@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mr-audio-smith"
-version = "0.0.1"
+version = "1.0.0-rc.1"
 description = "Turn any web page into a realistic, audience-tuned narration with your own cloned voice, generated locally, embedded with one tag."
 readme = "README.md"
 license = "MIT"

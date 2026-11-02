@@ -1851,7 +1851,7 @@ wheels = [
 
 [[package]]
 name = "mr-audio-smith"
-version = "0.0.1"
+version = "1.0.0rc1"
 source = { editable = "." }
 dependencies = [
     { name = "audioop-lts", marker = "python_full_version >= '3.13'" },

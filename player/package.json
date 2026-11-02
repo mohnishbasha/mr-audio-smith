@@ -1,6 +1,6 @@
 {
   "name": "@mr-audio-smith/player",
-  "version": "0.0.1",
+  "version": "1.0.0-rc.1",
   "private": false,
   "license": "MIT",
   "description": "Accessible, dependency-free <audio-smith-player> web component",
