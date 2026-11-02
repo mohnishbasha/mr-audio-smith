@@ -109,3 +109,35 @@ blanking the signature, which is now enforced by code.
 
 **What to change:** keep heavyweight mastering tests few and focused; consider a short fixture for
 pipeline tests.
+
+## Sprints 4 and 5: Publish and Site, Studio (completed 2026-11-02, tags `sprint-4-complete`, `sprint-5-complete`)
+
+Delivered in one PR because the dependency graph runs them in parallel and they share the CLI and API
+surface.
+
+**Built** (issues #38 to #49): the `<audio-smith-player>` web component (6.5 KB gzipped, zero
+dependencies, axe clean in default and kid variants, works with JavaScript off); embed snippet and player
+bundle written on every run with `embed_*` settings; `inject` that splices only between markers and keeps
+the rest of the page byte for byte (CRLF preserved, idempotent); translation and language tracks with
+alignment checks; `site` batch mode with `--inject-root`; the composite GitHub Action and the
+letters-to-a-child example; Studio (FastAPI on 127.0.0.1 with a per-session token and strict CSP, Vite +
+Preact UI) for editing chunks, rendering and comparing takes, re-mastering, approving, and injecting with
+a diff preview.
+
+**Gate evidence:** Playwright: 14 player specs (keyboard, captions, language toggle, no-JS fallback,
+storage blocked, axe) and 5 Studio specs (edit and save marks stale, compare takes and keep the best,
+approve persists, inject diff before write, zero external requests) pass locally. Inject verified
+idempotent on the reference letter. Site mode skips unchanged pages. The Action is unit-tested with a fake
+runner; a run in a throwaway repository is a manual step for the owner (it needs a GPU runner or a server).
+
+**Tests added:** about 120 Python unit, 48 player unit, 23 Studio unit, 19 e2e.
+
+**What worked:** writing the Studio HTTP contract first let the backend and frontend agents build in
+parallel and meet on the first try.
+
+**What did not:** several agents edited `cli_commands.py` at the same time; it held only because each
+edit was one additive line. Studio media needs the session token, so the UI fetches audio as blobs and the
+CSP gained `connect-src blob:`.
+
+**What to change:** give each command group its own module (already true for voice, publish, site,
+studio) so parallel work never touches the same file.
