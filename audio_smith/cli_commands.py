@@ -1,10 +1,12 @@
 """CLI commands for the pipeline stages. Thin: parse flags, call audio_smith.api, print results."""
 
+import sys
 from pathlib import Path
 from typing import Annotated
 
 import typer
 from rich.console import Console
+from rich.markup import escape
 from rich.table import Table
 
 from audio_smith import api
@@ -25,9 +27,17 @@ LlmOpt = Annotated[
 BackendOpt = Annotated[str | None, typer.Option("--backend", "-b", help="TTS backend id.")]
 VoiceOpt = Annotated[str | None, typer.Option("--voice", "-v", help="Registered voice id or built-in voice.")]
 ForceOpt = Annotated[bool, typer.Option("--force", help="Bypass the cache and re-run every stage.")]
+NonCommercialOpt = Annotated[
+    bool, typer.Option("--accept-noncommercial", help="Allow backends with non-commercial weights.")
+]
 PrivateOpt = Annotated[
     bool, typer.Option("--allow-private", help="Allow fetching private or loopback addresses.")
 ]
+
+
+def progress_callback() -> api.Progress | None:
+    """Rich progress bar on an interactive terminal; silent otherwise (CI, pipes)."""
+    return api.rich_progress() if sys.stderr.isatty() else None
 
 
 def settings_from(**overrides: object) -> Settings:
@@ -77,7 +87,49 @@ def register_stage_commands(app: typer.Typer, console: Console) -> None:
         if res.parent_script:
             typer.echo(f"parent script: {res.parent_script}")
         for w in res.warnings:
-            console.print(f"[yellow]warning:[/yellow] {w}")
+            console.print(f"[yellow]warning:[/yellow] {escape(w)}")
+
+    @app.command("run")
+    def run_cmd(
+        source: Annotated[str, typer.Argument(help="Page URL or local .html/.md file.")],
+        profile: ProfileOpt = None,
+        voice: VoiceOpt = None,
+        backend: BackendOpt = None,
+        out: OutOpt = None,
+        llm: LlmOpt = None,
+        approve: Annotated[bool, typer.Option("--approve", help="Review the script in $EDITOR.")] = False,
+        force: ForceOpt = False,
+        dry_run: Annotated[bool, typer.Option("--dry-run", help="Show the plan and cache status.")] = False,
+        allow_private: PrivateOpt = False,
+        accept_noncommercial: NonCommercialOpt = False,
+    ) -> None:
+        """Narrate a page end to end: MP3, captions, and manifest in OUT/<slug>/."""
+        settings = settings_from(allow_private=allow_private, accept_noncommercial=accept_noncommercial)
+        res = api.narrate(
+            source,
+            profile=profile,
+            voice=voice,
+            backend=backend,
+            out=out,
+            llm=llm,
+            approve=approve,
+            force=force,
+            dry_run=dry_run,
+            settings=settings,
+            progress=progress_callback(),
+        )
+        for line in res.plan:
+            typer.echo(line)
+        for t in res.tracks:
+            state = "cached" if t.cached else "rendered"
+            typer.echo(
+                f"{t.track.kind} {t.track.lang} ({state}): {t.mp3} {t.track.duration_s:.1f}s "
+                f"{t.track.loudness_lufs:.1f} LUFS"
+            )
+        if res.manifest_path:
+            typer.echo(f"manifest: {res.manifest_path}")
+        for w in res.warnings:
+            console.print(f"[yellow]warning:[/yellow] {escape(w)}")
 
     @app.command("render")
     def render_cmd(
@@ -86,11 +138,10 @@ def register_stage_commands(app: typer.Typer, console: Console) -> None:
         voice: VoiceOpt = None,
         backend: BackendOpt = None,
         out: OutOpt = None,
-        accept_noncommercial: Annotated[
-            bool, typer.Option("--accept-noncommercial", help="Allow backends with non-commercial weights.")
-        ] = False,
+        accept_noncommercial: NonCommercialOpt = False,
+        force: ForceOpt = False,
     ) -> None:
-        """Synthesize a reviewed script chunk by chunk."""
+        """Render a reviewed script (mastered track), or preview chosen chunks with --chunks."""
         settings = settings_from(accept_noncommercial=accept_noncommercial)
         wanted = [c.strip() for c in chunks.split(",") if c.strip()] if chunks else None
         res = api.render_script(
@@ -99,7 +150,7 @@ def register_stage_commands(app: typer.Typer, console: Console) -> None:
         for cid, path in res.chunk_files.items():
             typer.echo(f"chunk {cid}: {path}")
         for w in res.warnings:
-            console.print(f"[yellow]warning:[/yellow] {w}")
+            console.print(f"[yellow]warning:[/yellow] {escape(w)}")
 
 
 def register_profile_commands(app: typer.Typer, console: Console) -> None:

@@ -194,6 +194,10 @@ audio_smith/
   paths.py             safe_slug, ensure_inside (output root guard), atomic_write
   preflight.py         PreflightIssue model shared by backends, LLM providers, doctor
   cli_commands.py      stage commands registered on the typer app (front door)
+  pipeline.py          stages 3 to 5 for one track (plan, synth, QA, assemble, master, VTT, track cache)
+  orchestrate.py       narrate(): the whole pipeline for one page, exposed as api.narrate
+  pipeline_types.py    models passed between synthesis, mastering, and publish
+  script/verbatim.py   splices exact verbatim text and the signature into LLM output
   api.py               the core public API: narrate, extract, write_script,
                        render_script, master, publish (only module front doors import)
   fetch.py             httpx fetch, size/time limits, scheme allowlist, SSRF guard
@@ -487,6 +491,8 @@ File: `{slug}.manifest.json`. Schema id `audio-smith/manifest@1`. JSON Schema pu
 | `tracks[].loudness_lufs` | number | Integrated loudness |
 | `tracks[].true_peak_dbtp` | number | |
 | `tracks[].peaks` | array of number | Downsampled waveform peaks, each 0.0..1.0 (from `master/peaks.py`) |
+| `tracks[].captions` | string | Relative path to the WebVTT file for this track |
+| `tracks[].opus` | string, optional | Relative path to the Opus file when `--opus` was requested |
 | `chunks[]` | array | One per rendered chunk |
 | `chunks[].id` | string | Chunk number (for example `001`) |
 | `chunks[].hash` | string | `chunk_key` |
@@ -919,6 +925,9 @@ cache/
 ```
 
 Additions and clarifications:
+
+- `tracks/{track_key}` holds the finished MP3, VTT, optional Opus, and a JSON record of the track. The key covers every planned synthesis unit key plus the mastering signature (stings, bed, Opus, chunk pause, mastering version), so an unchanged page skips synthesis, QA, and ffmpeg (NFR-004, measured at about 0.6 s).
+- Take 0 of a unit is cached under `chunks/`; QA retakes under `takes/`, with the best score in `takes/{key}.json`.
 
 - Every key starts with the cache format (`v1-`), so bumping `CACHE_FORMAT` makes old entries unreachable instead of misread.
 - The blocks key uses page bytes because the content hash is only known after extraction; the content hash (FR-003) is then computed from the normalized blocks.

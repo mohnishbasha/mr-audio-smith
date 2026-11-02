@@ -2,7 +2,6 @@ import shutil
 from pathlib import Path
 
 import pytest
-import soundfile as sf
 from typer.testing import CliRunner
 
 from audio_smith import api
@@ -15,11 +14,12 @@ from audio_smith.tts.mock import MockBackend
 FIX = Path(__file__).resolve().parents[1] / "fixtures"
 
 
-def test_api_render_mock_writes_one_wav_per_chunk(tmp_path: Path) -> None:
+def test_api_render_mock_full_script_masters_track(tmp_path: Path) -> None:
     res = api.render_script(FIX / "scripts" / "valid.script.md", backend="mock", voice="mock-a", out=tmp_path)
-    assert sorted(res.chunk_files) == ["001", "002", "003", "004"]
-    data, rate = sf.read(res.chunk_files["001"])
-    assert rate == 24_000 and len(data) > 0
+    track = res.tracks[0]
+    assert track.mp3.is_file() and track.vtt.is_file()
+    assert [c.id for c in track.chunks] == ["001", "002", "003", "004"]
+    assert abs(track.track.loudness_lufs + 16) <= 1.0
 
 
 def test_api_render_subset_chunks(tmp_path: Path) -> None:
@@ -88,7 +88,7 @@ def test_api_render_registered_voice_with_consent_renders(tmp_path: Path) -> Non
     )
     add_voice(settings.voices_dir, "dad", FIX / "voices" / "clean.wav", consent, display_name="Dad")
     res = api.render_script(FIX / "scripts" / "valid.script.md", backend="mock", voice="dad", out=tmp_path)
-    assert res.voice == "dad" and len(res.chunk_files) == 4
+    assert res.voice == "dad" and res.tracks[0].mp3.is_file()
 
 
 def test_api_render_noncommercial_backend_requires_flag(tmp_path: Path) -> None:

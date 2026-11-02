@@ -8,30 +8,43 @@ import re
 import time
 from collections.abc import Callable
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
-import soundfile as sf
 from pydantic import BaseModel, Field
 
 from audio_smith.blocks import BlockDoc, Track, content_hash
 from audio_smith.cache import CacheStore
 from audio_smith.cache.keys import blocks_key, script_key
 from audio_smith.config import Settings, load_settings
-from audio_smith.errors import UsageError
+from audio_smith.errors import PreflightError, UsageError
 from audio_smith.extract import extract as extract_html
 from audio_smith.fetch import FetchResult, fetch
 from audio_smith.llm import get_provider, provider_label
 from audio_smith.llm.base import LLMProvider
 from audio_smith.paths import atomic_write, ensure_inside, safe_slug
+from audio_smith.pipeline import (
+    Progress,
+    TrackJob,
+    TrackOutput,
+    produce_track,
+    project_lexicon,
+    write_chunk_previews,
+)
 from audio_smith.profiles import Profile, get_profile
-from audio_smith.script import lexicon
 from audio_smith.script.markdown import Script, ScriptMeta, parse_script, serialize
-from audio_smith.script.validate import plain_text
 from audio_smith.script.writer import PROMPT_VERSION
 from audio_smith.script.writer import write_script as run_writer
 from audio_smith.tts.base import SynthParams, TTSBackend, VoiceRef
 from audio_smith.tts.license import check_license
+from audio_smith.tts.planner import plan_units
 from audio_smith.tts.registry import get_backend
+from audio_smith.tts.runner import SynthesisRunner, rich_progress
 from audio_smith.voices import registry as voice_registry
+
+if TYPE_CHECKING:
+    from audio_smith.orchestrate import NarrateResult
+
+__all__ = ["Progress", "rich_progress"]
 
 Fetcher = Callable[[str, Settings], FetchResult]
 _MD_HEADING = re.compile(r"^(#{1,6})\s+(.*)$")
@@ -50,6 +63,7 @@ class ScriptResult(BaseModel):
     cache_hits: dict[str, bool] = Field(default_factory=dict)
     warnings: list[str] = Field(default_factory=list)
     timings: dict[str, float] = Field(default_factory=dict)
+    doc: BlockDoc | None = Field(default=None, exclude=True)
 
 
 def markdown_to_html(text: str) -> str:
@@ -179,6 +193,7 @@ def write_script(
         content_hash=chash,
         cache_hits={"blocks": blocks_hit, "script": script_hit},
         warnings=doc.warnings + warnings,
+        doc=doc,
     )
     if doc.track_blocks("parent") and "parent" in prof.tracks:
         parent_prof = resolve_profile(prof.tracks["parent"], s)
@@ -191,11 +206,12 @@ def write_script(
 
 
 class RenderResult(BaseModel):
-    """Outputs of stage 3 for a script: one WAV per rendered chunk."""
+    """Outputs of stages 3 to 5 for a script (or chunk previews when a subset was requested)."""
 
     slug: str
     out_dir: Path
     chunk_files: dict[str, Path] = Field(default_factory=dict)
+    tracks: list[TrackOutput] = Field(default_factory=list)
     backend: str
     voice: str
     warnings: list[str] = Field(default_factory=list)
@@ -209,10 +225,18 @@ def resolve_voice(voice: str | None, backend: TTSBackend, settings: Settings) ->
     caps = backend.capabilities()
     voice_id = voice or settings.default_voice or (caps.builtin_voices[0] if caps.builtin_voices else None)
     if voice_id is None:
-        raise UsageError(
-            f"Backend {backend.id} needs --voice", hint="Register one with `mr-audio-smith voice add`."
-        )
+        raise UsageError(f"Backend {backend.id} needs --voice", hint="Use `mr-audio-smith voice add`.")
     return voice_registry.resolve(voice_id, settings, caps)
+
+
+def _engine(backend: str | None, tts: TTSBackend | None, s: Settings) -> tuple[TTSBackend, list[str]]:
+    engine = tts or get_backend(backend or s.default_backend, s)
+    issues = [i for i in engine.preflight() if i.severity == "error"]
+    if issues:
+        raise PreflightError(
+            f"Backend {engine.id} is not ready: {issues[0].message}", hint=issues[0].hint, issues=issues
+        )
+    return engine, check_license(engine.id, engine.capabilities(), s.accept_noncommercial)
 
 
 def render_script(
@@ -222,31 +246,64 @@ def render_script(
     voice: str | None = None,
     backend: str | None = None,
     out: Path | None = None,
+    force: bool = False,
     settings: Settings | None = None,
     tts: TTSBackend | None = None,
+    progress: Progress | None = None,
 ) -> RenderResult:
-    """Synthesize script chunks one at a time (ADR-005), applying the lexicon at synthesis only."""
+    """Render a reviewed script. With `chunks`, write per-chunk WAV previews only (US-004)."""
     s = _settings(settings)
     script = parse_script(script_path.read_text(encoding="utf-8"))
     prof = resolve_profile(script.meta.profile.split("@")[0], s)
-    engine = tts or get_backend(backend or s.default_backend, s)
-    warnings = check_license(engine.id, engine.capabilities(), s.accept_noncommercial)
+    engine, warnings = _engine(backend, tts, s)
     vref = resolve_voice(voice, engine, s)
-    lex = lexicon.merge(prof.lexicon, lexicon.load_project_lexicon(Path(lexicon.PROJECT_LEXICON)))
     slug = safe_slug(script.meta.source)
     out_root = (out or s.out_dir).expanduser()
     out_dir = ensure_inside(out_root, out_root / slug)
-    wanted = {c.zfill(3) for c in chunks} if chunks else None
-    params = SynthParams(lang=script.meta.lang, rate=prof.speech.rate)
-    files: dict[str, Path] = {}
-    for chunk in script.chunks:
-        if wanted is not None and chunk.id not in wanted:
-            continue
-        pcm = engine.synth(lexicon.apply(plain_text(chunk.text), lex), vref, params)
-        path = ensure_inside(out_dir, out_dir / "chunks" / f"{chunk.id}.wav")
-        path.parent.mkdir(parents=True, exist_ok=True)
-        sf.write(path, pcm.samples, pcm.sample_rate, subtype="PCM_16")
-        files[chunk.id] = path
+    if chunks:
+        wanted = {c.zfill(3) for c in chunks}
+        plan = plan_units(
+            script,
+            max_chars=min(prof.speech.max_chunk_chars, engine.capabilities().max_chars),
+            lexicon=project_lexicon(prof),
+            backend_id=engine.id,
+            model=engine.model,
+            voice=vref,
+            rate=prof.speech.rate,
+            chunks=wanted,
+        )
+        runner = SynthesisRunner(
+            engine,
+            vref,
+            SynthParams(lang=script.meta.lang, rate=prof.speech.rate),
+            CacheStore(s.cache_dir),
+            progress=progress,
+        )
+        files = write_chunk_previews(runner.run(plan.units), out_dir)
+        return RenderResult(
+            slug=slug,
+            out_dir=out_dir,
+            chunk_files=files,
+            backend=engine.id,
+            voice=vref.id,
+            warnings=warnings + plan.warnings,
+        )
+    kind = "parent" if ".parent." in script_path.name else "main"
+    stem = f"{slug}.parent" if kind == "parent" else slug
+    job = TrackJob(script=script, profile=prof, lang=script.meta.lang, kind=kind, out_dir=out_dir, stem=stem)
+    track = produce_track(job, engine, vref, s, force=force, progress=progress, clock=time.monotonic)
     return RenderResult(
-        slug=slug, out_dir=out_dir, chunk_files=files, backend=engine.id, voice=vref.id, warnings=warnings
+        slug=slug,
+        out_dir=out_dir,
+        tracks=[track],
+        backend=engine.id,
+        voice=vref.id,
+        warnings=warnings + track.warnings,
     )
+
+
+def narrate(source: str, **kwargs: Any) -> "NarrateResult":
+    """Full pipeline for one page; see audio_smith.orchestrate.narrate for the keyword arguments."""
+    from audio_smith.orchestrate import narrate as _narrate  # noqa: PLC0415 - narrate builds on this module
+
+    return _narrate(source, **kwargs)

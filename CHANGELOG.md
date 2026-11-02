@@ -21,14 +21,22 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `mr-audio-smith render <script.md> [--chunks 3,7]` synthesizes a reviewed script chunk by chunk, applying the pronunciation lexicon.
 - `--accept-noncommercial` is required for backends whose weights are not licensed for commercial use.
 - `doctor` now reports each backend, GPU visibility, the LLM provider, and registered voices.
+- `mr-audio-smith run <url|file>` narrates a page end to end: a mastered MP3 (-16 LUFS, true peak at or below -1.5 dBTP, 128 kbps mono), WebVTT captions, ID3 tags with same-origin cover art, and a manifest, in `OUT/<slug>/`. `--approve` opens the script in `$EDITOR` first, `--dry-run` shows the plan, and an unchanged page re-runs in under two seconds.
+- Content marked for grown-ups becomes a separate `<slug>.parent.mp3` read with the `adult-brief` profile.
+- Speaker similarity checks for cloned voices (install the `qa` extra): weak chunks are re-rendered with a new seed and the best take is kept.
+- Gentle original intro and outro chimes (`builtin:chime-soft`, `builtin:chime-bright`) and optional music bed ducking.
+- `render <script.md>` now produces the mastered track; `--chunks 3,7` previews just those chunks as WAV files.
+- Published JSON Schemas for blocks, scripts, profiles, voices, and manifests in `schemas/`.
+- Python API: `audio_smith.narrate(source, profile=..., voice=..., backend=...)`.
+
+### Fixed
+- The signature and other verbatim passages are always kept exactly as written, even when the language model blanks or rephrases them.
 
 ### Changed
 
 ### Deprecated
 
 ### Removed
-
-### Fixed
 
 ### Security
 

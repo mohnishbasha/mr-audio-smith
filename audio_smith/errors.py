@@ -90,6 +90,10 @@ class SynthesisError(AudioSmithError):
     exit_code = 6
     http_status = 502
 
+    def __init__(self, message: str, *, hint: str | None = None, retryable: bool = True) -> None:
+        super().__init__(message, hint=hint)
+        self.retryable = retryable
+
 
 class MasteringError(AudioSmithError):
     code = "mastering_failed"

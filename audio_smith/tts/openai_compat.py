@@ -178,6 +178,7 @@ class OpenAICompatBackend:
                     raise SynthesisError(
                         f"{self.id} rejected the request ({e.status_code}): {e.message}",
                         hint="Check the model, voice, and text; this error is not retried.",
+                        retryable=False,
                     ) from e
                 last = e
             except openai.APIConnectionError as e:  # includes APITimeoutError
@@ -187,6 +188,7 @@ class OpenAICompatBackend:
         raise SynthesisError(
             f"{self.id} failed after {MAX_RETRIES + 1} attempts: {last}",
             hint="Run `mr-audio-smith doctor` and check the server is up and not overloaded.",
+            retryable=False,
         ) from last
 
     @staticmethod
@@ -206,6 +208,7 @@ class OpenAICompatBackend:
             raise SynthesisError(
                 f"{self.id} returned audio that is not a valid WAV: {e}",
                 hint="Check the server's response_format support.",
+                retryable=False,
             ) from e
         return PcmAudio(samples=to_float32(samples), sample_rate=int(sr))
 

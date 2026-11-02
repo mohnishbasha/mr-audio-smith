@@ -1,0 +1,122 @@
+{
+  "$defs": {
+    "ClipcheckInfo": {
+      "properties": {
+        "clipping_pct": {
+          "title": "Clipping Pct",
+          "type": "number"
+        },
+        "duration_s": {
+          "title": "Duration S",
+          "type": "number"
+        },
+        "sample_rate": {
+          "title": "Sample Rate",
+          "type": "integer"
+        },
+        "snr_db": {
+          "title": "Snr Db",
+          "type": "number"
+        }
+      },
+      "required": [
+        "duration_s",
+        "sample_rate",
+        "snr_db",
+        "clipping_pct"
+      ],
+      "title": "ClipcheckInfo",
+      "type": "object"
+    },
+    "ConsentRecord": {
+      "description": "Who the voice belongs to and why cloning it is allowed.",
+      "properties": {
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "relationship": {
+          "enum": [
+            "self",
+            "written_permission"
+          ],
+          "title": "Relationship",
+          "type": "string"
+        },
+        "speaker_name": {
+          "title": "Speaker Name",
+          "type": "string"
+        },
+        "statement": {
+          "title": "Statement",
+          "type": "string"
+        }
+      },
+      "required": [
+        "speaker_name",
+        "relationship",
+        "statement",
+        "date"
+      ],
+      "title": "ConsentRecord",
+      "type": "object"
+    }
+  },
+  "$id": "https://getaudiosmith.com/schemas/voice.schema.json",
+  "description": "Contents of voice.yaml.",
+  "properties": {
+    "backend_hints": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Backend Hints",
+      "type": "array"
+    },
+    "clip_hash": {
+      "title": "Clip Hash",
+      "type": "string"
+    },
+    "clipcheck": {
+      "$ref": "#/$defs/ClipcheckInfo"
+    },
+    "consent": {
+      "$ref": "#/$defs/ConsentRecord"
+    },
+    "display_name": {
+      "title": "Display Name",
+      "type": "string"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "reference": {
+      "default": "reference.wav",
+      "title": "Reference",
+      "type": "string"
+    },
+    "reference_text": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reference Text"
+    }
+  },
+  "required": [
+    "id",
+    "display_name",
+    "consent",
+    "clipcheck",
+    "clip_hash"
+  ],
+  "title": "audio-smith/voice@1",
+  "type": "object"
+}

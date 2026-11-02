@@ -6,6 +6,7 @@ from typing import Annotated
 
 import typer
 from rich.console import Console
+from rich.markup import escape
 from rich.table import Table
 
 from audio_smith.config import load_settings
@@ -103,7 +104,7 @@ def register_voice_commands(app: typer.Typer, console: Console) -> None:
             load_settings().resolved(load_settings().voices_dir), voice_id, fix_permissions=fix
         )
         for w in res.warnings:
-            console.print(f"[yellow]warning:[/yellow] {w}")
+            console.print(f"[yellow]warning:[/yellow] {escape(w)}")
         if res.consent_error:
             console.print(f"consent: {res.consent_error}")
             raise typer.Exit(code=EXIT_CONSENT)
