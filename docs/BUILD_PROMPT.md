@@ -57,6 +57,8 @@ prompt stays accurate. Inline text below has been corrected where it was factual
 
 - Sprint 2: in-process Maya 2 is selected with `AUDIO_SMITH_MAYA2_MODE=inproc`; Chatterbox, like Maya 2, applies rate after synthesis; `require_consent()` re-reads the voice record and re-hashes the clip inside every cloning backend; the installed `openai` SDK uses `httpx2`, so SDK calls are tested with an injected client and mock transport while plain httpx calls use respx; a minimal `render` command lands in Sprint 2 (per-chunk WAVs) and Sprint 3 extends it with the chunk planner, cache, QA, and mastering.
 
+- Sprint 3: verbatim passages and the signature are enforced by code (`script/verbatim.py`) rather than trusted to the LLM (the live gate showed qwen3:14b blanking the signature chunk); finished tracks are cached under `tracks/` so unchanged re-runs skip ffmpeg; `render` without `--chunks` produces the mastered track and with `--chunks` writes WAV previews; the manifest track gains `captions` and optional `opus`; the `qa` extra pins `setuptools<81` because resemblyzer imports `pkg_resources`; unit tests that master audio need ffmpeg, so CI installs it on every OS.
+
 **Tooling added**
 - `scripts/sync-test-plan.py` marks TEST_PLAN rows Automated when a test with that exact id exists and appends unplanned tests to section 5.28; CI runs it with `--check`.
 - `scripts/record-llm.py` (`make record-llm`) records real Ollama responses into `tests/fixtures/llm/` for the fake provider; the golden script is the replay of that recording.

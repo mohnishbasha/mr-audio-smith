@@ -37,3 +37,8 @@ def test_errors_problem_json_has_rfc9457_fields() -> None:
     assert p["detail"] == "no consent"
     assert p["hint"] == "register"
     assert p["stage"] == "voice"
+
+
+def test_errors_synthesis_error_retryable_flag() -> None:
+    assert errors.SynthesisError("x").retryable
+    assert not errors.SynthesisError("x", retryable=False).retryable

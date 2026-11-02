@@ -50,7 +50,7 @@ dependencies = [
 maya2 = ["torch>=2.4"]
 kokoro = ["kokoro>=0.9.4; python_version < '3.13'", "torch>=2.4; python_version < '3.13'"]
 chatterbox = ["chatterbox-tts>=0.1; python_version < '3.13'", "torch>=2.4; python_version < '3.13'"]
-qa = ["resemblyzer>=0.1.4"]
+qa = ["resemblyzer>=0.1.4", "setuptools>=69,<81"]  # resemblyzer imports pkg_resources
 cloud = ["anthropic>=0.34"]
 server = ["fastapi>=0.112", "uvicorn[standard]>=0.30", "python-multipart>=0.0.9"]
 mcp = ["mcp>=1.2"]

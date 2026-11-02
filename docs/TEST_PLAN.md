@@ -380,80 +380,80 @@ Conventions: ids follow section 3. Types are Unit, Integration, Smoke, E2E, Regr
 
 | ID | Scenario | Type | Status |
 |---|---|---|---|
-| `test_planner_split_on_pause_markers_into_segments` | `[pause N]` splits units | Unit | ⚠️ Deferred |
-| `test_planner_max_chars_splits_on_sentence_boundary` | Never splits mid-sentence | Unit | ⚠️ Deferred |
-| `test_planner_lexicon_applied_before_keying` | Lexicon affects synthesis text and key | Unit | ⚠️ Deferred |
-| `test_planner_chunk_key_stable_across_runs` | Keys deterministic | Unit | ⚠️ Deferred |
-| `test_planner_chunk_key_changes_with_voice_seed_rate` | Voice, seed, or rate alters the key | Unit | ⚠️ Deferred |
-| `test_runner_cache_hit_skips_synthesis` | Cached chunk is not re-synthesized | Unit | ⚠️ Deferred |
-| `test_runner_failed_chunk_retried_twice_with_backoff` | Retries 2 times with exponential backoff and jitter | Unit | ⚠️ Deferred |
-| `test_runner_third_failure_marks_chunk_failed` | Failure surfaced after retries | Unit | ⚠️ Deferred |
-| `test_runner_resume_after_interrupt_renders_only_remainder` | Partial progress survives (FR-012) | Unit | ⚠️ Deferred |
-| `test_runner_cache_write_atomic_temp_rename` | No partial WAV is ever visible | Unit | ⚠️ Deferred |
-| `test_runner_chunks_subset_renders_only_selected` | `--chunks 3,4` renders those only | Unit | ⚠️ Deferred |
-| `test_runner_concurrency_bounded_semaphore_default_2` | At most 2 in-flight requests | Unit | ⚠️ Deferred |
+| `test_planner_split_on_pause_markers_into_segments` | `[pause N]` splits units | Unit | ✅ Automated |
+| `test_planner_max_chars_splits_on_sentence_boundary` | Never splits mid-sentence | Unit | ✅ Automated |
+| `test_planner_lexicon_applied_before_keying` | Lexicon affects synthesis text and key | Unit | ✅ Automated |
+| `test_planner_chunk_key_stable_across_runs` | Keys deterministic | Unit | ✅ Automated |
+| `test_planner_chunk_key_changes_with_voice_seed_rate` | Voice, seed, or rate alters the key | Unit | ✅ Automated |
+| `test_runner_cache_hit_skips_synthesis` | Cached chunk is not re-synthesized | Unit | ✅ Automated |
+| `test_runner_failed_chunk_retried_twice_with_backoff` | Retries 2 times with exponential backoff and jitter | Unit | ✅ Automated |
+| `test_runner_third_failure_marks_chunk_failed` | Failure surfaced after retries | Unit | ✅ Automated |
+| `test_runner_resume_after_interrupt_renders_only_remainder` | Partial progress survives (FR-012) | Unit | ✅ Automated |
+| `test_runner_cache_write_atomic_temp_rename` | No partial WAV is ever visible | Unit | ✅ Automated |
+| `test_runner_chunks_subset_renders_only_selected` | `--chunks 3,4` renders those only | Unit | ✅ Automated |
+| `test_runner_concurrency_bounded_semaphore_default_2` | At most 2 in-flight requests | Unit | ✅ Automated |
 | `it_runner_kill_midrun_then_resume_renders_remainder` | Real process killed with SIGINT, re-run completes | Integration | ⚠️ Deferred |
 
 ### 5.11 Voice consistency QA (FR-013)
 
 | ID | Scenario | Type | Status |
 |---|---|---|---|
-| `test_qa_similarity_below_threshold_rerenders` | QA retake loop | Unit | ⚠️ Deferred |
-| `test_qa_rerender_uses_new_seed_each_take` | Seeds differ across takes | Unit | ⚠️ Deferred |
-| `test_qa_takes_per_chunk_limit_respected` | Stops after `takes_per_chunk` | Unit | ⚠️ Deferred |
-| `test_qa_best_take_kept_by_score` | Highest similarity retained | Unit | ⚠️ Deferred |
-| `test_qa_builtin_voice_compared_to_chunk_1` | Reference is chunk 1 when no clip | Unit | ⚠️ Deferred |
-| `test_qa_report_lists_scores_per_chunk` | Scores in the report and manifest | Unit | ⚠️ Deferred |
-| `test_qa_default_threshold_0_75` | Default threshold value | Unit | ⚠️ Deferred |
-| `test_qa_extra_missing_skips_with_manifest_warning` | resemblyzer absent: warning, no crash (ADR-015) | Unit | ⚠️ Deferred |
+| `test_qa_similarity_below_threshold_rerenders` | QA retake loop | Unit | ✅ Automated |
+| `test_qa_rerender_uses_new_seed_each_take` | Seeds differ across takes | Unit | ✅ Automated |
+| `test_qa_takes_per_chunk_limit_respected` | Stops after `takes_per_chunk` | Unit | ✅ Automated |
+| `test_qa_best_take_kept_by_score` | Highest similarity retained | Unit | ✅ Automated |
+| `test_qa_builtin_voice_compared_to_chunk_1` | Reference is chunk 1 when no clip | Unit | ✅ Automated |
+| `test_qa_report_lists_scores_per_chunk` | Scores in the report and manifest | Unit | ✅ Automated |
+| `test_qa_default_threshold_0_75` | Default threshold value | Unit | ✅ Automated |
+| `test_qa_extra_missing_skips_with_manifest_warning` | resemblyzer absent: warning, no crash (ADR-015) | Unit | ✅ Automated |
 | `it_qa_resemblyzer_embeds_fixture_clip` | Real embedding of `voices/clean.wav` returns a vector | Integration | ⚠️ Deferred |
 
 ### 5.12 Assemble and master (FR-014)
 
 | ID | Scenario | Type | Status |
 |---|---|---|---|
-| `test_assemble_total_duration_equals_parts_plus_pauses` | Sum within 5 ms per join (golden, mock audio) | Unit | ⚠️ Deferred |
-| `test_assemble_crossfade_10ms_at_joins` | Short crossfade at joins | Unit | ⚠️ Deferred |
-| `test_assemble_resamples_to_44100` | Output rate 44.1 kHz | Unit | ⚠️ Deferred |
-| `test_assemble_chunk_timestamps_within_10ms` | Start and end boundaries within tolerance | Unit | ⚠️ Deferred |
-| `test_assemble_heading_and_chunk_pauses_from_profile` | `pause_after_heading_ms`, `pause_between_chunks_ms` applied | Unit | ⚠️ Deferred |
-| `test_master_ffmpeg_args_are_array_no_shell` | Wrapper never builds shell strings | Unit | ⚠️ Deferred |
-| `test_master_loudness_within_target` | -16 LUFS plus or minus 1 | Integration | ⚠️ Deferred |
-| `it_master_true_peak_at_or_below_minus_1_5_dbtp` | True peak limit via ebur128 | Integration | ⚠️ Deferred |
-| `it_master_mp3_128k_mono_44100_default` | Default encode parameters verified with ffprobe | Integration | ⚠️ Deferred |
-| `it_master_opus_optional_output_created` | `--opus` yields a valid Opus file | Integration | ⚠️ Deferred |
-| `it_master_intro_outro_stings_included` | Stings add expected duration | Integration | ⚠️ Deferred |
-| `it_master_music_bed_ducks_under_voice` | Bed at -24 dB under voice with sidechain | Integration | ⚠️ Deferred |
-| `it_master_two_pass_loudnorm_runs` | Measure pass then apply pass | Integration | ⚠️ Deferred |
-| `test_master_stings_are_procedural_and_documented` | `assets/stings/` entries listed as original in THIRD_PARTY_LICENSES | Unit | ⚠️ Deferred |
+| `test_assemble_total_duration_equals_parts_plus_pauses` | Sum within 5 ms per join (golden, mock audio) | Unit | ✅ Automated |
+| `test_assemble_crossfade_10ms_at_joins` | Short crossfade at joins | Unit | ✅ Automated |
+| `test_assemble_resamples_to_44100` | Output rate 44.1 kHz | Unit | ✅ Automated |
+| `test_assemble_chunk_timestamps_within_10ms` | Start and end boundaries within tolerance | Unit | ✅ Automated |
+| `test_assemble_heading_and_chunk_pauses_from_profile` | `pause_after_heading_ms`, `pause_between_chunks_ms` applied | Unit | ✅ Automated |
+| `test_master_ffmpeg_args_are_array_no_shell` | Wrapper never builds shell strings | Unit | ✅ Automated |
+| `test_master_loudness_within_target` | -16 LUFS plus or minus 1 | Integration | ✅ Automated |
+| `it_master_true_peak_at_or_below_minus_1_5_dbtp` | True peak limit via ebur128 | Integration | ✅ Automated |
+| `it_master_mp3_128k_mono_44100_default` | Default encode parameters verified with ffprobe | Integration | ✅ Automated |
+| `it_master_opus_optional_output_created` | `--opus` yields a valid Opus file | Integration | ✅ Automated |
+| `it_master_intro_outro_stings_included` | Stings add expected duration | Integration | ✅ Automated |
+| `it_master_music_bed_ducks_under_voice` | Bed at -24 dB under voice with sidechain | Integration | ✅ Automated |
+| `it_master_two_pass_loudnorm_runs` | Measure pass then apply pass | Integration | ✅ Automated |
+| `test_master_stings_are_procedural_and_documented` | `assets/stings/` entries listed as original in THIRD_PARTY_LICENSES | Unit | ✅ Automated |
 | `test_perf_reference_letter_meets_nfr_003` | Reference letter time meets NFR-003 (logged to `docs/PERFORMANCE.md`) | Integration | ❌ Skipped: needs GPU runner for the Maya 2 numbers. Manual step: run the reference letter on the GPU machine, record wall time in `docs/PERFORMANCE.md` |
 
 ### 5.13 ID3 tags (FR-014)
 
 | ID | Scenario | Type | Status |
 |---|---|---|---|
-| `test_tags_id3_title_artist_album_date_written` | TIT2, TPE1, TALB, TDRC readable by mutagen | Unit | ⚠️ Deferred |
+| `test_tags_id3_title_artist_album_date_written` | TIT2, TPE1, TALB, TDRC readable by mutagen | Unit | ✅ Automated |
 | `test_tags_author_from_page_meta_else_config` | Artist fallback order | Unit | ⚠️ Deferred |
-| `test_tags_cover_art_same_origin_under_1mb_embedded` | APIC embedded | Unit | ⚠️ Deferred |
-| `test_tags_cover_art_cross_origin_skipped` | Cross-origin og:image ignored | Unit | ⚠️ Deferred |
-| `test_tags_cover_art_over_1mb_skipped` | Oversized image ignored | Unit | ⚠️ Deferred |
+| `test_tags_cover_art_same_origin_under_1mb_embedded` | APIC embedded | Unit | ✅ Automated |
+| `test_tags_cover_art_cross_origin_skipped` | Cross-origin og:image ignored | Unit | ✅ Automated |
+| `test_tags_cover_art_over_1mb_skipped` | Oversized image ignored | Unit | ✅ Automated |
 
 ### 5.14 WebVTT captions (FR-015)
 
 | ID | Scenario | Type | Status |
 |---|---|---|---|
-| `test_vtt_cues_align_within_150ms` | Caption alignment | Unit | ⚠️ Deferred |
-| `test_vtt_one_cue_per_sentence` | Sentence-level cues | Unit | ⚠️ Deferred |
-| `test_vtt_text_from_narrated_script_not_page` | Cue text equals the script text | Unit | ⚠️ Deferred |
-| `test_vtt_distribution_by_character_length_proportion` | Within-chunk timing split proportionally | Unit | ⚠️ Deferred |
-| `test_vtt_format_valid_header_and_timestamps` | `WEBVTT` header, monotonic `hh:mm:ss.mmm` | Unit | ⚠️ Deferred |
-| `test_vtt_pause_markers_not_rendered_as_text` | Markers absent from cue text | Unit | ⚠️ Deferred |
+| `test_vtt_cues_align_within_150ms` | Caption alignment | Unit | ✅ Automated |
+| `test_vtt_one_cue_per_sentence` | Sentence-level cues | Unit | ✅ Automated |
+| `test_vtt_text_from_narrated_script_not_page` | Cue text equals the script text | Unit | ✅ Automated |
+| `test_vtt_distribution_by_character_length_proportion` | Within-chunk timing split proportionally | Unit | ✅ Automated |
+| `test_vtt_format_valid_header_and_timestamps` | `WEBVTT` header, monotonic `hh:mm:ss.mmm` | Unit | ✅ Automated |
+| `test_vtt_pause_markers_not_rendered_as_text` | Markers absent from cue text | Unit | ✅ Automated |
 
 ### 5.15 Manifest (FR-016)
 
 | ID | Scenario | Type | Status |
 |---|---|---|---|
-| `test_manifest_validates_against_published_schema` | Output passes `schemas/manifest.schema.json` | Unit | ⚠️ Deferred |
+| `test_manifest_validates_against_published_schema` | Output passes `schemas/manifest.schema.json` | Unit | ✅ Automated |
 | `test_manifest_contains_versions_hashes_backend_voice_languages` | All required fields present | Unit | ⚠️ Deferred |
 | `test_manifest_records_durations_qa_scores_file_names` | Durations, QA scores, files listed | Unit | ⚠️ Deferred |
 | `test_manifest_warnings_include_qa_skipped_and_noncommercial` | Warnings array populated | Unit | ⚠️ Deferred |
@@ -499,7 +499,7 @@ Conventions: ids follow section 3. Types are Unit, Integration, Smoke, E2E, Regr
 | `test_config_audio_smith_toml_discovered_upward_from_cwd` | Upward discovery | Unit | ✅ Automated |
 | `test_config_unknown_key_warns_not_crashes` | Unknown keys warn | Unit | ✅ Automated |
 | `test_config_env_prefix_audio_smith` | `AUDIO_SMITH_` prefix | Unit | ✅ Automated |
-| `smoke_run_mock_outputs_exist` | End to end with mocks | Smoke | ⚠️ Deferred |
+| `smoke_run_mock_outputs_exist` | End to end with mocks | Smoke | ✅ Automated |
 | `smoke_doctor_exit_0_on_clean_machine` | `doctor` exits 0 first | Smoke | ⚠️ Deferred |
 | `smoke_run_mock_manifest_validates` | Manifest passes the schema in the smoke run | Smoke | ⚠️ Deferred |
 | `smoke_version_prints_semver` | `--version` smoke | Smoke | ✅ Automated |
@@ -832,6 +832,64 @@ Row count: more than 120 scenarios across 27 tables.
 | `test_voices_cli_add_list_check_remove` | voices cli add list check remove | Unit | ✅ Automated |
 | `test_voices_permissions_0700_dir_0600_files` | voices permissions 0700 dir 0600 files | Unit | ✅ Automated |
 | `test_cli_main_prints_code_and_violations` | cli main prints code and violations | Unit | ✅ Automated |
+| `smoke_manifest_validates_schema` | manifest validates schema | Smoke | ✅ Automated |
+| `smoke_unchanged_rerun_is_cached` | unchanged rerun is cached | Smoke | ✅ Automated |
+| `test_api_render_mock_full_script_masters_track` | api render mock full script masters track | Unit | ✅ Automated |
+| `test_api_render_settings_default_backend_mock` | api render settings default backend mock | Unit | ✅ Automated |
+| `test_assemble_empty_and_short_units` | assemble empty and short units | Unit | ✅ Automated |
+| `test_assemble_no_clicks_around_silence` | assemble no clicks around silence | Unit | ✅ Automated |
+| `test_cache_unchanged_rerun_under_2s` | cache unchanged rerun under 2s | Unit | ✅ Automated |
+| `test_cli_main_prints_code_and_violations` | cli main prints code and violations | Unit | ✅ Automated |
+| `test_cli_run_mock_end_to_end` | cli run mock end to end | Unit | ✅ Automated |
+| `test_errors_synthesis_error_retryable_flag` | errors synthesis error retryable flag | Unit | ✅ Automated |
+| `test_has_deesser_detection_and_failure` | has deesser detection and failure | Unit | ✅ Automated |
+| `test_http_get_bytes_pins_ip_follows_redirect_and_blocks_private` | http get bytes pins ip follows redirect and blocks private | Unit | ✅ Automated |
+| `test_http_get_bytes_redirect_loop_and_network_error` | http get bytes redirect loop and network error | Unit | ✅ Automated |
+| `test_manifest_has_no_secrets_clips_or_consent` | manifest has no secrets clips or consent | Unit | ✅ Automated |
+| `test_manifest_rejects_bad_input` | manifest rejects bad input | Unit | ✅ Automated |
+| `test_manifest_round_trip_and_fields` | manifest round trip and fields | Unit | ✅ Automated |
+| `test_manifest_schemas_published_are_current` | manifest schemas published are current | Unit | ✅ Automated |
+| `test_master_failure_has_stderr_tail_and_hint` | master failure has stderr tail and hint | Unit | ✅ Automated |
+| `test_master_graph_variants_and_fallback_deesser` | master graph variants and fallback deesser | Unit | ✅ Automated |
+| `test_master_timeout_and_parse_errors` | master timeout and parse errors | Unit | ✅ Automated |
+| `test_measure_rms_dbfs` | measure rms dbfs | Unit | ✅ Automated |
+| `test_narrate_approve_invalid_edit_rejected` | narrate approve invalid edit rejected | Unit | ✅ Automated |
+| `test_narrate_approve_uses_edited_script` | narrate approve uses edited script | Unit | ✅ Automated |
+| `test_narrate_dry_run_plans_without_audio` | narrate dry run plans without audio | Unit | ✅ Automated |
+| `test_parent_track_rendered_separately_never_in_child_track` | parent track rendered separately never in child track | Unit | ✅ Automated |
+| `test_peaks_edge_cases_and_attr` | peaks edge cases and attr | Unit | ✅ Automated |
+| `test_peaks_normalized_28_bars` | peaks normalized 28 bars | Unit | ✅ Automated |
+| `test_planner_oversized_sentence_split_at_comma_with_warning` | planner oversized sentence split at comma with warning | Unit | ✅ Automated |
+| `test_planner_oversized_word_without_break_still_bounded` | planner oversized word without break still bounded | Unit | ✅ Automated |
+| `test_planner_pause_only_chunk_extends_previous_unit` | planner pause only chunk extends previous unit | Unit | ✅ Automated |
+| `test_proc_run_capture_returns_both_streams` | proc run capture returns both streams | Unit | ✅ Automated |
+| `test_python_api_package_level_narrate_exposed` | python api package level narrate exposed | Unit | ✅ Automated |
+| `test_qa_cached_unit_without_score_is_rescored` | qa cached unit without score is rescored | Unit | ✅ Automated |
+| `test_qa_cosine` | qa cosine | Unit | ✅ Automated |
+| `test_qa_from_reference_clip_embeds_once` | qa from reference clip embeds once | Unit | ✅ Automated |
+| `test_qa_good_first_take_not_rerendered` | qa good first take not rerendered | Unit | ✅ Automated |
+| `test_qa_resemblyzer_embedder_uses_encoder` | qa resemblyzer embedder uses encoder | Unit | ✅ Automated |
+| `test_qa_takes_cached_separately_and_scores_not_recomputed` | qa takes cached separately and scores not recomputed | Unit | ✅ Automated |
+| `test_resolve_sting_builtin_relative_and_guards` | resolve sting builtin relative and guards | Unit | ✅ Automated |
+| `test_rich_progress_callback_runs_to_completion` | rich progress callback runs to completion | Unit | ✅ Automated |
+| `test_runner_consent_error_not_retried` | runner consent error not retried | Unit | ✅ Automated |
+| `test_runner_corrupt_cache_entry_is_resynthesized` | runner corrupt cache entry is resynthesized | Unit | ✅ Automated |
+| `test_runner_failure_keeps_completed_units_cached` | runner failure keeps completed units cached | Unit | ✅ Automated |
+| `test_runner_non_retryable_synthesis_error_fails_fast` | runner non retryable synthesis error fails fast | Unit | ✅ Automated |
+| `test_runner_progress_events_reported` | runner progress events reported | Unit | ✅ Automated |
+| `test_script_verbatim_empty_signature_chunk_replaced_with_exact_text` | script verbatim empty signature chunk replaced with exact text | Unit | ✅ Automated |
+| `test_script_verbatim_missing_sources_appended_signature_last` | script verbatim missing sources appended signature last | Unit | ✅ Automated |
+| `test_script_verbatim_no_sources_is_identity` | script verbatim no sources is identity | Unit | ✅ Automated |
+| `test_script_verbatim_paraphrased_signature_restored_in_place` | script verbatim paraphrased signature restored in place | Unit | ✅ Automated |
+| `test_script_verbatim_signature_moved_to_end` | script verbatim signature moved to end | Unit | ✅ Automated |
+| `test_smoke_run_mock_outputs_exist_and_manifest_validates` | smoke run mock outputs exist and manifest validates | Unit | ✅ Automated |
+| `test_stings_generate_script_is_deterministic` | stings generate script is deterministic | Unit | ✅ Automated |
+| `test_tags_cover_fetch_errors_are_swallowed` | tags cover fetch errors are swallowed | Unit | ✅ Automated |
+| `test_vtt_abbreviations_stay_intact` | vtt abbreviations stay intact | Unit | ✅ Automated |
+| `test_vtt_cues_monotonic_and_non_overlapping` | vtt cues monotonic and non overlapping | Unit | ✅ Automated |
+| `test_vtt_empty_text_yields_no_cues_and_write` | vtt empty text yields no cues and write | Unit | ✅ Automated |
+| `test_vtt_escapes_markup` | vtt escapes markup | Unit | ✅ Automated |
+| `test_vtt_long_sentence_split_at_comma` | vtt long sentence split at comma | Unit | ✅ Automated |
 
 ## 6. Listening test protocol
 

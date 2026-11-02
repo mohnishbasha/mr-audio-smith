@@ -1,0 +1,292 @@
+{
+  "$defs": {
+    "BackendRef": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "model"
+      ],
+      "title": "BackendRef",
+      "type": "object"
+    },
+    "ChunkRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "duration_ms": {
+          "title": "Duration Ms",
+          "type": "integer"
+        },
+        "hash": {
+          "title": "Hash",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "seed": {
+          "title": "Seed",
+          "type": "integer"
+        },
+        "similarity": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Similarity"
+        },
+        "take": {
+          "title": "Take",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "hash",
+        "take",
+        "seed",
+        "duration_ms"
+      ],
+      "title": "ChunkRecord",
+      "type": "object"
+    },
+    "ProfileRef": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version"
+      ],
+      "title": "ProfileRef",
+      "type": "object"
+    },
+    "Timings": {
+      "additionalProperties": false,
+      "description": "Per-stage wall time in seconds (NFR-010).",
+      "properties": {
+        "extract": {
+          "default": 0.0,
+          "title": "Extract",
+          "type": "number"
+        },
+        "fetch": {
+          "default": 0.0,
+          "title": "Fetch",
+          "type": "number"
+        },
+        "master": {
+          "default": 0.0,
+          "title": "Master",
+          "type": "number"
+        },
+        "publish": {
+          "default": 0.0,
+          "title": "Publish",
+          "type": "number"
+        },
+        "script": {
+          "default": 0.0,
+          "title": "Script",
+          "type": "number"
+        },
+        "synth": {
+          "default": 0.0,
+          "title": "Synth",
+          "type": "number"
+        }
+      },
+      "title": "Timings",
+      "type": "object"
+    },
+    "Track": {
+      "additionalProperties": false,
+      "description": "One mastered audio track. `captions` is the relative WebVTT file name.",
+      "properties": {
+        "captions": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Captions"
+        },
+        "duration_s": {
+          "title": "Duration S",
+          "type": "number"
+        },
+        "file": {
+          "title": "File",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "main",
+            "parent"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "lang": {
+          "title": "Lang",
+          "type": "string"
+        },
+        "loudness_lufs": {
+          "title": "Loudness Lufs",
+          "type": "number"
+        },
+        "opus": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Opus"
+        },
+        "peaks": {
+          "items": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "type": "number"
+          },
+          "title": "Peaks",
+          "type": "array"
+        },
+        "true_peak_dbtp": {
+          "title": "True Peak Dbtp",
+          "type": "number"
+        }
+      },
+      "required": [
+        "lang",
+        "kind",
+        "file",
+        "duration_s",
+        "loudness_lufs",
+        "true_peak_dbtp"
+      ],
+      "title": "Track",
+      "type": "object"
+    }
+  },
+  "$id": "https://getaudiosmith.com/schemas/manifest.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "approved": {
+      "default": false,
+      "title": "Approved",
+      "type": "boolean"
+    },
+    "backend": {
+      "$ref": "#/$defs/BackendRef"
+    },
+    "chunks": {
+      "items": {
+        "$ref": "#/$defs/ChunkRecord"
+      },
+      "title": "Chunks",
+      "type": "array"
+    },
+    "content_hash": {
+      "title": "Content Hash",
+      "type": "string"
+    },
+    "created_at": {
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+      "title": "Created At",
+      "type": "string"
+    },
+    "llm": {
+      "title": "Llm",
+      "type": "string"
+    },
+    "profile": {
+      "$ref": "#/$defs/ProfileRef"
+    },
+    "schema": {
+      "default": "audio-smith/manifest@1",
+      "pattern": "^audio-smith/manifest@1$",
+      "title": "Schema",
+      "type": "string"
+    },
+    "source": {
+      "title": "Source",
+      "type": "string"
+    },
+    "timings": {
+      "$ref": "#/$defs/Timings"
+    },
+    "title": {
+      "title": "Title",
+      "type": "string"
+    },
+    "tool_version": {
+      "title": "Tool Version",
+      "type": "string"
+    },
+    "tracks": {
+      "items": {
+        "$ref": "#/$defs/Track"
+      },
+      "title": "Tracks",
+      "type": "array"
+    },
+    "voice_id": {
+      "title": "Voice Id",
+      "type": "string"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "tool_version",
+    "source",
+    "title",
+    "profile",
+    "backend",
+    "llm",
+    "voice_id",
+    "content_hash",
+    "created_at",
+    "tracks",
+    "chunks"
+  ],
+  "title": "audio-smith/manifest@1",
+  "type": "object"
+}

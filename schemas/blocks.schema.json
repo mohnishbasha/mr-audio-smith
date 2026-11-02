@@ -1,0 +1,165 @@
+{
+  "$defs": {
+    "Block": {
+      "additionalProperties": false,
+      "properties": {
+        "heading": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Heading"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "index": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Index"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "track": {
+          "default": "main",
+          "enum": [
+            "main",
+            "parent"
+          ],
+          "title": "Track",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "title",
+            "heading",
+            "paragraph",
+            "list_item",
+            "quote",
+            "signature"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "verbatim": {
+          "default": false,
+          "title": "Verbatim",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "text"
+      ],
+      "title": "Block",
+      "type": "object"
+    }
+  },
+  "$id": "https://getaudiosmith.com/schemas/blocks.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "author": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Author"
+    },
+    "blocks": {
+      "items": {
+        "$ref": "#/$defs/Block"
+      },
+      "title": "Blocks",
+      "type": "array"
+    },
+    "date": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Date"
+    },
+    "image": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Image"
+    },
+    "lang": {
+      "default": "en",
+      "title": "Lang",
+      "type": "string"
+    },
+    "schema": {
+      "default": "audio-smith/blocks@1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "site_name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Site Name"
+    },
+    "source": {
+      "title": "Source",
+      "type": "string"
+    },
+    "title": {
+      "title": "Title",
+      "type": "string"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "source",
+    "title",
+    "blocks"
+  ],
+  "title": "audio-smith/blocks@1",
+  "type": "object"
+}

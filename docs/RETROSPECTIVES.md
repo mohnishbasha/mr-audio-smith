@@ -57,3 +57,55 @@ CPU here, so each live call took about 10 minutes. Native Windows needed explici
 
 **What to change:** verbatim passages and the signature are now enforced by code (`script/verbatim.py`)
 instead of being trusted to the model. CI sets `PYTHONUTF8=1`. Always pass `encoding="utf-8"`.
+
+## Sprint 2: Voices and Backends (completed 2026-11-02, tag `sprint-2-complete`)
+
+**Built** (PR #90, issues #20 to #26; follow-up #91): TTSBackend protocol and registry, deterministic
+mock backend, license guard, OpenAI-compatible backend with retries, the Maya 2 adapter written against
+the verified upstream API (port 8080, `POST /v1/voices` clone registration, `speed` fixed at 1.0 with
+post-synthesis `atempo`), Kokoro on CPU, optional Chatterbox, the voice registry with consent records
+and clip checks, `voice` and `render` commands, and doctor rows for backends, GPU, and voices.
+
+**Gate evidence:** `render valid.script.md --backend mock` writes chunk audio; the Kokoro integration test
+passed locally on CPU; consent is enforced from the CLI (exit 8) and the Python API, and
+`require_consent()` re-checks the record and clip hash inside every cloning backend. Maya 2 on a GPU
+runner is a manual step (no GPU runner attached).
+
+**Tests added:** about 110 unit, 2 integration (Kokoro, Maya 2 gated on a GPU server).
+
+**What worked:** three agents in parallel against a contract written first (tts/base.py), with the
+lead integrating.
+
+**What did not:** the lead stashed the shared working tree while agents were writing, which briefly
+removed their files; PR #90 auto-merged with macOS and Windows unit jobs red because only the Ubuntu
+unit job was a required check; `setup-ffmpeg` does not support macOS arm64 runners.
+
+**What to change:** other-branch work happens only in a separate `git worktree`; every unit job is now a
+required check on `develop`; CI installs ffmpeg with apt, brew, or choco. Promotion to staging is a
+fast-forward (squash promotion made the branches diverge).
+
+## Sprint 3: Synthesis and Mastering (completed 2026-11-02, tag `sprint-3-complete`)
+
+**Built** (issues #27 to #37): chunk planner, synthesis runner with per-unit cache, retries, resume, and
+bounded concurrency; speaker similarity QA with retakes; assembler; ffmpeg mastering (high-pass,
+de-esser, compression, stings, bed ducking, two-pass loudnorm, MP3 and Opus); ID3 tags with same-origin
+cover art; waveform peaks; WebVTT captions; manifest and published JSON Schemas; `narrate()` and `run`
+with `--approve`, `--dry-run`, and the parent track; a track-level cache.
+
+**Gate evidence:** the fixture letter narrates end to end with the mock backend at -16.4 LUFS; the
+reference letter rendered with Kokoro on CPU in 76 s for 4 min 33 s of audio (-16.7 LUFS); unchanged
+re-run 0.64 s; loudness, true peak, and caption alignment are covered by automated tests. A cloned-voice
+render needs the Maya 2 GPU host and the owner's consented voice (manual), and the listening test needs a
+human listener (see docs/LISTENING_TESTS.md).
+
+**Tests added:** about 100 unit, 7 integration (real ffmpeg). Coverage: tts 99, master 99, publish 100,
+qa 100 percent.
+
+**What worked:** caching the finished track made NFR-004 trivial; the live-page gate exposed the LLM
+blanking the signature, which is now enforced by code.
+
+**What did not:** unit tests that master audio take about a minute in total; resemblyzer needed
+`setuptools<81` for `pkg_resources`.
+
+**What to change:** keep heavyweight mastering tests few and focused; consider a short fixture for
+pipeline tests.
