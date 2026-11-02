@@ -18,7 +18,7 @@ def test_scripts_check_coverage_module_under_target_fails(tmp_path: Path) -> Non
     cov = tmp_path / "c.json"
     cov.write_text(json.dumps(_cov({"audio_smith/blocks.py": (50, 100)}, 90.0)))
     thr = tmp_path / "t.toml"
-    thr.write_text('[python]\n"audio_smith/blocks.py" = 95\noverall = 85\n')
+    thr.write_text('[python]\n"audio_smith/blocks.py" = 95\noverall = 85\n', encoding="utf-8")
     assert mod.main([str(cov), str(thr)]) == 1
 
 
@@ -31,7 +31,9 @@ def test_scripts_check_coverage_directory_prefix_aggregates(tmp_path: Path) -> N
     }
     cov.write_text(json.dumps(_cov(files, 90.0)))
     thr = tmp_path / "t.toml"
-    thr.write_text('[python]\n"audio_smith/tts" = 85\n"audio_smith/qa" = 80\noverall = 85\n')
+    thr.write_text(
+        '[python]\n"audio_smith/tts" = 85\n"audio_smith/qa" = 80\noverall = 85\n', encoding="utf-8"
+    )
     assert mod.main([str(cov), str(thr)]) == 0
 
 
@@ -39,5 +41,5 @@ def test_scripts_check_coverage_overall_under_target_fails(tmp_path: Path) -> No
     cov = tmp_path / "c.json"
     cov.write_text(json.dumps(_cov({}, 70.0)))
     thr = tmp_path / "t.toml"
-    thr.write_text("[python]\noverall = 85\n")
+    thr.write_text("[python]\noverall = 85\n", encoding="utf-8")
     assert mod.main([str(cov), str(thr)]) == 1

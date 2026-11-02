@@ -34,7 +34,7 @@ def test_lexicon_project_overrides_profile_entry() -> None:
 
 def test_lexicon_merge_profile_and_project(tmp_path: Path) -> None:
     f = tmp_path / "lexicon.yaml"
-    f.write_text("Houston: HYOO-stun\n")
+    f.write_text("Houston: HYOO-stun\n", encoding="utf-8")
     merged = lexicon.merge({"Aadi": "AH-dee"}, lexicon.load_project_lexicon(f))
     assert merged == {"Aadi": "AH-dee", "Houston": "HYOO-stun"}
     assert lexicon.load_project_lexicon(tmp_path / "missing.yaml") == {}
@@ -42,9 +42,9 @@ def test_lexicon_merge_profile_and_project(tmp_path: Path) -> None:
 
 def test_lexicon_invalid_file_raises(tmp_path: Path) -> None:
     f = tmp_path / "lexicon.yaml"
-    f.write_text("- a list\n")
+    f.write_text("- a list\n", encoding="utf-8")
     with pytest.raises(UsageError):
         lexicon.load_project_lexicon(f)
-    f.write_text("a: [unclosed\n")
+    f.write_text("a: [unclosed\n", encoding="utf-8")
     with pytest.raises(UsageError):
         lexicon.load_project_lexicon(f)

@@ -11,7 +11,8 @@ import time
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
-from urllib.parse import unquote, urljoin, urlsplit
+from urllib.parse import urljoin, urlsplit
+from urllib.request import url2pathname
 
 import httpx
 from pydantic import BaseModel
@@ -271,7 +272,7 @@ def fetch(
     parts = urlsplit(source)
     scheme = parts.scheme.lower()
     if scheme == "file":
-        return _read_local(Path(unquote(parts.path)), settings, source)
+        return _read_local(Path(url2pathname(parts.path)), settings, source)
     if scheme in REMOTE_SCHEMES:
         owned = client is None
         http = client or httpx.Client(follow_redirects=False)

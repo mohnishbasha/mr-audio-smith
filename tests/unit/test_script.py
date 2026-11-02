@@ -19,7 +19,7 @@ def _script(*texts: str, verbatim: tuple[int, ...] = ()) -> Script:
 
 
 def test_script_parse_frontmatter_and_numbered_chunks() -> None:
-    s = parse_script((FIX / "valid.script.md").read_text())
+    s = parse_script((FIX / "valid.script.md").read_text(encoding="utf-8"))
     assert s.meta.profile == "kid-5@1.0.0"
     assert [c.id for c in s.chunks] == ["001", "002", "003", "004"]
     assert s.chunks[0].text == "My dear Aadi... [pause 600]\nSome days feel like a big, swirly storm!"
@@ -28,13 +28,13 @@ def test_script_parse_frontmatter_and_numbered_chunks() -> None:
 
 
 def test_script_parse_valid_fixture_passes() -> None:
-    s = parse_script((FIX / "valid.script.md").read_text())
+    s = parse_script((FIX / "valid.script.md").read_text(encoding="utf-8"))
     report = validate(s, max_chunk_chars=360, verbatim_sources=["Your calm spot in every storm, Dad"])
     assert report.ok, report.errors
 
 
 def test_script_parse_invalid_markers_fixture_rejected() -> None:
-    s = parse_script((FIX / "invalid-markers.script.md").read_text())
+    s = parse_script((FIX / "invalid-markers.script.md").read_text(encoding="utf-8"))
     report = validate(s, max_chunk_chars=360)
     joined = " ".join(report.errors)
     assert "[laugh]" in joined

@@ -57,7 +57,7 @@ def test_profiles_language_code_validated() -> None:
 
 
 def test_profiles_user_profile_overrides_builtin_same_id(tmp_path: Path) -> None:
-    (tmp_path / "kid-5.yaml").write_text("id: kid-5\nversion: 2.0.0\n")
+    (tmp_path / "kid-5.yaml").write_text("id: kid-5\nversion: 2.0.0\n", encoding="utf-8")
     assert get_profile("kid-5", tmp_path).version == "2.0.0"
     assert get_profile("kid-8", tmp_path).version == "1.0.0"
 
@@ -77,11 +77,11 @@ def test_profiles_get_profile_version_pin_and_unknown() -> None:
 
 
 def test_profiles_track_reference_must_exist(tmp_path: Path) -> None:
-    (tmp_path / "x.yaml").write_text("id: x\nversion: 1.0.0\ntracks:\n  parent: missing\n")
+    (tmp_path / "x.yaml").write_text("id: x\nversion: 1.0.0\ntracks:\n  parent: missing\n", encoding="utf-8")
     with pytest.raises(UsageError):
         get_profile("x", tmp_path)
 
 
 def test_profiles_json_schema_matches_pydantic_model() -> None:
-    published = json.loads((ROOT / "schemas" / "profile.schema.json").read_text())
+    published = json.loads((ROOT / "schemas" / "profile.schema.json").read_text(encoding="utf-8"))
     assert published == json.loads(json_schema())

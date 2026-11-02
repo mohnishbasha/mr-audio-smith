@@ -51,7 +51,7 @@ def _parent_body() -> str:
 
 
 def test_api_write_script_writes_blocks_and_scripts(tmp_path: Path) -> None:
-    html = (PAGES / "data-narrate.html").read_text()
+    html = (PAGES / "data-narrate.html").read_text(encoding="utf-8")
     provider = FakeProvider(responses=[_main_body(), _parent_body()])
     res = api.write_script(
         "https://example.com/rainy-day.html",
@@ -64,15 +64,15 @@ def test_api_write_script_writes_blocks_and_scripts(tmp_path: Path) -> None:
     )
     assert res.slug == "rainy-day"
     assert res.blocks_path == (tmp_path / "out" / "rainy-day" / "rainy-day.blocks.json").resolve()
-    script = parse_script(res.scripts["en"].read_text())
+    script = parse_script(res.scripts["en"].read_text(encoding="utf-8"))
     assert script.chunks[-1].verbatim and script.meta.profile == "kid-5@1.0.0"
     assert res.parent_script is not None
-    assert parse_script(res.parent_script.read_text()).meta.profile == "adult-brief@1.0.0"
+    assert parse_script(res.parent_script.read_text(encoding="utf-8")).meta.profile == "adult-brief@1.0.0"
     assert res.cache_hits == {"blocks": False, "script": False}
 
 
 def test_cache_unchanged_page_skips_render(tmp_path: Path) -> None:
-    html = (PAGES / "data-narrate.html").read_text()
+    html = (PAGES / "data-narrate.html").read_text(encoding="utf-8")
     provider = FakeProvider(responses=[_main_body(), _parent_body()])
     kwargs = dict(llm="fake", out=tmp_path / "out", provider=provider, backend="mock", voice="dad")
     api.write_script("https://example.com/rainy-day.html", fetcher=_fetcher(html), **kwargs)  # type: ignore[arg-type]
@@ -84,7 +84,7 @@ def test_cache_unchanged_page_skips_render(tmp_path: Path) -> None:
 
 
 def test_cache_force_flag_bypasses(tmp_path: Path) -> None:
-    html = (PAGES / "data-narrate.html").read_text()
+    html = (PAGES / "data-narrate.html").read_text(encoding="utf-8")
     provider = FakeProvider(responses=[_main_body(), _parent_body(), _main_body(), _parent_body()])
     kwargs = dict(llm="fake", out=tmp_path / "out", provider=provider, backend="mock", voice="dad")
     api.write_script("https://example.com/rainy-day.html", fetcher=_fetcher(html), **kwargs)  # type: ignore[arg-type]
@@ -113,7 +113,7 @@ def test_api_markdown_to_html_closes_trailing_list() -> None:
 
 def test_cli_script_command_with_local_fixture(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     page = tmp_path / "rainy-day.html"
-    page.write_text((PAGES / "data-narrate.html").read_text())
+    page.write_text((PAGES / "data-narrate.html").read_text(encoding="utf-8"))
     queue = [_main_body(), _parent_body()]
     import audio_smith.api as api_mod
 
@@ -132,10 +132,10 @@ def test_cli_profile_list_show_validate_commands(tmp_path: Path) -> None:
     assert show.exit_code == 0 and '"rate": 0.9' in show.output
     assert runner.invoke(app, ["profile", "show", "nope"]).exit_code != 0
     bad = tmp_path / "bad.yaml"
-    bad.write_text("id: x\nversion: 1.0.0\nspeech:\n  rate: 9\n")
+    bad.write_text("id: x\nversion: 1.0.0\nspeech:\n  rate: 9\n", encoding="utf-8")
     assert runner.invoke(app, ["profile", "validate", str(bad)]).exit_code != 0
     good = tmp_path / "good.yaml"
-    good.write_text("id: x\nversion: 1.0.0\n")
+    good.write_text("id: x\nversion: 1.0.0\n", encoding="utf-8")
     ok = runner.invoke(app, ["profile", "validate", str(good)])
     assert ok.exit_code == 0 and "x@1.0.0" in ok.output
     assert '"title": "audio-smith/profile@1"' in runner.invoke(app, ["profile", "schema"]).output

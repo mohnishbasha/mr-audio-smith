@@ -41,7 +41,7 @@ def test_scripts_check_versions_consistent_passes(tmp_path: Path) -> None:
 def test_versions_check_exits_1_naming_mismatched_file(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
     pkg = repo / "web/studio/package.json"
-    pkg.write_text(pkg.read_text().replace('"version": "', '"version": "9.9.9-x', 1))
+    pkg.write_text(pkg.read_text(encoding="utf-8").replace('"version": "', '"version": "9.9.9-x', 1))
     r = subprocess.run(
         ["bash", "scripts/check-versions.sh"], cwd=repo, capture_output=True, text=True, check=False
     )

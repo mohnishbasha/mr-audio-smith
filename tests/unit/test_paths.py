@@ -32,6 +32,6 @@ def test_paths_atomic_write_replaces_and_sets_mode(tmp_path: Path) -> None:
     target = tmp_path / "x" / "f.txt"
     atomic_write(target, "one")
     atomic_write(target, b"two", mode=0o600)
-    assert target.read_text() == "two"
+    assert target.read_text(encoding="utf-8") == "two"
     assert (target.stat().st_mode & 0o777) == 0o600
     assert [p.name for p in target.parent.iterdir()] == ["f.txt"]

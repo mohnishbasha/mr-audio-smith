@@ -46,8 +46,8 @@ def check(coverage: dict[str, object], thresholds: dict[str, object]) -> list[st
 def main(argv: list[str]) -> int:
     cov_path = Path(argv[0] if argv else "coverage.json")
     thr_path = Path(argv[1] if len(argv) > 1 else ".coverage-thresholds.toml")
-    coverage = json.loads(cov_path.read_text())
-    thresholds = tomllib.loads(thr_path.read_text())["python"]
+    coverage = json.loads(cov_path.read_text(encoding="utf-8"))
+    thresholds = tomllib.loads(thr_path.read_text(encoding="utf-8"))["python"]
     failures = check(coverage, thresholds)
     if failures:
         print(f"coverage below threshold: {', '.join(failures)}")
