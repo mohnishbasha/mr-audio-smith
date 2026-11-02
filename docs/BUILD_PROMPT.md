@@ -61,6 +61,8 @@ prompt stays accurate. Inline text below has been corrected where it was factual
 
 - Sprints 4 and 5 (built in parallel, delivered in one PR): every run writes `<slug>.embed.html` and copies the player bundle; `embed_*` settings configure label, size, and paths; `run` gains `--lang`, `--inject`, `--selector`; Studio media is fetched with the session token and handed to elements as `blob:` URLs, so the Studio CSP is `connect-src 'self' blob:` (one addition to the prompt's CSP); Studio core lives in `audio_smith/review*.py` and is re-exported as `api.review_*`; take numbers start at 1 and take 0 is the original narration.
 
+- Sprint 6: the `chatterbox` extra is removed (upstream pins carried about 80 advisories; ADR-014 amended) and torch is upgraded to 2.15 in the lock; `mutagen` (GPL-2.0-or-later) is replaced by ffmpeg metadata writing; structlog redaction lives in `audio_smith/logging.py`; the release workflow builds, SBOMs, and creates the GitHub Release on every tag but publishes to PyPI/npm only when the owner sets `PYPI_PUBLISH`/`NPM_PUBLISH` repository variables after configuring trusted publishing; human listening scores are recorded by the owner in docs/LISTENING_TESTS.md and are never filled in by the agent.
+
 **Tooling added**
 - `scripts/sync-test-plan.py` marks TEST_PLAN rows Automated when a test with that exact id exists and appends unplanned tests to section 5.28; CI runs it with `--check`.
 - `scripts/record-llm.py` (`make record-llm`) records real Ollama responses into `tests/fixtures/llm/` for the fake provider; the golden script is the replay of that recording.

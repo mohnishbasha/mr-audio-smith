@@ -9,7 +9,13 @@ studio-build:
 player-build:
 	cd player && npm ci && npm run build
 
-.PHONY: studio-build player-build install lint format typecheck test test-int coverage smoke e2e check-versions build licenses docs clean record-llm
+player-assets: player-build
+	mkdir -p audio_smith/_assets/player && cp player/dist/audio-smith-player.js audio_smith/_assets/player/
+
+package: studio-build player-assets
+	$(UV) build
+
+.PHONY: studio-build player-build player-assets package install lint format typecheck test test-int coverage smoke e2e check-versions build licenses docs clean record-llm
 
 install:
 	$(UV) sync $(PY_EXTRAS)
@@ -55,7 +61,7 @@ build:
 	@for p in $(dir $(TS_PACKAGES)); do (cd $$p && npm run --if-present build) || exit 1; done
 
 licenses:
-	$(UV) run pip-licenses --format=markdown --with-urls --order=license
+	$(UV) run python scripts/check-licenses.py
 
 docs:
 	$(UV) run mkdocs build --strict

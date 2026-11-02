@@ -12,7 +12,7 @@ import soundfile as sf
 from pydantic import BaseModel
 
 from audio_smith.errors import UsageError
-from audio_smith.tts.base import to_float32
+from audio_smith.tts.base import FloatArray, to_float32
 
 MIN_DURATION_S = 3.0
 MAX_DURATION_S = 30.0
@@ -102,7 +102,8 @@ def _resample(mono: F32, rate: int, target: int) -> F32:
         mono = np.fft.irfft(spectrum, n=len(mono)).astype(np.float32)
     n_out = round(len(mono) * target / rate)
     x_new = np.arange(n_out) * (rate / target)
-    return np.interp(x_new, np.arange(len(mono)), mono).astype(np.float32)
+    resampled: FloatArray = np.asarray(np.interp(x_new, np.arange(len(mono)), mono), dtype=np.float32)
+    return resampled
 
 
 def normalize_to_24k(src: Path, dst: Path) -> None:

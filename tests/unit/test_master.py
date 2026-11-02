@@ -10,7 +10,6 @@ import httpx
 import numpy as np
 import pytest
 import soundfile as sf
-from mutagen.id3 import ID3
 
 from audio_smith import proc
 from audio_smith.config import Settings
@@ -20,7 +19,7 @@ from audio_smith.master.assemble import assemble, resample
 from audio_smith.master.ffmpeg_graph import Measured, build_filter_graph
 from audio_smith.master.peaks import compute_peaks, peaks_attr
 from audio_smith.master.stings import resolve_sting
-from audio_smith.master.tags import detect_image_mime, fetch_cover, http_get_bytes, write_tags
+from audio_smith.master.tags import detect_image_mime, fetch_cover, http_get_bytes, read_tags, write_tags
 from audio_smith.pipeline_types import MASTER_SAMPLE_RATE, AssembledTrack, RenderedUnit, SynthUnit
 
 ROOT = Path(__file__).parents[2]
@@ -264,34 +263,79 @@ def test_proc_run_capture_returns_both_streams() -> None:
 
 
 def _blank_mp3(path: Path) -> Path:
-    path.write_bytes(b"\xff\xfb\x90\x00" + b"\x00" * 400)
+    """A real half-second MP3 (ffmpeg needs decodable input to remux tags)."""
+    subprocess.run(
+        [
+            "ffmpeg",
+            "-nostdin",
+            "-loglevel",
+            "error",
+            "-y",
+            "-f",
+            "lavfi",
+            "-i",
+            "sine=frequency=440:duration=0.5",
+            "-c:a",
+            "libmp3lame",
+            "-b:a",
+            "64k",
+            str(path),
+        ],
+        check=True,
+    )
     return path
+
+
+def _image(tmp_path: Path, ext: str) -> bytes:
+    out = tmp_path / f"cover.{ext}"
+    subprocess.run(
+        [
+            "ffmpeg",
+            "-nostdin",
+            "-loglevel",
+            "error",
+            "-y",
+            "-f",
+            "lavfi",
+            "-i",
+            "color=c=green:s=16x16",
+            "-frames:v",
+            "1",
+            str(out),
+        ],
+        check=True,
+    )
+    return out.read_bytes()
 
 
 def test_tags_id3_title_artist_album_date_written(tmp_path: Path) -> None:
     mp3 = _blank_mp3(tmp_path / "a.mp3")
     write_tags(mp3, title="T", artist="Ann", album="Alb", date="2026-11-02", cover=None)
-    tags = ID3(mp3)
-    assert (str(tags["TIT2"]), str(tags["TPE1"]), str(tags["TALB"]), str(tags["TDRC"])) == (
-        "T",
-        "Ann",
-        "Alb",
-        "2026-11-02",
-    )
-    assert not tags.getall("APIC")
+    tags = read_tags(mp3)
+    assert (tags["title"], tags["artist"], tags["album"], tags["date"]) == ("T", "Ann", "Alb", "2026-11-02")
+    assert "cover" not in tags
 
 
 def test_tags_cover_art_same_origin_under_1mb_embedded(tmp_path: Path) -> None:
     mp3 = _blank_mp3(tmp_path / "a.mp3")
-    cover = fetch_cover("/img/c.png", "https://ex.com/post/1", lambda url: PNG)
-    assert cover == PNG
+    png, jpeg = _image(tmp_path, "png"), _image(tmp_path, "jpg")
+    cover = fetch_cover("/img/c.png", "https://ex.com/post/1", lambda url: png)
+    assert cover == png
     write_tags(mp3, title="T", artist="A", album="B", date="2026", cover=cover)
-    apic = ID3(mp3).getall("APIC")[0]
-    assert apic.mime == "image/png" and apic.type == 3 and apic.data == PNG
-    write_tags(mp3, title="T", artist="A", album="B", date="2026", cover=JPEG)
-    assert ID3(mp3).getall("APIC")[0].mime == "image/jpeg"
+    assert read_tags(mp3)["cover"] == "png"
+    write_tags(mp3, title="T", artist="A", album="B", date="2026", cover=jpeg)
+    assert read_tags(mp3)["cover"] == "mjpeg"
     write_tags(mp3, title="T", artist="A", album="B", date="2026", cover=b"junk")
-    assert not ID3(mp3).getall("APIC")
+    assert "cover" not in read_tags(mp3)
+
+
+def test_tags_write_failure_raises_mastering_error(tmp_path: Path) -> None:
+    from audio_smith.errors import MasteringError
+
+    bad = tmp_path / "bad.mp3"
+    bad.write_bytes(b"not audio")
+    with pytest.raises(MasteringError):
+        write_tags(bad, title="T", artist="A", album="B", date="2026", cover=None)
 
 
 def test_tags_cover_art_cross_origin_skipped() -> None:

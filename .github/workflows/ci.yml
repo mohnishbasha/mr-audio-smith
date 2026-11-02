@@ -5,6 +5,7 @@ on:
     branches: [develop, staging, main]
   pull_request:
   workflow_dispatch:
+  workflow_call:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -170,3 +171,40 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: ./scripts/check-versions.sh
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: uv sync --frozen ${{ env.PY_EXTRAS }}
+      - name: pip-audit on the core runtime closure (blocking)
+        run: |
+          uv export --frozen --no-dev --extra server --extra mcp --extra cloud --no-emit-project --no-hashes > "$RUNNER_TEMP/requirements.txt"
+          uv run pip-audit -r "$RUNNER_TEMP/requirements.txt" --no-deps --disable-pip
+      - name: pip-audit on optional ML extras (report only, see docs/SECURITY_REVIEW.md)
+        continue-on-error: true
+        run: |
+          uv export --frozen --no-dev --extra kokoro --extra chatterbox --extra maya2 --extra qa --no-emit-project --no-hashes > "$RUNNER_TEMP/ml-requirements.txt"
+          uv run pip-audit -r "$RUNNER_TEMP/ml-requirements.txt" --no-deps --disable-pip
+      - name: npm audit
+        run: |
+          for p in player web/studio tests/e2e integrations/pi; do
+            if [ -f "$p/package-lock.json" ]; then (cd "$p" && npm audit --audit-level=high); fi
+          done
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Third-party license check
+        run: |
+          for p in player web/studio; do
+            if [ -f "$p/package-lock.json" ]; then (cd "$p" && npm ci); fi
+          done
+          uv run python scripts/check-licenses.py --check

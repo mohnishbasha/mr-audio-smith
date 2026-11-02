@@ -223,3 +223,48 @@ def test_extract_hostile_html_no_crash_within_limits() -> None:
 def test_extract_blocks_fuzz_hypothesis_never_raises(parts: list[str]) -> None:
     with contextlib.suppress(ExtractError):
         extract("".join(parts), "fuzz")
+
+
+_TAGS = [
+    "p",
+    "div",
+    "section",
+    "article",
+    "li",
+    "ul",
+    "ol",
+    "h1",
+    "h2",
+    "blockquote",
+    "span",
+    "script",
+    "style",
+    "td",
+]
+_ATTRS = st.sampled_from(
+    ["", ' data-narrate=""', ' class="x"', " hidden", ' aria-hidden="true"', ' onclick="x()"']
+)
+_TEXT = st.text(alphabet=st.characters(blacklist_categories=("Cs",)), max_size=30)
+
+
+@st.composite
+def _html_tree(draw: st.DrawFn, depth: int = 0) -> str:
+    """A syntactically valid but arbitrarily nested and hostile HTML fragment."""
+    if depth >= 4 or draw(st.integers(0, 3)) == 0:
+        return draw(_TEXT).replace("<", "&lt;")
+    tag = draw(st.sampled_from(_TAGS))
+    kids = draw(st.lists(_html_tree(depth + 1), max_size=4))
+    return f"<{tag}{draw(_ATTRS)}>{''.join(kids)}</{tag}>"
+
+
+@settings(
+    max_examples=80, deadline=None, suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large]
+)
+@given(st.lists(_html_tree(), max_size=6), st.booleans())
+def test_extract_fuzz_generated_html_trees_never_crash(trees: list[str], wrap_body: bool) -> None:
+    html = "".join(trees)
+    page = f"<html><body>{html}</body></html>" if wrap_body else html
+    with contextlib.suppress(ExtractError):
+        doc = extract(page, "fuzz")
+        assert sum(len(b.text) for b in doc.blocks) <= MAX_TOTAL_CHARS
+        assert not any("<script" in b.text.lower() for b in doc.blocks)
