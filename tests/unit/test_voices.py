@@ -1,3 +1,5 @@
+import os
+
 """Voice registry, consent, and clip check (TEST_PLAN 5.9)."""
 
 import datetime as dt
@@ -20,6 +22,10 @@ from audio_smith.tts.base import Capabilities, VoiceRef
 from audio_smith.voices import registry
 from audio_smith.voices.clipcheck import check_clip, normalize_to_24k
 from audio_smith.voices.consent import DEFAULT_SELF_STATEMENT, ConsentRecord, require_consent
+
+POSIX_ONLY = pytest.mark.skipif(
+    os.name == "nt", reason="POSIX permission bits; Windows is supported via WSL2"
+)
 
 VOICES = Path(__file__).parent.parent / "fixtures" / "voices"
 REPO = Path(__file__).parent.parent.parent
@@ -226,6 +232,7 @@ def test_voices_add_stores_24k_mono_reference_copy(vdir: Path, added: registry.V
     assert added.clipcheck.sample_rate == 24000
 
 
+@POSIX_ONLY
 def test_voices_permissions_0700_dir_0600_files(vdir: Path, added: registry.VoiceRecord) -> None:
     assert stat.S_IMODE((vdir / "dad").stat().st_mode) == 0o700
     for f in (vdir / "dad").iterdir():
@@ -256,6 +263,7 @@ def test_voices_list_check_remove_commands(vdir: Path, added: registry.VoiceReco
             fn(vdir, "dad")
 
 
+@POSIX_ONLY
 def test_voices_check_warns_and_fixes_broad_permissions(vdir: Path, added: registry.VoiceRecord) -> None:
     (vdir / "dad").chmod(0o755)
     (vdir / "dad" / "voice.yaml").chmod(0o644)
