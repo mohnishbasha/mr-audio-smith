@@ -1,8 +1,8 @@
-import os
 
 """Voice registry, consent, and clip check (TEST_PLAN 5.9)."""
 
 import datetime as dt
+import os
 import stat
 import subprocess
 from pathlib import Path
