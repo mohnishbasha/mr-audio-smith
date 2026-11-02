@@ -65,6 +65,8 @@ prompt stays accurate. Inline text below has been corrected where it was factual
 
 - Sprint 7: the installed MCP SDK is 2.x, where FastMCP was removed; the server uses `mcp.server.mcpserver.MCPServer` and the `mcp` extra requires `mcp>=2.3,<3`; the REST server only accepts http(s) sources (no local file reads over HTTP) and rejects `options.approve` (approval belongs to Studio); remote mode downloads the manifest, tracks, captions, and embed, and injects locally.
 
+- Sprint 8: the Pi extension API lives in `@earendil-works/pi-coding-agent` (1.4.0; `pi-agent-core` holds the agent runtime), so the extension depends on it for types only; `mr_audio_smith_status` in Pi takes an optional `job_id` (REST exposes health and readiness, not the doctor report); harness smoke tests launch the exact command in each harness config and complete the MCP handshake, because the harness binaries are not installed in CI.
+
 **Tooling added**
 - `scripts/sync-test-plan.py` marks TEST_PLAN rows Automated when a test with that exact id exists and appends unplanned tests to section 5.28; CI runs it with `--check`.
 - `scripts/record-llm.py` (`make record-llm`) records real Ollama responses into `tests/fixtures/llm/` for the fake provider; the golden script is the replay of that recording.

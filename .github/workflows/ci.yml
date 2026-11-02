@@ -208,3 +208,24 @@ jobs:
             if [ -f "$p/package-lock.json" ]; then (cd "$p" && npm ci); fi
           done
           uv run python scripts/check-licenses.py --check
+
+  harness-smoke-tests:
+    # Staging and release only (Appendix J): MCP stdio handshake for every harness config, Pi unit tests.
+    if: github.base_ref == 'staging' || github.base_ref == 'main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_call'
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: uv sync --frozen ${{ env.PY_EXTRAS }}
+      - name: MCP handshake per harness config
+        run: uv run pytest -m integration -o addopts="-ra --strict-markers" tests/integration/test_harness_configs.py tests/integration/test_mcp_stdio.py
+      - name: Pi extension unit tests
+        run: |
+          if [ -f integrations/pi/package-lock.json ]; then (cd integrations/pi && npm ci && npm test); fi
