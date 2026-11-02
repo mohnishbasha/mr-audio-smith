@@ -157,7 +157,9 @@ test("e2e_US006_player_remembers_position_per_src", async ({ page }) => {
     )
     .not.toBe("0");
   await page.reload();
-  await expect.poll(() => audioTime(page), { timeout: 15_000 }).toBeGreaterThanOrEqual(2);
+  await expect
+    .poll(() => audioTime(page), { timeout: 15_000 })
+    .toBeGreaterThanOrEqual(2);
 });
 
 test("e2e_US006_player_axe_core_zero_violations", async ({ page }) => {

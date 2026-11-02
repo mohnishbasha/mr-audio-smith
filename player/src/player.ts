@@ -61,6 +61,9 @@ export function spokenTime(seconds: number): string {
   return parts.join(" ");
 }
 
+/** HTMLMediaElement.HAVE_METADATA; a literal because not every DOM implementation exposes the constant. */
+const HAVE_METADATA = 1;
+
 function readStore(key: string): string | null {
   try {
     return window.localStorage.getItem(key);
@@ -294,6 +297,13 @@ export class AudioSmithPlayer extends HTMLElement {
         this.#resume = (d) => {
           if (saved < d - 2) this.#audio.currentTime = saved;
         };
+        // A cached file can report metadata before this element upgrades; apply the resume now.
+        const d = this.#audio.duration;
+        if (this.#audio.readyState >= HAVE_METADATA && Number.isFinite(d)) {
+          const resume = this.#resume;
+          this.#resume = null;
+          resume(d);
+        }
       }
     }
     void this.#loadCaptions();
