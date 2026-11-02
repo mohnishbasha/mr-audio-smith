@@ -159,7 +159,7 @@ def _mastering_signature(job: TrackJob) -> str:
     )
 
 
-def _master_units(
+def master_units(
     units: list[RenderedUnit], job: TrackJob, project_root: Path
 ) -> tuple[MasterResult, Path, Path]:
     m = job.profile.mastering
@@ -218,7 +218,7 @@ def produce_track(
     )
     units = runner.run(plan.units)
     t1 = clock()
-    result, mp3, vtt = _master_units(units, job, Path.cwd())
+    result, mp3, vtt = master_units(units, job, Path.cwd())
     track = Track(
         lang=job.lang,
         kind="parent" if job.kind == "parent" else "main",

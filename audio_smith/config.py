@@ -58,6 +58,11 @@ class Settings(BaseSettings):
     fetch_timeout_s: float = 20.0
     allow_private: bool = False
     accept_noncommercial: bool = False
+    embed_label: str = "Listen"
+    embed_size: Literal["default", "kid"] = "default"
+    embed_media_base: str = ""
+    embed_script_mode: Literal["self", "jsdelivr"] = "self"
+    embed_script_path: str = "/media/audio/audio-smith-player.js"
     config_warnings: list[str] = Field(default_factory=list, exclude=True)
 
     def resolved(self, path: Path) -> Path:

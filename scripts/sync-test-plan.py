@@ -3,7 +3,8 @@
 
 Test ids are function names in tests/ (Python, TypeScript `test("id"` / `it("id"`) and
 `echo "smoke_..."` markers in tests/smoke/*.sh. Rows already marked Skipped are left alone.
-With --add-missing, automated tests that have no row are appended to section 5.28.
+With --add-missing, automated tests that have no row are appended to section 5.28, and rows in
+5.28 whose test no longer exists are removed.
 Exit code 1 with --check when any row would change (used in CI).
 """
 
@@ -49,6 +50,16 @@ def sync(text: str, ids: set[str], add_missing: bool) -> tuple[str, int, list[st
         if r and r.group(1) in ids:
             lines[i] = line.replace("| ⚠️ Deferred |", "| ✅ Automated |")
             changed += 1
+    if EXTRA_HEADER in lines:
+        start = lines.index(EXTRA_HEADER)
+        stale = {
+            i
+            for i in range(start, len(lines))
+            if (m := re.match(r"^\| `([a-z0-9_]+)` \|", lines[i])) and m.group(1) not in ids
+        }
+        if stale:
+            lines = [ln for i, ln in enumerate(lines) if i not in stale]
+            changed += len(stale)
     missing = sorted(ids - planned)
     if add_missing and missing:
         if EXTRA_HEADER not in text:

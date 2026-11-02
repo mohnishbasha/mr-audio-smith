@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field
 
+from audio_smith import review, review_render, review_state
 from audio_smith.blocks import BlockDoc, Track, content_hash
 from audio_smith.cache import CacheStore
 from audio_smith.cache.keys import blocks_key, script_key
@@ -307,3 +308,18 @@ def narrate(source: str, **kwargs: Any) -> "NarrateResult":
     from audio_smith.orchestrate import narrate as _narrate  # noqa: PLC0415 - narrate builds on this module
 
     return _narrate(source, **kwargs)
+
+
+# Studio (FR-022): front doors reach the review core through these names only.
+ReviewChunkEdit = review_state.ChunkEdit
+ReviewNotFoundError = review_state.NotFoundError
+review_list_projects = review.list_projects
+review_load_project = review.load_project
+review_save_script = review.save_script
+review_render_take = review_render.render_take
+review_select_take = review.select_take
+review_master_selected = review_render.master_selected
+review_approve = review.approve
+review_inject_from_studio = review.inject_from_studio
+review_media_path = review.media_path
+review_player_bundle = review.player_bundle

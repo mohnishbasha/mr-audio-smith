@@ -155,7 +155,7 @@ root_package = "audio_smith"
 [[tool.importlinter.contracts]]
 name = "Front doors use the public API only"
 type = "forbidden"
-source_modules = ["audio_smith.cli", "audio_smith.cli_commands", "audio_smith.server", "audio_smith.mcp_server", "audio_smith.studio"]
+source_modules = ["audio_smith.cli", "audio_smith.cli_commands", "audio_smith.site_cli", "audio_smith.server", "audio_smith.mcp_server", "audio_smith.studio"]
 forbidden_modules = [
   "audio_smith.fetch", "audio_smith.extract", "audio_smith.script.writer", "audio_smith.master.ffmpeg",
   "audio_smith.master.assemble", "audio_smith.tts.maya2", "audio_smith.tts.kokoro",

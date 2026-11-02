@@ -926,6 +926,8 @@ cache/
 
 Additions and clarifications:
 
+- Translations are cached under `scripts/` with `script_key(sha256(source script), profile@ver, llm, lang, translate prompt version, "translation")`.
+
 - `tracks/{track_key}` holds the finished MP3, VTT, optional Opus, and a JSON record of the track. The key covers every planned synthesis unit key plus the mastering signature (stings, bed, Opus, chunk pause, mastering version), so an unchanged page skips synthesis, QA, and ffmpeg (NFR-004, measured at about 0.6 s).
 - Take 0 of a unit is cached under `chunks/`; QA retakes under `takes/`, with the best score in `takes/{key}.json`.
 
@@ -1062,6 +1064,10 @@ Unknown keys in `audio-smith.toml` produce a warning naming the key and file (no
 | `AUDIO_SMITH_SERVER_TOKEN` | unset | set (secret) | set if exposed | |
 | `AUDIO_SMITH_STUDIO_PORT` | `7341` | `7341` | `7341` | Always 127.0.0.1 |
 | `AUDIO_SMITH_QA_THRESHOLD` | `0.75` | `0.75` | `0.75` | Overrides profile `qa.threshold` |
+| `AUDIO_SMITH_EMBED_LABEL` | `Listen` | `Listen` | `Listen` | Player label in the embed snippet |
+| `AUDIO_SMITH_EMBED_SIZE` | `default` | `default` | `default` | `kid` for the 64 px play button |
+| `AUDIO_SMITH_EMBED_MEDIA_BASE` | empty | empty | empty | Prefix for media URLs in the snippet, e.g. `/media/audio/` |
+| `AUDIO_SMITH_EMBED_SCRIPT_PATH` | `/media/audio/audio-smith-player.js` | same | same | Self-hosted player path (`AUDIO_SMITH_EMBED_SCRIPT_MODE=jsdelivr` pins the CDN URL to the exact version) |
 | `AUDIO_SMITH_MAX_FETCH_BYTES` | `5242880` | `5242880` | `5242880` | |
 | `AUDIO_SMITH_ALLOW_PRIVATE` | `true` | `false` | `false` | SSRF guard bypass |
 

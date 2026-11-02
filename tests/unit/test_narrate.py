@@ -181,3 +181,30 @@ def test_api_render_settings_default_backend_mock(tmp_path: Path) -> None:
         ROOT / "tests" / "fixtures" / "scripts" / "valid.script.md", out=tmp_path, settings=s
     )
     assert res.backend == "mock" and res.tracks
+
+
+def test_narrate_embed_options_from_settings(tmp_path: Path) -> None:
+    s = load_settings(
+        overrides={"embed_label": "Listen to Dad", "embed_size": "kid", "embed_media_base": "/m/"}
+    )
+    res = api.narrate(
+        str(_letter(tmp_path)),
+        llm="fake",
+        backend="mock",
+        out=tmp_path / "out",
+        settings=s,
+        provider=FakeProvider(LLM),
+    )
+    assert res.embed_path is not None
+    html = res.embed_path.read_text(encoding="utf-8")
+    assert 'label="Listen to Dad"' in html and 'size="kid"' in html and 'src="/m/letter-calm.mp3"' in html
+
+
+def test_narrate_inject_writes_markers_once(tmp_path: Path) -> None:
+    page = _letter(tmp_path)
+    kwargs = dict(llm="fake", backend="mock", out=tmp_path / "out", provider=FakeProvider(LLM), inject=page)
+    first = api.narrate(str(page), **kwargs)
+    second = api.narrate(str(page), **kwargs)
+    text = page.read_text(encoding="utf-8")
+    assert first.inject_changed and not second.inject_changed
+    assert text.count("<!-- audio-smith:start -->") == 1

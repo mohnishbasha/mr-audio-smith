@@ -1,0 +1,30 @@
+# Narrate letters whenever they change. Copy to .github/workflows/ in your site repo.
+name: narrate
+on:
+  push:
+    branches: [main]
+    paths: ["letter-*.html"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  narrate:
+    # Option A: a self-hosted runner with a GPU. Option B: a hosted runner plus server-url below.
+    runs-on: [self-hosted, gpu]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: mohnishbasha/mr-audio-smith/action@v1
+        with:
+          pages-glob: "letter-*.html"
+          site-url: https://www.example.com
+          profile: kid-5
+          voice: dad
+          output-dir: media/audio
+          commit: "true"
+          # Hosted runner instead of a GPU (needs mr-audio-smith serve, S7-T04):
+          # server-url: ${{ vars.AUDIO_SMITH_SERVER_URL }}
+          # server-token: ${{ secrets.AUDIO_SMITH_TOKEN }}

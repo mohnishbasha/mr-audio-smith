@@ -59,6 +59,8 @@ prompt stays accurate. Inline text below has been corrected where it was factual
 
 - Sprint 3: verbatim passages and the signature are enforced by code (`script/verbatim.py`) rather than trusted to the LLM (the live gate showed qwen3:14b blanking the signature chunk); finished tracks are cached under `tracks/` so unchanged re-runs skip ffmpeg; `render` without `--chunks` produces the mastered track and with `--chunks` writes WAV previews; the manifest track gains `captions` and optional `opus`; the `qa` extra pins `setuptools<81` because resemblyzer imports `pkg_resources`; unit tests that master audio need ffmpeg, so CI installs it on every OS.
 
+- Sprints 4 and 5 (built in parallel, delivered in one PR): every run writes `<slug>.embed.html` and copies the player bundle; `embed_*` settings configure label, size, and paths; `run` gains `--lang`, `--inject`, `--selector`; Studio media is fetched with the session token and handed to elements as `blob:` URLs, so the Studio CSP is `connect-src 'self' blob:` (one addition to the prompt's CSP); Studio core lives in `audio_smith/review*.py` and is re-exported as `api.review_*`; take numbers start at 1 and take 0 is the original narration.
+
 **Tooling added**
 - `scripts/sync-test-plan.py` marks TEST_PLAN rows Automated when a test with that exact id exists and appends unplanned tests to section 5.28; CI runs it with `--check`.
 - `scripts/record-llm.py` (`make record-llm`) records real Ollama responses into `tests/fixtures/llm/` for the fake provider; the golden script is the replay of that recording.
@@ -70,6 +72,7 @@ prompt stays accurate. Inline text below has been corrected where it was factual
 - The repo was created from the local first commit (not with `--license/--gitignore`, which would have created a conflicting initial commit). Issues #1 to #68 are the sprint tasks in plan order (S0-T01 is #1, S9-T04 is #68); #69 to #80 are the out-of-scope enhancements.
 - The label taxonomy is 50 labels (the "44" count above undercounts the list); GitHub's default labels were removed.
 - The project board needs the `project` token scope (`gh auth refresh -s project,read:project`); `scripts/create-issues.py --project-only --project N` adds existing issues afterwards.
+- Promotion `develop` to `staging` (and `staging` to `main`) is a fast-forward of the target to the CI-verified commit, done by the admin after the promotion PR is green; GitHub then marks the PR merged. Squash-merging `develop` into `staging` made the branches diverge and conflict on the next promotion, so it is not used. (Sprint 0 was squash-promoted; staging was realigned to `develop` once on 2026-11-02.)
 - Branch protection: required approvals cannot be satisfied by a single-maintainer agent, so `enforce_admins` is false and release PRs into `staging`/`main` are merged by the admin; status checks are still required.
 
 **Cannot be completed by the agent (tracked as manual steps)**

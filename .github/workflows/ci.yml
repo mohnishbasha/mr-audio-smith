@@ -160,7 +160,7 @@ jobs:
             for p in player web/studio; do
               if [ -f "$p/package-lock.json" ]; then (cd "$p" && npm ci && npm run build); fi
             done
-            cd tests/e2e && npm ci && npx playwright install --with-deps chromium && npx playwright test
+            cd tests/e2e && npm ci && npx playwright install --with-deps chromium && npx playwright test && npx playwright test -c playwright.studio.config.ts
           else
             echo "no e2e suite yet"
           fi
