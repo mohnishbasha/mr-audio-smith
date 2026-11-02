@@ -1,0 +1,21 @@
+name: Bug report
+description: Something is broken
+labels: ["type: bug"]
+body:
+  - type: textarea
+    id: what
+    attributes: {label: What happened}
+    validations: {required: true}
+  - type: textarea
+    id: repro
+    attributes: {label: Steps to reproduce (command, page URL or fixture, profile, backend)}
+    validations: {required: true}
+  - type: textarea
+    id: expected
+    attributes: {label: Expected}
+  - type: textarea
+    id: doctor
+    attributes: {label: Output of `mr-audio-smith doctor --json`, render: json}
+  - type: input
+    id: version
+    attributes: {label: Version (`mr-audio-smith --version`)}

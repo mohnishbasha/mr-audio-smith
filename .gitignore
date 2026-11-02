@@ -1,0 +1,56 @@
+```
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+dist/
+build/
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+# TypeScript / Node / Bun
+node_modules/
+*.tsbuildinfo
+player/dist/
+web/studio/dist/
+integrations/pi/dist/
+.bun/
+# Environment
+.env
+.env.*
+!.env.*.example
+# Test / coverage
+coverage/
+.coverage
+htmlcov/
+coverage.xml
+playwright-report/
+test-results/
+# Product runtime
+.audio-smith/cache/
+out/
+audio/
+*.db
+*.db-shm
+*.db-wal
+voices/*/reference.wav
+!tests/fixtures/voices/*.wav
+# Model weights
+models/
+*.safetensors
+*.bin
+*.gguf
+# Agent sessions
+.pi/sessions/
+.agent/sessions/
+CLAUDE.local.md
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/settings.json
+.idea/
+# Lock files ARE tracked: uv.lock, bun.lockb, package-lock.json
+voices/*/reference.24k.wav
+jobs.db
+/Prompt.md

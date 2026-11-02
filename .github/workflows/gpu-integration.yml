@@ -1,0 +1,23 @@
+name: gpu-integration
+
+# Runs Maya 2 integration tests on a self-hosted runner labeled `gpu`. Enabled only when the
+# repository variable GPU_RUNNER_ENABLED is "true", so PRs never wait on a runner that does not exist.
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [staging, main]
+
+permissions:
+  contents: read
+
+jobs:
+  gpu-integration:
+    if: vars.GPU_RUNNER_ENABLED == 'true'
+    runs-on: [self-hosted, gpu]
+    env:
+      AUDIO_SMITH_IT_MAYA2_URL: ${{ vars.AUDIO_SMITH_IT_MAYA2_URL || 'http://127.0.0.1:8080/v1' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --frozen --extra dev --extra qa
+      - run: uv run pytest -m "gpu" -o addopts="-ra --strict-markers"

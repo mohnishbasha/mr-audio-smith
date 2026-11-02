@@ -566,7 +566,7 @@ Binary: `mr-audio-smith` (typer). Global options on every command: `--debug` (sh
 
 | Flag | Default | Meaning |
 |---|---|---|
-| `--profile` | config `profile`, else `adult-brief` | Profile id (optionally `id@version`) |
+| `--profile` | `AUDIO_SMITH_DEFAULT_PROFILE`, else `kid-5` (the flagship listener) | Profile id (optionally `id@version`) |
 | `--voice` | config `voice`, else backend default voice | Registered voice id or backend built-in voice |
 | `--backend` | `AUDIO_SMITH_DEFAULT_BACKEND` (`maya2`; `mock` in dev) | Backend id |
 | `--lang` | profile `languages` | Comma-separated language codes |
@@ -609,6 +609,7 @@ Module `audio_smith.api`. All functions accept an optional `config: Settings | N
 from pathlib import Path
 from typing import Callable
 
+
 def narrate(
     source: str | Path,
     *,
@@ -624,8 +625,10 @@ def narrate(
     dry_run: bool = False,
     config: "Settings | None" = None,
     progress: Callable[["ProgressEvent"], None] | None = None,
-) -> "NarrateResult": ...
+) -> "NarrateResult":
+    ...
     # full pipeline; NarrateResult: manifest_path, manifest, tracks, warnings, plan (dry run)
+
 
 def extract(
     source: str | Path,
@@ -633,8 +636,10 @@ def extract(
     out_dir: Path | None = None,
     allow_private: bool = False,
     config: "Settings | None" = None,
-) -> "BlockDocument": ...
+) -> "BlockDocument":
+    ...
     # stage 1; writes {slug}.blocks.json
+
 
 def write_script(
     blocks: "BlockDocument | Path",
@@ -645,8 +650,10 @@ def write_script(
     out_dir: Path | None = None,
     force: bool = False,
     config: "Settings | None" = None,
-) -> "ScriptDocument": ...
+) -> "ScriptDocument":
+    ...
     # stage 2; writes {slug}.{lang}.script.md
+
 
 def render_script(
     script: "ScriptDocument | Path",
@@ -658,8 +665,10 @@ def render_script(
     force: bool = False,
     config: "Settings | None" = None,
     progress: Callable[["ProgressEvent"], None] | None = None,
-) -> "RenderResult": ...
+) -> "RenderResult":
+    ...
     # stage 3 (and QA); RenderResult: chunk_paths, chunk_records, warnings
+
 
 def master(
     render: "RenderResult",
@@ -667,8 +676,10 @@ def master(
     profile: str | None = None,
     out_dir: Path | None = None,
     config: "Settings | None" = None,
-) -> "list[TrackFile]": ...
+) -> "list[TrackFile]":
+    ...
     # stage 4; TrackFile: lang, kind, path, duration_s, loudness_lufs, true_peak_dbtp, peaks
+
 
 def publish(
     tracks: "list[TrackFile]",
@@ -680,7 +691,8 @@ def publish(
     approved: bool = False,
     out_dir: Path | None = None,
     config: "Settings | None" = None,
-) -> "Manifest": ...
+) -> "Manifest":
+    ...
     # stage 5; writes mp3 refs, VTT, manifest, embed snippet, optional HTML injection
 ```
 
@@ -749,8 +761,10 @@ class Capabilities(BaseModel):
     license: str
     commercial_ok: bool
 
+
 class TTSBackend(Protocol):
     id: str
+
     def capabilities(self) -> Capabilities: ...
     def preflight(self) -> list[PreflightIssue]: ...
     def synth(self, text: str, voice: VoiceRef, params: SynthParams) -> PcmAudio: ...
@@ -759,9 +773,11 @@ class TTSBackend(Protocol):
 ```python
 class LLMProvider(Protocol):
     id: str
+
     def preflight(self) -> list[PreflightIssue]: ...
-    def complete(self, system: str, user: str, *, temperature: float, seed: int | None,
-                 max_tokens: int) -> str: ...
+    def complete(
+        self, system: str, user: str, *, temperature: float, seed: int | None, max_tokens: int
+    ) -> str: ...
 ```
 
 Supporting models (pydantic v2):
@@ -769,31 +785,35 @@ Supporting models (pydantic v2):
 ```python
 class PreflightIssue(BaseModel):
     severity: Literal["error", "warning", "info"]
-    code: str                      # stable id, e.g. "maya2.unreachable"
+    code: str  # stable id, e.g. "maya2.unreachable"
     message: str
-    hint: str | None = None        # actionable next step
+    hint: str | None = None  # actionable next step
+
 
 class VoiceRef(BaseModel):
-    id: str                        # registered voice id, or backend built-in voice name
-    builtin: bool = False          # true when id names a backend built-in voice
-    reference_wav: Path | None = None       # reference.24k.wav for cloned voices
+    id: str  # registered voice id, or backend built-in voice name
+    builtin: bool = False  # true when id names a backend built-in voice
+    reference_wav: Path | None = None  # reference.24k.wav for cloned voices
     reference_text: str | None = None
-    clip_hash: str | None = None            # SHA-256 of the original clip
+    clip_hash: str | None = None  # SHA-256 of the original clip
     lang: str = "en"
+
 
 class SynthParams(BaseModel):
     lang: str = "en"
-    rate: float = 1.0              # 0.5..2.0; adapter applies (Maya 2: post-synthesis atempo)
-    seed: int | None = None        # same seed + text + voice => same audio where supported
+    rate: float = 1.0  # 0.5..2.0; adapter applies (Maya 2: post-synthesis atempo)
+    seed: int | None = None  # same seed + text + voice => same audio where supported
     temperature: float | None = None
     top_k: int | None = None
     top_p: float | None = None
     repetition_penalty: float | None = None
     normalize: bool = True
 
+
 class PcmAudio(BaseModel):
-    samples: "np.ndarray"          # float32 mono, range -1.0..1.0 (arbitrary_types_allowed)
-    sample_rate: int               # 24000 for Maya 2 and Kokoro
+    samples: "np.ndarray"  # float32 mono, range -1.0..1.0 (arbitrary_types_allowed)
+    sample_rate: int  # 24000 for Maya 2 and Kokoro
+
     @property
     def duration_s(self) -> float: ...
 ```
