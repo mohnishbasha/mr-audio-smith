@@ -10,6 +10,7 @@ from audio_smith.llm.base import LLMProvider
 from audio_smith.profiles.schema import Profile
 from audio_smith.script.markdown import Script, ScriptMeta, parse_chunks
 from audio_smith.script.validate import ValidationReport, sanitize_script, validate, word_count
+from audio_smith.script.verbatim import enforce_verbatim
 
 WORDS_PER_MINUTE = 130
 LENGTH_TOLERANCE = 0.20
@@ -83,6 +84,12 @@ def build_user_prompt(doc: BlockDoc, track: Track) -> str:
     return f"Write the listening script for this page.\n<<<CONTENT\n{content}\nCONTENT>>>"
 
 
+def signature_text(doc: BlockDoc, track: Track, profile: Profile) -> str | None:
+    if not profile.writing.keep_signature_verbatim:
+        return None
+    return next((b.text for b in reversed(doc.track_blocks(track)) if b.type == "signature"), None)
+
+
 def verbatim_sources(doc: BlockDoc, track: Track, profile: Profile) -> list[str]:
     keep_sig = profile.writing.keep_signature_verbatim
     return [b.text for b in doc.track_blocks(track) if b.verbatim and (b.type != "signature" or keep_sig)]
@@ -109,13 +116,14 @@ def _attempt(
     profile: Profile,
     sources: list[str],
     seed: int,
+    signature: str | None = None,
 ) -> tuple[Script, ValidationReport]:
     raw = provider.complete(system, user, temperature=0.0, seed=seed, max_tokens=DEFAULT_MAX_TOKENS)
     try:
         chunks = parse_chunks(parse_llm_output(raw))
     except ScriptInvalidError as e:
         return Script(meta=meta, chunks=[]), ValidationReport(errors=[e.message])
-    script = sanitize_script(Script(meta=meta, chunks=chunks))
+    script = sanitize_script(Script(meta=meta, chunks=enforce_verbatim(chunks, sources, signature)))
     report = validate(script, max_chunk_chars=profile.speech.max_chunk_chars, verbatim_sources=sources)
     length = _length_violation(script, profile)
     if length:
@@ -139,7 +147,8 @@ def write_script(
     system = build_system_prompt(profile)
     user = build_user_prompt(doc, track)
     sources = verbatim_sources(doc, track, profile)
-    script, report = _attempt(provider, system, user, meta, profile, sources, seed)
+    sig = signature_text(doc, track, profile)
+    script, report = _attempt(provider, system, user, meta, profile, sources, seed, sig)
     length = next((w for w in report.warnings if w.startswith("script has")), None)
     if report.ok and length is None:
         return script, report.warnings
@@ -147,7 +156,7 @@ def write_script(
     retry_user = (
         user + "\n\nYour previous script had these problems. Fix all of them:\n- " + "\n- ".join(fixes)
     )
-    script, report = _attempt(provider, system, retry_user, meta, profile, sources, seed)
+    script, report = _attempt(provider, system, retry_user, meta, profile, sources, seed, sig)
     if not report.ok:
         raise ScriptInvalidError(
             "Script failed validation after one corrective retry",

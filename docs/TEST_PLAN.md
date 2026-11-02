@@ -762,6 +762,11 @@ Row count: more than 120 scenarios across 27 tables.
 | `test_script_writer_strips_think_blocks_and_fences` | script writer strips think blocks and fences | Unit | ✅ Automated |
 | `test_script_writer_too_short_retries_then_warns` | script writer too short retries then warns | Unit | ✅ Automated |
 | `test_script_writer_user_prompt_wraps_untrusted_content_and_track` | script writer user prompt wraps untrusted content and track | Unit | ✅ Automated |
+| `test_script_verbatim_empty_signature_chunk_replaced_with_exact_text` | script verbatim empty signature chunk replaced with exact text | Unit | ✅ Automated |
+| `test_script_verbatim_missing_sources_appended_signature_last` | script verbatim missing sources appended signature last | Unit | ✅ Automated |
+| `test_script_verbatim_no_sources_is_identity` | script verbatim no sources is identity | Unit | ✅ Automated |
+| `test_script_verbatim_paraphrased_signature_restored_in_place` | script verbatim paraphrased signature restored in place | Unit | ✅ Automated |
+| `test_script_verbatim_signature_moved_to_end` | script verbatim signature moved to end | Unit | ✅ Automated |
 
 ## 6. Listening test protocol
 

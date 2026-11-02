@@ -87,7 +87,7 @@ def test_script_writer_retry_with_violations_succeeds() -> None:
     fake = FakeProvider(responses=[_body(585, sig=False) + "\n\n## 099\n[laugh] Hi.", _body(585)])
     script, _ = write_script(DOC, kid, fake, META)
     assert len(fake.calls) == 2
-    assert "missing verbatim chunk" in fake.calls[1][1]
+    assert "[laugh]" in fake.calls[1][1]
     assert script.chunks[-1].text == SIG
 
 
