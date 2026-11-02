@@ -199,7 +199,7 @@ jobs:
           for p in player web/studio tests/e2e integrations/pi; do
             if [ -f "$p/package-lock.json" ]; then (cd "$p" && npm audit --audit-level=high); fi
           done
-      - uses: gitleaks/gitleaks-action@v2
+      - uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Third-party license check
