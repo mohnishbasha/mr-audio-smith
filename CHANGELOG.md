@@ -46,5 +46,9 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Removed
 
 ### Security
+- Logs redact any field whose name contains key, token, or secret; `--log-format json` for structured logs.
+- Dependency audit (pip-audit, npm audit), secrets scan (gitleaks), and a license check run in CI; see docs/SECURITY_REVIEW.md.
+- The Chatterbox backend is no longer an installable extra (its pinned dependencies carry unpatched advisories); install `chatterbox-tts` yourself to use it.
+- ID3 tags are written with ffmpeg instead of a GPL-licensed library, keeping the MIT core free of copyleft code.
 
 [Unreleased]: https://github.com/mohnishbasha/mr-audio-smith/compare/main...develop

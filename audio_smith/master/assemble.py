@@ -32,8 +32,8 @@ def resample(samples: FloatArray, src_rate: int, dst_rate: int) -> FloatArray:
         return samples.astype(np.float32, copy=False)
     n_out = round(len(samples) * dst_rate / src_rate)
     src_pos = np.arange(n_out) * (src_rate / dst_rate)
-    out = np.interp(src_pos, np.arange(len(samples)), samples)
-    return out.astype(np.float32)
+    out: FloatArray = np.asarray(np.interp(src_pos, np.arange(len(samples)), samples), dtype=np.float32)
+    return out
 
 
 def _ramp(n: int) -> FloatArray:

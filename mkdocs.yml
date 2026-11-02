@@ -1,0 +1,97 @@
+site_name: mr-audio-smith
+site_description: Turn any web page into a realistic, audience-tuned narration in your own voice.
+site_url: https://getaudiosmith.com
+repo_url: https://github.com/mohnishbasha/mr-audio-smith
+repo_name: mohnishbasha/mr-audio-smith
+edit_uri: edit/develop/docs/
+docs_dir: docs
+
+theme:
+  name: material
+  font: false
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - search.highlight
+
+extra_css:
+  - stylesheets/extra.css
+
+extra:
+  generator: false
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.snippets:
+      base_path: ["."]
+      check_paths: true
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: ["."]
+          options:
+            show_source: false
+            show_root_heading: true
+            docstring_style: google
+
+validation:
+  omitted_files: info
+  absolute_links: info
+  unrecognized_links: warn
+  anchors: warn
+
+not_in_nav: |
+  BUILD_PROMPT.md
+
+nav:
+  - Home: index.md
+  - Guide:
+      - Quickstart: guide/quickstart.md
+      - Voices and consent: guide/voices-and-consent.md
+      - Profiles: guide/profiles.md
+      - Backends: guide/backends.md
+      - Site mode: guide/site-mode.md
+      - GitHub Action: guide/github-action.md
+      - Studio: guide/studio.md
+      - Embedding: guide/embedding.md
+      - Configuration: guide/configuration.md
+      - Troubleshooting: guide/troubleshooting.md
+  - Reference:
+      - CLI: reference/cli.md
+      - Python API: reference/python-api.md
+      - File formats: reference/formats.md
+  - Project:
+      - PRD: PRD.md
+      - Architecture: ARCHITECTURE.md
+      - Design: DESIGN.md
+      - Sprint plan: SPRINT_PLAN.md
+      - Test plan: TEST_PLAN.md
+      - Performance: PERFORMANCE.md
+      - Retrospectives: RETROSPECTIVES.md
+      - Listening tests: LISTENING_TESTS.md
+      - Changelog: changelog.md

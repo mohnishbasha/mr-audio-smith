@@ -1,16 +1,21 @@
-# mypy: disable-error-code="no-untyped-call"
-"""ID3 tags and cover art for mastered MP3s (FR-014)."""
+"""ID3 tags and cover art for mastered MP3s (FR-014).
 
+Tags are written by ffmpeg in a separate process (stream copy, no re-encode) rather than by a
+GPL-licensed tagging library, so the MIT core links no copyleft code.
+"""
+
+import json
+import tempfile
 import time
 from collections.abc import Callable
 from pathlib import Path
 from urllib.parse import urljoin, urlsplit
 
 import httpx
-from mutagen.id3 import APIC, ID3, TALB, TDRC, TIT2, TPE1, ID3NoHeaderError
 
+from audio_smith import proc
 from audio_smith.config import Settings
-from audio_smith.errors import AudioSmithError, FetchError
+from audio_smith.errors import AudioSmithError, FetchError, MasteringError
 from audio_smith.fetch import (
     MAX_REDIRECTS,
     REDIRECT_STATUSES,
@@ -23,9 +28,9 @@ from audio_smith.fetch import (
 )
 
 DEFAULT_MAX_COVER_BYTES = 1_048_576
-ID3_ENCODING_UTF8 = 3
-APIC_FRONT_COVER = 3
 ID3_VERSION = 3
+TAG_TIMEOUT_S = 60
+MIME_EXT = {"image/jpeg": "jpg", "image/png": "png"}
 DEFAULT_PORTS = {"http": 80, "https": 443}
 _JPEG_MAGIC = b"\xff\xd8\xff"
 _PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
@@ -42,21 +47,73 @@ def detect_image_mime(data: bytes) -> str | None:
     return None
 
 
+def _tag_args(src: Path, dst: Path, meta: dict[str, str], cover: Path | None) -> list[str]:
+    args = ["ffmpeg", "-nostdin", "-loglevel", "error", "-y", "-i", str(src)]
+    if cover is not None:
+        args += [
+            "-i",
+            str(cover),
+            "-map",
+            "0:a",
+            "-map",
+            "1:v",
+            "-c:v",
+            "copy",
+            "-disposition:v",
+            "attached_pic",
+            "-metadata:s:v",
+            "title=Cover",
+            "-metadata:s:v",
+            "comment=Cover (front)",
+        ]
+    else:
+        args += ["-map", "0:a"]
+    args += ["-c:a", "copy", "-map_metadata", "-1", "-id3v2_version", str(ID3_VERSION)]
+    for key, value in meta.items():
+        args += ["-metadata", f"{key}={value}"]
+    return [*args, str(dst)]
+
+
 def write_tags(mp3: Path, *, title: str, artist: str, album: str, date: str, cover: bytes | None) -> None:
-    """Write TIT2, TPE1, TALB, TDRC and an optional front cover, replacing existing tags."""
-    try:
-        tags = ID3(mp3)
-    except ID3NoHeaderError:
-        tags = ID3()
-    tags.delall("APIC")
-    tags.add(TIT2(encoding=ID3_ENCODING_UTF8, text=title))
-    tags.add(TPE1(encoding=ID3_ENCODING_UTF8, text=artist))
-    tags.add(TALB(encoding=ID3_ENCODING_UTF8, text=album))
-    tags.add(TDRC(encoding=ID3_ENCODING_UTF8, text=date))
+    """Replace title, artist, album, date, and the optional front cover (jpeg or png only)."""
     mime = detect_image_mime(cover) if cover else None
-    if cover and mime:
-        tags.add(APIC(encoding=ID3_ENCODING_UTF8, mime=mime, type=APIC_FRONT_COVER, desc="Cover", data=cover))
-    tags.save(mp3, v2_version=ID3_VERSION)
+    meta = {"title": title, "artist": artist, "album": album, "date": date}
+    with tempfile.TemporaryDirectory(dir=mp3.parent) as tmp:
+        cover_path = None
+        if cover is not None and mime is not None:
+            cover_path = Path(tmp) / f"cover.{MIME_EXT[mime]}"
+            cover_path.write_bytes(cover)
+        out = Path(tmp) / mp3.name
+        try:
+            proc.run(_tag_args(mp3, out, meta, cover_path), timeout=TAG_TIMEOUT_S)
+        except Exception as e:
+            raise MasteringError(
+                f"Could not write tags to {mp3.name}: {e}", hint="Check that ffmpeg works."
+            ) from e
+        out.replace(mp3)
+
+
+def read_tags(mp3: Path) -> dict[str, str]:
+    """Tags as ffprobe reports them, plus `cover` = codec of an attached picture (tests and Studio)."""
+    raw = proc.run(
+        [
+            "ffprobe",
+            "-v",
+            "error",
+            "-show_entries",
+            "format_tags:stream=codec_name,codec_type",
+            "-of",
+            "json",
+            str(mp3),
+        ],
+        timeout=TAG_TIMEOUT_S,
+    )
+    data = json.loads(raw)
+    tags = {k.lower(): str(v) for k, v in data.get("format", {}).get("tags", {}).items()}
+    pics = [s["codec_name"] for s in data.get("streams", []) if s.get("codec_type") == "video"]
+    if pics:
+        tags["cover"] = pics[0]
+    return tags
 
 
 def _origin(url: str) -> tuple[str, str, int] | None:

@@ -3,6 +3,7 @@
 import sys
 from typing import Annotated
 
+import click
 import typer
 from rich.console import Console
 from rich.table import Table
@@ -11,6 +12,7 @@ from audio_smith import __version__, doctor
 from audio_smith.cli_commands import register
 from audio_smith.config import load_settings
 from audio_smith.errors import AudioSmithError
+from audio_smith.logging import configure_logging
 
 app = typer.Typer(
     name="mr-audio-smith",
@@ -18,6 +20,7 @@ app = typer.Typer(
     no_args_is_help=True,
     add_completion=False,
 )
+LOG_FORMATS = ["pretty", "json"]
 console = Console()
 err_console = Console(stderr=True)
 
@@ -34,8 +37,18 @@ def _root(
         bool, typer.Option("--version", callback=_version_callback, is_eager=True, help="Print the version.")
     ] = False,
     debug: Annotated[bool, typer.Option("--debug", help="Show stack traces on errors.")] = False,
+    log_format: Annotated[
+        str | None,
+        typer.Option(
+            "--log-format",
+            click_type=click.Choice(LOG_FORMATS),
+            help="Log rendering on stderr: pretty or json (default: AUDIO_SMITH_LOG_FORMAT).",
+        ),
+    ] = None,
 ) -> None:
     """mr-audio-smith command line."""
+    settings = load_settings({"log_format": log_format})
+    configure_logging(settings.log_format, settings.log_level)
 
 
 @app.command("doctor")

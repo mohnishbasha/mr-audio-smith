@@ -1024,6 +1024,53 @@ Row count: more than 120 scenarios across 27 tables.
 | `test_studio_validate_max_chunk_chars` | studio validate max chunk chars | Unit | ✅ Automated |
 | `test_studio_validate_pause_range` | studio validate pause range | Unit | ✅ Automated |
 | `test_studio_validate_rejects_unknown_marker` | studio validate rejects unknown marker | Unit | ✅ Automated |
+| `e2e_US006_player_axe_core_dark_error_state_zero_violations` | US006 player axe core dark error state zero violations | E2E | ✅ Automated |
+| `e2e_US006_player_axe_core_zero_violations` | US006 player axe core zero violations | E2E | ✅ Automated |
+| `e2e_US006_player_keyboard_arrows_seek_5s` | US006 player keyboard arrows seek 5s | E2E | ✅ Automated |
+| `e2e_US006_player_keyboard_play_pause` | US006 player keyboard play pause | E2E | ✅ Automated |
+| `e2e_US006_player_kid_size_variant_renders` | US006 player kid size variant renders | E2E | ✅ Automated |
+| `e2e_US006_player_language_toggle_switches_track` | US006 player language toggle switches track | E2E | ✅ Automated |
+| `e2e_US006_player_media_session_metadata_set` | US006 player media session metadata set | E2E | ✅ Automated |
+| `e2e_US006_player_no_js_fallback_native_audio_plays` | US006 player no js fallback native audio plays | E2E | ✅ Automated |
+| `e2e_US006_player_no_js_fallback_plays` | US006 player no js fallback plays | E2E | ✅ Automated |
+| `e2e_US006_player_reduced_motion_disables_breathing` | US006 player reduced motion disables breathing | E2E | ✅ Automated |
+| `e2e_US006_player_remembers_position_per_src` | US006 player remembers position per src | E2E | ✅ Automated |
+| `e2e_US006_player_storage_blocked_still_plays` | US006 player storage blocked still plays | E2E | ✅ Automated |
+| `e2e_US006_player_theme_auto_light_dark` | US006 player theme auto light dark | E2E | ✅ Automated |
+| `e2e_US012_player_captions_toggle` | US012 player captions toggle | E2E | ✅ Automated |
+| `e2e_US017_studio_approve_persists_in_manifest` | US017 studio approve persists in manifest | E2E | ✅ Automated |
+| `e2e_US017_studio_compare_takes_keep_best` | US017 studio compare takes keep best | E2E | ✅ Automated |
+| `e2e_US017_studio_edit_validate_save_chunk` | US017 studio edit validate save chunk | E2E | ✅ Automated |
+| `e2e_US017_studio_inject_diff_preview_before_write` | US017 studio inject diff preview before write | E2E | ✅ Automated |
+| `e2e_US017_studio_marker_autocomplete_pause` | US017 studio marker autocomplete pause | E2E | ✅ Automated |
+| `e2e_US017_studio_zero_external_requests` | US017 studio zero external requests | E2E | ✅ Automated |
+| `regression_logs_redact_secret_named_keys_in_json_output` | logs redact secret named keys in json output | Regression | ✅ Automated |
+| `test_docs_cli_reference_is_current` | docs cli reference is current | Unit | ✅ Automated |
+| `test_docs_every_cli_flag_documented` | docs every cli flag documented | Unit | ✅ Automated |
+| `test_docs_every_command_documented` | docs every command documented | Unit | ✅ Automated |
+| `test_extract_fuzz_generated_html_trees_never_crash` | extract fuzz generated html trees never crash | Unit | ✅ Automated |
+| `test_fetch_mixed_public_and_private_answers_rejected_whole` | fetch mixed public and private answers rejected whole | Unit | ✅ Automated |
+| `test_fetch_rebinding_second_resolution_never_reaches_private_ip` | fetch rebinding second resolution never reaches private ip | Unit | ✅ Automated |
+| `test_licenses_allowlisted_package_passes_denylist` | licenses allowlisted package passes denylist | Unit | ✅ Automated |
+| `test_licenses_committed_file_has_required_sections` | licenses committed file has required sections | Unit | ✅ Automated |
+| `test_licenses_denylist_blocks_agpl_and_gpl3_but_not_lgpl_or_gpl2` | licenses denylist blocks agpl and gpl3 but not lgpl or gpl2 | Unit | ✅ Automated |
+| `test_licenses_new_dependency_without_entry_fails` | licenses new dependency without entry fails | Unit | ✅ Automated |
+| `test_licenses_normalize_license_cases` | licenses normalize license cases | Unit | ✅ Automated |
+| `test_licenses_npm_ls_fallback_reads_manifest` | licenses npm ls fallback reads manifest | Unit | ✅ Automated |
+| `test_licenses_override_applies_only_to_unknown_metadata` | licenses override applies only to unknown metadata | Unit | ✅ Automated |
+| `test_licenses_parse_license_checker_drops_own_packages` | licenses parse license checker drops own packages | Unit | ✅ Automated |
+| `test_licenses_parse_pip_filters_to_runtime_and_normalizes` | licenses parse pip filters to runtime and normalizes | Unit | ✅ Automated |
+| `test_licenses_replace_section_preserves_hand_written_sections` | licenses replace section preserves hand written sections | Unit | ✅ Automated |
+| `test_licenses_unknown_license_fails_even_with_entry` | licenses unknown license fails even with entry | Unit | ✅ Automated |
+| `test_logging_deeply_nested_input_is_bounded` | logging deeply nested input is bounded | Unit | ✅ Automated |
+| `test_logging_exception_text_does_not_leak_through_redacted_keys` | logging exception text does not leak through redacted keys | Unit | ✅ Automated |
+| `test_logging_json_format_goes_to_stderr_and_redacts` | logging json format goes to stderr and redacts | Unit | ✅ Automated |
+| `test_logging_leaves_innocent_values_alone` | logging leaves innocent values alone | Unit | ✅ Automated |
+| `test_logging_pretty_format_redacts_and_respects_level` | logging pretty format redacts and respects level | Unit | ✅ Automated |
+| `test_logging_redaction_runs_before_renderer` | logging redaction runs before renderer | Unit | ✅ Automated |
+| `test_logging_redacts_nested_and_listed_values_and_secretstr` | logging redacts nested and listed values and secretstr | Unit | ✅ Automated |
+| `test_logging_redacts_secret_named_keys` | logging redacts secret named keys | Unit | ✅ Automated |
+| `test_tags_write_failure_raises_mastering_error` | tags write failure raises mastering error | Unit | ✅ Automated |
 
 ## 6. Listening test protocol
 

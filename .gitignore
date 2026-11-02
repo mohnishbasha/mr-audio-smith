@@ -58,3 +58,4 @@ coverage.json
 audio_smith/studio/static/
 audio_smith/_assets/player/
 tests/e2e/.studio-tmp/
+site/

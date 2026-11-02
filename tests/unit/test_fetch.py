@@ -318,3 +318,28 @@ def test_default_resolver_localhost_and_failure() -> None:
     assert "127.0.0.1" in default_resolver("localhost")
     with pytest.raises(FetchError, match="Cannot resolve"):
         default_resolver("nonexistent.invalid")
+
+
+def test_fetch_rebinding_second_resolution_never_reaches_private_ip(
+    settings: Settings, mock: respx.MockRouter
+) -> None:
+    """Hop one resolves public; a rebinding answer on hop two is vetted and refused, never dialled."""
+    mock.get(f"https://{PUBLIC_IP}/start").respond(302, headers={"location": "https://rebind.test/next"})
+    private = mock.get("https://127.0.0.1/next").respond(200, text="secret", headers=HTML_HEADERS)
+    answers = iter([[PUBLIC_IP], ["127.0.0.1"]])
+    calls: list[str] = []
+
+    def rebinding(host: str) -> list[str]:
+        calls.append(host)
+        return next(answers)
+
+    with pytest.raises(FetchError, match=r"Blocked non-public address 127\.0\.0\.1"):
+        run("https://rebind.test/start", settings, rebinding)
+    assert calls == ["rebind.test", "rebind.test"]
+    assert private.call_count == 0
+
+
+def test_fetch_mixed_public_and_private_answers_rejected_whole(settings: Settings) -> None:
+    """A round-robin answer containing any private address is refused, not filtered."""
+    with pytest.raises(FetchError, match="Blocked non-public address"):
+        run("https://mixed.test/p", settings, lambda _host: [PUBLIC_IP, "10.0.0.7"])

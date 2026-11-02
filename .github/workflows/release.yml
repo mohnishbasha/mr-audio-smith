@@ -1,0 +1,154 @@
+name: release
+
+# Tag-driven release (Versioning section of docs/BUILD_PROMPT.md).
+# vX.Y.Z on main -> PyPI + npm latest; vX.Y.Z-rc.N on staging -> TestPyPI + npm next.
+# Publishing steps run only when the owner has configured trusted publishing and set the
+# repository variables PYPI_PUBLISH / NPM_PUBLISH to "true". Build, SBOM, and the GitHub Release
+# always run, so a tag without registry setup still produces signed-off artifacts.
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to (re)build
+        required: true
+
+permissions:
+  contents: read
+
+env:
+  UV_PYTHON: "3.12"
+  PYTHONUTF8: "1"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      prerelease: ${{ steps.v.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.tag || github.ref }}
+      - id: v
+        name: Tag matches pyproject version and branch policy
+        run: |
+          TAG="${{ inputs.tag || github.ref_name }}"
+          VERSION="${TAG#v}"
+          PYV=$(python3 -c "import tomllib;print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          [ "$VERSION" = "$PYV" ] || { echo "tag $TAG != pyproject $PYV"; exit 1; }
+          ./scripts/check-versions.sh
+          if [[ "$VERSION" == *-rc.* ]]; then BRANCH=staging; PRE=true; else BRANCH=main; PRE=false; fi
+          git branch -r --contains "$(git rev-parse HEAD)" | grep -q "origin/$BRANCH" \
+            || { echo "$TAG must point at a commit on $BRANCH"; exit 1; }
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "prerelease=$PRE" >> "$GITHUB_OUTPUT"
+
+  ci:
+    needs: verify
+    uses: ./.github/workflows/ci.yml
+
+  build:
+    needs: [verify, ci]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - name: Build UI bundles into the package
+        run: make studio-build player-assets
+      - name: Build sdist and wheel
+        run: uv build
+      - name: Pack npm packages
+        run: |
+          mkdir -p dist/npm
+          for p in player integrations/pi; do
+            if [ -f "$p/package.json" ] && [ -f "$p/package-lock.json" ]; then
+              (cd "$p" && npm ci && npm run --if-present build && npm pack --pack-destination ../../dist/npm)
+            fi
+          done
+      - name: SBOMs (CycloneDX)
+        run: |
+          uv export --frozen --no-dev --all-extras --no-emit-project --format requirements-txt > dist/requirements.txt
+          uvx --from cyclonedx-bom cyclonedx-py requirements dist/requirements.txt -o dist/sbom-python.cdx.json
+          (cd player && npx --yes @cyclonedx/cyclonedx-npm --omit dev --output-file ../dist/sbom-player.cdx.json)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish-pypi:
+    needs: [verify, build]
+    if: vars.PYPI_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    environment: ${{ needs.verify.outputs.prerelease == 'true' && 'testpypi' || 'pypi' }}
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - name: Keep only Python distributions
+        run: find dist -mindepth 1 -not -name '*.whl' -not -name '*.tar.gz' -delete
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: ${{ needs.verify.outputs.prerelease == 'true' && 'https://test.pypi.org/legacy/' || 'https://upload.pypi.org/legacy/' }}
+          attestations: true
+
+  publish-npm:
+    needs: [verify, build]
+    if: vars.NPM_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - name: Publish with provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          TAG=${{ needs.verify.outputs.prerelease == 'true' && 'next' || 'latest' }}
+          for t in dist/npm/*.tgz; do npm publish "$t" --provenance --access public --tag "$TAG"; done
+
+  github-release:
+    needs: [verify, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - name: Release notes from CHANGELOG
+        run: ./scripts/extract-changelog.sh "${{ needs.verify.outputs.version }}" > notes.md
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag || github.ref_name }}
+          name: mr-audio-smith ${{ needs.verify.outputs.version }}
+          body_path: notes.md
+          prerelease: ${{ needs.verify.outputs.prerelease == 'true' }}
+          files: |
+            dist/*.whl
+            dist/*.tar.gz
+            dist/npm/*.tgz
+            dist/*.cdx.json

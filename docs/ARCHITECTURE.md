@@ -155,6 +155,8 @@ Each record uses Context / Decision / Consequence. ADR-001 to ADR-014 carry the 
 - **Decision:** Kokoro is the CPU fallback backend; Chatterbox optional extra; XTTS and F5-TTS are excluded by default because their weights are non-commercial.
 - **Consequence:** `Capabilities.license` and `commercial_ok` let a license guard refuse non-commercial models unless explicitly overridden.
 
+- **Amendment (Sprint 6):** Chatterbox is no longer a packaged extra; its upstream pins of torch, transformers, gradio, and pillow carry unpatched advisories (docs/SECURITY_REVIEW.md). The backend code stays and works when `chatterbox-tts` is installed manually.
+
 ### ADR-015: Speaker similarity uses resemblyzer (qa extra), lazy-imported
 
 - **Context:** Per-take QA compares the speaker embedding of synthesized audio to the reference clip to detect timbre drift. The source prompt left the choice between resemblyzer and speechbrain to a Sprint 3 ADR. resemblyzer is Apache-2.0 and small.
@@ -252,7 +254,7 @@ Layering, top to bottom: front doors, `api`, stages (`fetch/extract`, `script`, 
 
 | Extra | Contents | Notes |
 |---|---|---|
-| (base) | typer, rich, httpx, selectolax, trafilatura, emoji, pydantic, pydantic-settings, pyyaml, structlog, numpy, soundfile, pydub, mutagen, openai, keyring | No torch |
+| (base) | typer, rich, httpx, selectolax, trafilatura, emoji, pydantic, pydantic-settings, pyyaml, structlog, numpy, soundfile, pydub, openai, keyring (ID3 tags are written by ffmpeg, so no GPL tagging library) | No torch |
 | `maya2` | `torch` | In-process Maya 2 Native. `maya3` is not on PyPI (PyPI forbids direct URL dependencies); install it with `uv pip install "maya3 @ git+https://github.com/MayaResearch/maya2-native@<pinned sha>"` |
 | `kokoro` | `kokoro>=0.9`, `torch>=2.4` | Marked `python_version < "3.13"` (ADR-017) |
 | `chatterbox` | `chatterbox-tts`, `torch>=2.4` | Optional clone backend |
@@ -925,6 +927,7 @@ cache/
 ```
 
 Additions and clarifications:
+
 
 - Translations are cached under `scripts/` with `script_key(sha256(source script), profile@ver, llm, lang, translate prompt version, "translation")`.
 
