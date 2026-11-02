@@ -315,6 +315,14 @@ apply_routes
 
 echo "5/6 wait for the rollout (the API does not wait for Maya; Maya downloads its model on first start, see: kubectl -n $NAMESPACE logs statefulset/$RELEASE-maya2)"
 on "$HOME_UNIT" "$KUBE -n $NAMESPACE rollout status deployment/$RELEASE --timeout=15m"
+# A StatefulSet never replaces a pod that never became Ready (for example one that crash-looped on an
+# old spec), so a fixed Maya spec would not roll out on its own. Recycle that pod when its revision is stale.
+on "$HOME_UNIT" "sts=$RELEASE-maya2; pod=\$sts-0; \
+  upd=\$($KUBE -n $NAMESPACE get sts \$sts -o jsonpath='{.status.updateRevision}' 2>/dev/null); \
+  cur=\$($KUBE -n $NAMESPACE get pod \$pod -o jsonpath='{.metadata.labels.controller-revision-hash}' 2>/dev/null); \
+  ready=\$($KUBE -n $NAMESPACE get pod \$pod -o jsonpath='{.status.containerStatuses[0].ready}' 2>/dev/null); \
+  if [ -n \"\$upd\" ] && [ -n \"\$cur\" ] && [ \"\$upd\" != \"\$cur\" ] && [ \"\$ready\" != true ]; then \
+    echo \"maya: pod \$pod is on a stale revision and not ready; recycling it\"; $KUBE -n $NAMESPACE delete pod \$pod --wait=false; fi" || true
 
 prune_images
 
