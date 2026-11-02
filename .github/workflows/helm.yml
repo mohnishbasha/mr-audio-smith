@@ -70,6 +70,7 @@ jobs:
         run: kind load docker-image mr-audio-smith:ci --name chart-testing
       - name: ct install (CPU profile)
         run: |
+          # chart-testing installs once per charts/<chart>/ci/*-values.yaml (ci/cpu-values.yaml mirrors values-ci.yaml)
           ct install \
             --charts charts/mr-audio-smith \
-            --helm-extra-args "--timeout 300s --values charts/mr-audio-smith/values-ci.yaml"
+            --helm-extra-args "--timeout 300s"

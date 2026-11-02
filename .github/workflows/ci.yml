@@ -153,6 +153,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - uses: oven-sh/setup-bun@v2
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: uv sync --frozen ${{ env.PY_EXTRAS }}
       - name: Playwright
@@ -192,7 +193,7 @@ jobs:
       - name: pip-audit on optional ML extras (report only, see docs/SECURITY_REVIEW.md)
         continue-on-error: true
         run: |
-          uv export --frozen --no-dev --extra kokoro --extra chatterbox --extra maya2 --extra qa --no-emit-project --no-hashes > "$RUNNER_TEMP/ml-requirements.txt"
+          uv export --frozen --no-dev --extra kokoro --extra maya2 --extra qa --no-emit-project --no-hashes > "$RUNNER_TEMP/ml-requirements.txt"
           uv run pip-audit -r "$RUNNER_TEMP/ml-requirements.txt" --no-deps --disable-pip
       - name: npm audit
         run: |
