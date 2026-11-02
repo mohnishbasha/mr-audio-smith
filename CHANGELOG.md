@@ -16,6 +16,11 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Script writing with Ollama (default), Anthropic, or any OpenAI-compatible server, with one corrective retry when the script breaks the format.
 - Pronunciation lexicon applied at synthesis time from the profile and an optional `lexicon.yaml`.
 - `cache info` and `cache prune --older-than 30d`; unchanged pages are served from the cache.
+- TTS backends behind one interface: Maya 2 Native (default, zero-shot cloning, 12 languages), Kokoro on CPU, OpenAI, any OpenAI-compatible server, Chatterbox (optional), and a deterministic mock.
+- `mr-audio-smith voice add|list|check|remove` with a required consent record and clip quality checks (length, sample rate, clipping, noise); cloned voices are refused without consent from every entry point.
+- `mr-audio-smith render <script.md> [--chunks 3,7]` synthesizes a reviewed script chunk by chunk, applying the pronunciation lexicon.
+- `--accept-noncommercial` is required for backends whose weights are not licensed for commercial use.
+- `doctor` now reports each backend, GPU visibility, the LLM provider, and registered voices.
 
 ### Changed
 

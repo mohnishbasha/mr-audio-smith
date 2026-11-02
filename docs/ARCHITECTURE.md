@@ -829,6 +829,9 @@ Contract rules:
 - `synth` raises `SynthesisError` for non-retryable failures; transient failures (503, timeouts) are retried by the transport layer with backoff before surfacing.
 - `preflight` never raises; it returns issues. Any `error` severity makes `PreflightError` for the run.
 - Inline markers are removed from `text` by the pipeline before `synth` (pauses are assembled at mastering); the adapter receives plain text, with `*word*` emphasis either converted or stripped according to the backend's capability.
+- Rate: backends with native speed (Kokoro) apply it directly; Maya 2 and Chatterbox apply it after synthesis with `tts/rate.py` `apply_rate` (ffmpeg `atempo` through `proc.run`).
+- Retries: `OpenAICompatBackend` retries 429, 5xx, timeouts, and connection errors twice with exponential backoff and jitter, honoring `retry-after` (capped at 30 s); other 4xx raise `SynthesisError` immediately.
+- Consent: cloning backends call `voices.consent.require_consent(voice)` right before cloning; it re-reads `voice.yaml` and re-hashes the clip, so a hand-built `VoiceRef` cannot bypass consent.
 - Registry (`tts/registry.py`) maps backend ids (`maya2`, `kokoro`, `chatterbox`, `openai`, `openai_compat`, `mock`) to factories; heavy imports occur inside the factory.
 
 ### 6.6 Maya 2 adapter (verified facts)
@@ -877,7 +880,7 @@ Source: github.com/MayaResearch/maya2-native (`maya3/client.py`, `maya3/server.p
 
 **Built-in voices (20)**: Ahana, Vaidehi, Malini, Charvi, Jahnavi, Anirban, Nakul, Vasant, Siddhant, Satvik, Abhay, Nivedita, Ishwari, Ritvik, Vrinda, Sreekar, Kayal, Shaunak, Akshat, Tanushree.
 
-**In-process mode** (`maya2` extra, package `maya3`): `Maya3TTS.from_pretrained("maya-research/maya2-native", max_seats=N)`, `.generate(text, lang, voice)`, `.register_voice(name, ref_audio, ref_text, lang)`; returns 24 kHz float32. The adapter selects in-process mode when `AUDIO_SMITH_MAYA2_URL` is unset and the package is importable; otherwise HTTP.
+**In-process mode** (`maya2` extra, package `maya3`): `Maya3TTS.from_pretrained("maya-research/maya2-native", max_seats=N)`, `.generate(text, lang, voice)`, `.register_voice(name, ref_audio, ref_text, lang)`; returns 24 kHz float32. In-process mode is selected explicitly with `AUDIO_SMITH_MAYA2_MODE=inproc` (the URL always has a default, so it cannot signal the mode); otherwise HTTP.
 
 **Adapter responsibilities**: language-code mapping, voice-id mapping and registration, `speed=1.0` enforcement plus post-synthesis `atempo`, `*word*` emphasis stripped (no inline emotion tags), and capabilities (`cloning: true`, `sample_rate: 24000`, `streaming: true`, `license: "Apache-2.0"`, `commercial_ok: true`).
 

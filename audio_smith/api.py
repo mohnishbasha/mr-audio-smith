@@ -9,21 +9,29 @@ import time
 from collections.abc import Callable
 from pathlib import Path
 
+import soundfile as sf
 from pydantic import BaseModel, Field
 
 from audio_smith.blocks import BlockDoc, Track, content_hash
 from audio_smith.cache import CacheStore
 from audio_smith.cache.keys import blocks_key, script_key
 from audio_smith.config import Settings, load_settings
+from audio_smith.errors import UsageError
 from audio_smith.extract import extract as extract_html
 from audio_smith.fetch import FetchResult, fetch
 from audio_smith.llm import get_provider, provider_label
 from audio_smith.llm.base import LLMProvider
 from audio_smith.paths import atomic_write, ensure_inside, safe_slug
 from audio_smith.profiles import Profile, get_profile
+from audio_smith.script import lexicon
 from audio_smith.script.markdown import Script, ScriptMeta, parse_script, serialize
+from audio_smith.script.validate import plain_text
 from audio_smith.script.writer import PROMPT_VERSION
 from audio_smith.script.writer import write_script as run_writer
+from audio_smith.tts.base import SynthParams, TTSBackend, VoiceRef
+from audio_smith.tts.license import check_license
+from audio_smith.tts.registry import get_backend
+from audio_smith.voices import registry as voice_registry
 
 Fetcher = Callable[[str, Settings], FetchResult]
 _MD_HEADING = re.compile(r"^(#{1,6})\s+(.*)$")
@@ -180,3 +188,65 @@ def write_script(
         result.warnings += pwarn
     result.timings = {"extract": round(t1 - t0, 3), "script": round(time.monotonic() - t1, 3)}
     return result
+
+
+class RenderResult(BaseModel):
+    """Outputs of stage 3 for a script: one WAV per rendered chunk."""
+
+    slug: str
+    out_dir: Path
+    chunk_files: dict[str, Path] = Field(default_factory=dict)
+    backend: str
+    voice: str
+    warnings: list[str] = Field(default_factory=list)
+
+
+def resolve_voice(voice: str | None, backend: TTSBackend, settings: Settings) -> VoiceRef:
+    """Voice flag, else configured default, else the backend's first built-in voice.
+
+    Registered (cloned) voices go through voices.registry.resolve, which enforces consent.
+    """
+    caps = backend.capabilities()
+    voice_id = voice or settings.default_voice or (caps.builtin_voices[0] if caps.builtin_voices else None)
+    if voice_id is None:
+        raise UsageError(
+            f"Backend {backend.id} needs --voice", hint="Register one with `mr-audio-smith voice add`."
+        )
+    return voice_registry.resolve(voice_id, settings, caps)
+
+
+def render_script(
+    script_path: Path,
+    *,
+    chunks: list[str] | None = None,
+    voice: str | None = None,
+    backend: str | None = None,
+    out: Path | None = None,
+    settings: Settings | None = None,
+    tts: TTSBackend | None = None,
+) -> RenderResult:
+    """Synthesize script chunks one at a time (ADR-005), applying the lexicon at synthesis only."""
+    s = _settings(settings)
+    script = parse_script(script_path.read_text(encoding="utf-8"))
+    prof = resolve_profile(script.meta.profile.split("@")[0], s)
+    engine = tts or get_backend(backend or s.default_backend, s)
+    warnings = check_license(engine.id, engine.capabilities(), s.accept_noncommercial)
+    vref = resolve_voice(voice, engine, s)
+    lex = lexicon.merge(prof.lexicon, lexicon.load_project_lexicon(Path(lexicon.PROJECT_LEXICON)))
+    slug = safe_slug(script.meta.source)
+    out_root = (out or s.out_dir).expanduser()
+    out_dir = ensure_inside(out_root, out_root / slug)
+    wanted = {c.zfill(3) for c in chunks} if chunks else None
+    params = SynthParams(lang=script.meta.lang, rate=prof.speech.rate)
+    files: dict[str, Path] = {}
+    for chunk in script.chunks:
+        if wanted is not None and chunk.id not in wanted:
+            continue
+        pcm = engine.synth(lexicon.apply(plain_text(chunk.text), lex), vref, params)
+        path = ensure_inside(out_dir, out_dir / "chunks" / f"{chunk.id}.wav")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        sf.write(path, pcm.samples, pcm.sample_rate, subtype="PCM_16")
+        files[chunk.id] = path
+    return RenderResult(
+        slug=slug, out_dir=out_dir, chunk_files=files, backend=engine.id, voice=vref.id, warnings=warnings
+    )

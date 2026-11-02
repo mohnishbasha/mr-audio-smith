@@ -329,29 +329,29 @@ Conventions: ids follow section 3. Types are Unit, Integration, Smoke, E2E, Regr
 | ID | Scenario | Type | Status |
 |---|---|---|---|
 | `test_tts_registry_lists_five_backends` | maya2, kokoro, openai, openai_compat, mock registered | Unit | ⚠️ Deferred |
-| `test_tts_mock_deterministic_across_runs` | Same text, voice, seed give identical samples | Unit | ⚠️ Deferred |
-| `test_tts_mock_duration_proportional_to_text_length` | Duration scales with characters | Unit | ⚠️ Deferred |
-| `test_tts_mock_pitch_derived_from_voice_id` | Different voices give different pitch | Unit | ⚠️ Deferred |
-| `test_tts_capabilities_flags_per_backend` | Languages, clone, sample rate, license, commercial_ok correct | Unit | ⚠️ Deferred |
-| `test_tts_openai_compat_success_returns_pcm` | 200 WAV decoded to PcmAudio (respx) | Unit | ⚠️ Deferred |
-| `test_tts_openai_compat_4xx_raises_no_retry` | 4xx surfaced immediately | Unit | ⚠️ Deferred |
-| `test_tts_openai_compat_5xx_retries_with_backoff` | 5xx retried | Unit | ⚠️ Deferred |
-| `test_tts_openai_compat_timeout_raises` | Timeout becomes backend error | Unit | ⚠️ Deferred |
-| `test_tts_maya2_request_body_matches_server_contract` | Body has model, input, voice, language, response_format, seed, `speed` fixed at 1.0 | Unit | ⚠️ Deferred |
-| `test_tts_maya2_default_url_port_8080` | Default `AUDIO_SMITH_MAYA2_URL` is `http://127.0.0.1:8080/v1` | Unit | ⚠️ Deferred |
-| `test_tts_maya2_rate_applied_post_synthesis_atempo` | Speaking rate applied by ffmpeg atempo, not sent to the server (ADR-016) | Unit | ⚠️ Deferred |
+| `test_tts_mock_deterministic_across_runs` | Same text, voice, seed give identical samples | Unit | ✅ Automated |
+| `test_tts_mock_duration_proportional_to_text_length` | Duration scales with characters | Unit | ✅ Automated |
+| `test_tts_mock_pitch_derived_from_voice_id` | Different voices give different pitch | Unit | ✅ Automated |
+| `test_tts_capabilities_flags_per_backend` | Languages, clone, sample rate, license, commercial_ok correct | Unit | ✅ Automated |
+| `test_tts_openai_compat_success_returns_pcm` | 200 WAV decoded to PcmAudio (respx) | Unit | ✅ Automated |
+| `test_tts_openai_compat_4xx_raises_no_retry` | 4xx surfaced immediately | Unit | ✅ Automated |
+| `test_tts_openai_compat_5xx_retries_with_backoff` | 5xx retried | Unit | ✅ Automated |
+| `test_tts_openai_compat_timeout_raises` | Timeout becomes backend error | Unit | ✅ Automated |
+| `test_tts_maya2_request_body_matches_server_contract` | Body has model, input, voice, language, response_format, seed, `speed` fixed at 1.0 | Unit | ✅ Automated |
+| `test_tts_maya2_default_url_port_8080` | Default `AUDIO_SMITH_MAYA2_URL` is `http://127.0.0.1:8080/v1` | Unit | ✅ Automated |
+| `test_tts_maya2_rate_applied_post_synthesis_atempo` | Speaking rate applied by ffmpeg atempo, not sent to the server (ADR-016) | Unit | ✅ Automated |
 | `test_tts_maya2_pause_markers_split_into_separate_requests` | No inline tags; pauses become silences | Unit | ⚠️ Deferred |
 | `test_tts_maya2_emphasis_markers_stripped` | `*emphasis*` removed before the request | Unit | ⚠️ Deferred |
-| `test_tts_maya2_registers_clone_via_voices_endpoint_idempotent` | POST /v1/voices with `as-{voice_id}-{clip_hash[:8]}`; 409 treated as ok | Unit | ⚠️ Deferred |
-| `test_tts_maya2_503_not_ready_retries_with_retry_after` | 503 honored before failing | Unit | ⚠️ Deferred |
-| `test_tts_maya2_supports_all_12_languages` | Capabilities list as, bn, en, gu, hi, kn, ml, mr, or, pa, ta, te | Unit | ⚠️ Deferred |
-| `test_tts_maya2_inproc_mode_requires_extra` | `--maya2-mode inproc` errors with hint when `maya2` extra missing | Unit | ⚠️ Deferred |
-| `test_tts_license_guard_noncommercial_requires_flag` | `commercial_ok: false` without `--accept-noncommercial` refuses | Unit | ⚠️ Deferred |
-| `test_tts_license_guard_flag_recorded_in_manifest_warnings` | Accepted noncommercial use is logged in the manifest | Unit | ⚠️ Deferred |
+| `test_tts_maya2_registers_clone_via_voices_endpoint_idempotent` | POST /v1/voices with `as-{voice_id}-{clip_hash[:8]}`; 409 treated as ok | Unit | ✅ Automated |
+| `test_tts_maya2_503_not_ready_retries_with_retry_after` | 503 honored before failing | Unit | ✅ Automated |
+| `test_tts_maya2_supports_all_12_languages` | Capabilities list as, bn, en, gu, hi, kn, ml, mr, or, pa, ta, te | Unit | ✅ Automated |
+| `test_tts_maya2_inproc_mode_requires_extra` | `--maya2-mode inproc` errors with hint when `maya2` extra missing | Unit | ✅ Automated |
+| `test_tts_license_guard_noncommercial_requires_flag` | `commercial_ok: false` without `--accept-noncommercial` refuses | Unit | ✅ Automated |
+| `test_tts_license_guard_flag_recorded_in_manifest_warnings` | Accepted noncommercial use is logged in the manifest | Unit | ✅ Automated |
 | `it_maya2_synth_clone_returns_24khz_mono` | Maya 2 integration | Integration | ❌ Skipped: no GPU runner in default CI (marker `gpu`, needs `AUDIO_SMITH_IT_MAYA2_URL`). Manual step: start `python -m maya3.server --ckpt maya-research/maya2-native --host 127.0.0.1 --port 8080`, then `AUDIO_SMITH_IT_MAYA2_URL=http://127.0.0.1:8080/v1 pytest -m "integration and gpu"` |
 | `it_maya2_synth_builtin_voice_returns_audio` | Built-in voice (for example Ahana) renders | Integration | ❌ Skipped: no GPU runner. Manual step: same server as above, run the `gpu` marker subset |
 | `it_maya2_health_reports_loaded_model` | Doctor reports reachability and loaded model | Integration | ❌ Skipped: no GPU runner. Manual step: run `mr-audio-smith doctor` against a live Maya 2 server and confirm the backend row is OK |
-| `it_kokoro_synth_cpu_returns_audio` | Kokoro integration | Integration | ⚠️ Deferred |
+| `it_kokoro_synth_cpu_returns_audio` | Kokoro integration | Integration | ✅ Automated |
 | `it_kokoro_weights_checksum_verified` | First-use download verified against the pinned checksum | Integration | ⚠️ Deferred |
 | `it_openai_compat_local_stub_server_roundtrip` | Real HTTP against a local stub speech server | Integration | ⚠️ Deferred |
 
@@ -359,22 +359,22 @@ Conventions: ids follow section 3. Types are Unit, Integration, Smoke, E2E, Regr
 
 | ID | Scenario | Type | Status |
 |---|---|---|---|
-| `test_consent_clone_unregistered_voice_raises` | Consent enforced in core | Unit | ⚠️ Deferred |
-| `test_consent_registration_requires_all_fields` | Name, relationship, date, statement all required | Unit | ⚠️ Deferred |
-| `test_consent_relationship_only_self_or_written_permission` | Other relationship values rejected | Unit | ⚠️ Deferred |
-| `test_consent_enforced_from_python_api_and_cli_and_server` | `voices.registry.resolve()` guards every front door | Unit | ⚠️ Deferred |
-| `test_consent_backend_refuses_clone_without_registry_entry` | Backend-level refusal | Unit | ⚠️ Deferred |
-| `test_clipcheck_too_short_rejected` | Clip quality gate | Unit | ⚠️ Deferred |
-| `test_clipcheck_too_long_over_30s_rejected` | Duration above 30 s rejected | Unit | ⚠️ Deferred |
-| `test_clipcheck_sample_rate_below_16khz_rejected` | Low sample rate rejected | Unit | ⚠️ Deferred |
-| `test_clipcheck_clipping_over_0_1_percent_rejected` | `voices/clipped.wav` fails | Unit | ⚠️ Deferred |
-| `test_clipcheck_snr_below_25db_rejected` | `voices/noisy.wav` fails | Unit | ⚠️ Deferred |
-| `test_clipcheck_stereo_downmixed_to_mono` | Stereo accepted and downmixed | Unit | ⚠️ Deferred |
-| `test_clipcheck_clean_fixture_passes` | `voices/clean.wav` passes | Unit | ⚠️ Deferred |
-| `test_voices_add_stores_24k_mono_reference_copy` | `reference.24k.wav` written; clip hash computed | Unit | ⚠️ Deferred |
-| `test_voices_list_check_remove_commands` | Registry CRUD works | Unit | ⚠️ Deferred |
-| `test_voices_gitignore_blocks_reference_wav` | Real clips under `voices/*/reference.wav` are ignored; fixtures are not | Unit | ⚠️ Deferred |
-| `test_cli_voice_add_interactive_consent_prompt` | Interactive consent flow completes | Unit | ⚠️ Deferred |
+| `test_consent_clone_unregistered_voice_raises` | Consent enforced in core | Unit | ✅ Automated |
+| `test_consent_registration_requires_all_fields` | Name, relationship, date, statement all required | Unit | ✅ Automated |
+| `test_consent_relationship_only_self_or_written_permission` | Other relationship values rejected | Unit | ✅ Automated |
+| `test_consent_enforced_from_python_api_and_cli_and_server` | `voices.registry.resolve()` guards every front door | Unit | ✅ Automated |
+| `test_consent_backend_refuses_clone_without_registry_entry` | Backend-level refusal | Unit | ✅ Automated |
+| `test_clipcheck_too_short_rejected` | Clip quality gate | Unit | ✅ Automated |
+| `test_clipcheck_too_long_over_30s_rejected` | Duration above 30 s rejected | Unit | ✅ Automated |
+| `test_clipcheck_sample_rate_below_16khz_rejected` | Low sample rate rejected | Unit | ✅ Automated |
+| `test_clipcheck_clipping_over_0_1_percent_rejected` | `voices/clipped.wav` fails | Unit | ✅ Automated |
+| `test_clipcheck_snr_below_25db_rejected` | `voices/noisy.wav` fails | Unit | ✅ Automated |
+| `test_clipcheck_stereo_downmixed_to_mono` | Stereo accepted and downmixed | Unit | ✅ Automated |
+| `test_clipcheck_clean_fixture_passes` | `voices/clean.wav` passes | Unit | ✅ Automated |
+| `test_voices_add_stores_24k_mono_reference_copy` | `reference.24k.wav` written; clip hash computed | Unit | ✅ Automated |
+| `test_voices_list_check_remove_commands` | Registry CRUD works | Unit | ✅ Automated |
+| `test_voices_gitignore_blocks_reference_wav` | Real clips under `voices/*/reference.wav` are ignored; fixtures are not | Unit | ✅ Automated |
+| `test_cli_voice_add_interactive_consent_prompt` | Interactive consent flow completes | Unit | ✅ Automated |
 
 ### 5.10 Chunk planner and synthesis runner (FR-009, FR-012)
 
@@ -491,7 +491,7 @@ Conventions: ids follow section 3. Types are Unit, Integration, Smoke, E2E, Regr
 | `test_doctor_each_failure_has_fix_hint` | Hints present for every check | Unit | ✅ Automated |
 | `test_doctor_json_output_schema` | `--json` output is valid | Unit | ✅ Automated |
 | `test_doctor_ffmpeg_older_than_6_fails` | ffmpeg below 6.0 flagged | Unit | ✅ Automated |
-| `test_doctor_python_313_hints_kokoro_use_312` | ADR-017 hint | Unit | ⚠️ Deferred |
+| `test_doctor_python_313_hints_kokoro_use_312` | ADR-017 hint | Unit | ✅ Automated |
 | `test_doctor_disk_space_and_cache_writable_checks` | Both checks registered | Unit | ✅ Automated |
 | `test_doctor_gpu_visibility_reported_when_torch_installed` | CUDA check conditional on torch | Unit | ⚠️ Deferred |
 | `test_doctor_backend_and_llm_and_voices_rows_present` | Each backend, LLM provider, voices checked | Unit | ⚠️ Deferred |
@@ -767,6 +767,71 @@ Row count: more than 120 scenarios across 27 tables.
 | `test_script_verbatim_no_sources_is_identity` | script verbatim no sources is identity | Unit | ✅ Automated |
 | `test_script_verbatim_paraphrased_signature_restored_in_place` | script verbatim paraphrased signature restored in place | Unit | ✅ Automated |
 | `test_script_verbatim_signature_moved_to_end` | script verbatim signature moved to end | Unit | ✅ Automated |
+| `test_api_render_applies_lexicon_at_synthesis_only` | api render applies lexicon at synthesis only | Unit | ✅ Automated |
+| `test_api_render_default_voice_is_backend_builtin` | api render default voice is backend builtin | Unit | ✅ Automated |
+| `test_api_render_mock_writes_one_wav_per_chunk` | api render mock writes one wav per chunk | Unit | ✅ Automated |
+| `test_api_render_noncommercial_backend_requires_flag` | api render noncommercial backend requires flag | Unit | ✅ Automated |
+| `test_api_render_registered_voice_with_consent_renders` | api render registered voice with consent renders | Unit | ✅ Automated |
+| `test_api_render_subset_chunks` | api render subset chunks | Unit | ✅ Automated |
+| `test_apply_rate_identity_and_failure` | apply rate identity and failure | Unit | ✅ Automated |
+| `test_backend_checks_failure_and_import_error` | backend checks failure and import error | Unit | ✅ Automated |
+| `test_backend_checks_one_row_per_backend_default_required` | backend checks one row per backend default required | Unit | ✅ Automated |
+| `test_chatterbox_builtin_voice_no_consent` | chatterbox builtin voice no consent | Unit | ✅ Automated |
+| `test_chatterbox_clone_requires_consent` | chatterbox clone requires consent | Unit | ✅ Automated |
+| `test_chatterbox_clone_without_reference_raises` | chatterbox clone without reference raises | Unit | ✅ Automated |
+| `test_chatterbox_device_selection` | chatterbox device selection | Unit | ✅ Automated |
+| `test_chatterbox_missing_package` | chatterbox missing package | Unit | ✅ Automated |
+| `test_chatterbox_preflight_ok` | chatterbox preflight ok | Unit | ✅ Automated |
+| `test_cli_render_mock_produces_wav_chunks` | cli render mock produces wav chunks | Unit | ✅ Automated |
+| `test_cli_voice_add_errors` | cli voice add errors | Unit | ✅ Automated |
+| `test_cli_voice_add_explicit_statement_and_unreadable_clip_check` | cli voice add explicit statement and unreadable clip check | Unit | ✅ Automated |
+| `test_cli_voice_check_clip_problems_exit_3` | cli voice check clip problems exit 3 | Unit | ✅ Automated |
+| `test_clipcheck_edge_cases` | clipcheck edge cases | Unit | ✅ Automated |
+| `test_consent_enforced_from_cli_unregistered_voice_exit_8` | consent enforced from cli unregistered voice exit 8 | Unit | ✅ Automated |
+| `test_consent_enforced_from_python_api_unregistered_voice` | consent enforced from python api unregistered voice | Unit | ✅ Automated |
+| `test_consent_hash_mismatch_after_tamper_raises` | consent hash mismatch after tamper raises | Unit | ✅ Automated |
+| `test_consent_record_edge_cases` | consent record edge cases | Unit | ✅ Automated |
+| `test_doctor_default_checks_include_tts` | doctor default checks include tts | Unit | ✅ Automated |
+| `test_doctor_voices_check` | doctor voices check | Unit | ✅ Automated |
+| `test_get_backend_kokoro_and_chatterbox_lazy` | get backend kokoro and chatterbox lazy | Unit | ✅ Automated |
+| `test_get_backend_mock_and_unknown` | get backend mock and unknown | Unit | ✅ Automated |
+| `test_gpu_check` | gpu check | Unit | ✅ Automated |
+| `test_is_local_host` | is local host | Unit | ✅ Automated |
+| `test_kokoro_empty_audio_raises` | kokoro empty audio raises | Unit | ✅ Automated |
+| `test_kokoro_lang_code_from_voice` | kokoro lang code from voice | Unit | ✅ Automated |
+| `test_kokoro_preflight_clean` | kokoro preflight clean | Unit | ✅ Automated |
+| `test_kokoro_preflight_espeak_missing_warning` | kokoro preflight espeak missing warning | Unit | ✅ Automated |
+| `test_kokoro_preflight_missing_package` | kokoro preflight missing package | Unit | ✅ Automated |
+| `test_kokoro_preflight_reports_weights_mismatch` | kokoro preflight reports weights mismatch | Unit | ✅ Automated |
+| `test_kokoro_rate_passthrough` | kokoro rate passthrough | Unit | ✅ Automated |
+| `test_kokoro_rejects_non_builtin_voice` | kokoro rejects non builtin voice | Unit | ✅ Automated |
+| `test_kokoro_synth_concatenates_chunks` | kokoro synth concatenates chunks | Unit | ✅ Automated |
+| `test_kokoro_synth_without_package_raises` | kokoro synth without package raises | Unit | ✅ Automated |
+| `test_kokoro_weights_checksum` | kokoro weights checksum | Unit | ✅ Automated |
+| `test_maya2_hash_derived_when_missing` | maya2 hash derived when missing | Unit | ✅ Automated |
+| `test_maya2_inproc_with_fake_module` | maya2 inproc with fake module | Unit | ✅ Automated |
+| `test_maya2_preflight_ok_loading_unreachable` | maya2 preflight ok loading unreachable | Unit | ✅ Automated |
+| `test_maya2_registration_conflict_and_exists_are_success` | maya2 registration conflict and exists are success | Unit | ✅ Automated |
+| `test_maya2_registration_failures` | maya2 registration failures | Unit | ✅ Automated |
+| `test_maya2_unsupported_language_names_supported` | maya2 unsupported language names supported | Unit | ✅ Automated |
+| `test_normalize_resamples_and_peaks_at_minus_1_dbfs` | normalize resamples and peaks at minus 1 dbfs | Unit | ✅ Automated |
+| `test_openai_compat_invalid_wav_raises` | openai compat invalid wav raises | Unit | ✅ Automated |
+| `test_openai_compat_preflight_local_and_unreachable` | openai compat preflight local and unreachable | Unit | ✅ Automated |
+| `test_openai_preflight_cloud_warning_and_key` | openai preflight cloud warning and key | Unit | ✅ Automated |
+| `test_pcm_duration_zero_rate` | pcm duration zero rate | Unit | ✅ Automated |
+| `test_registry_maya2_and_openai_factories_delegate` | registry maya2 and openai factories delegate | Unit | ✅ Automated |
+| `test_resolve_builtin_vs_cloned` | resolve builtin vs cloned | Unit | ✅ Automated |
+| `test_scan_voices_reports_invalid` | scan voices reports invalid | Unit | ✅ Automated |
+| `test_to_float32_int16_and_stereo` | to float32 int16 and stereo | Unit | ✅ Automated |
+| `test_tts_chatterbox_rate_applied_post_synthesis` | tts chatterbox rate applied post synthesis | Unit | ✅ Automated |
+| `test_tts_registry_lists_all_backends` | tts registry lists all backends | Unit | ✅ Automated |
+| `test_voices_add_rejects_bad_input` | voices add rejects bad input | Unit | ✅ Automated |
+| `test_voices_check_clip_problem_when_clip_degrades` | voices check clip problem when clip degrades | Unit | ✅ Automated |
+| `test_voices_check_reports_clip_and_consent_problems` | voices check reports clip and consent problems | Unit | ✅ Automated |
+| `test_voices_check_warns_and_fixes_broad_permissions` | voices check warns and fixes broad permissions | Unit | ✅ Automated |
+| `test_voices_cli_add_list_check_remove` | voices cli add list check remove | Unit | ✅ Automated |
+| `test_voices_permissions_0700_dir_0600_files` | voices permissions 0700 dir 0600 files | Unit | ✅ Automated |
+| `test_cli_main_prints_code_and_violations` | cli main prints code and violations | Unit | ✅ Automated |
 
 ## 6. Listening test protocol
 

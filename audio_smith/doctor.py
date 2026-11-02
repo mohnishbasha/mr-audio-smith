@@ -117,11 +117,37 @@ def core_checks() -> list[Check]:
     ]
 
 
+def voices_check(settings: Settings) -> CheckResult:
+    """List registered voices and flag any whose record, consent, or permissions are invalid."""
+    from audio_smith.voices.registry import check_voice, scan_voices  # noqa: PLC0415
+
+    voices_dir = settings.resolved(settings.voices_dir)
+    valid, invalid = scan_voices(voices_dir)
+    bad = dict(invalid)
+    for v in valid:
+        res = check_voice(voices_dir, v.id)
+        if not res.ok or res.warnings:
+            bad[v.id] = "; ".join([res.consent_error or "", *res.clip_problems, *res.warnings]).strip("; ")
+    names = ", ".join(v.id for v in valid) or "none registered"
+    if not bad:
+        return CheckResult(name="voices", ok=True, required=False, detail=names)
+    detail = "; ".join(f"{k}: {v}" for k, v in bad.items())
+    return CheckResult(
+        name="voices",
+        ok=False,
+        required=False,
+        detail=detail,
+        hint="Run `mr-audio-smith voice check <id>` (add --fix for permissions) or re-add with --replace.",
+    )
+
+
 def default_checks() -> list[Check]:
     """Core checks plus contributions from later stages (backends, LLM, voices)."""
     from audio_smith.llm.checks import llm_check  # noqa: PLC0415
+    from audio_smith.tts.checks import backend_checks, gpu_check  # noqa: PLC0415
 
-    return [*core_checks(), Check(name="llm", run=llm_check)]
+    checks = [*core_checks(), Check(name="llm", run=llm_check), Check(name="voices", run=voices_check)]
+    return [*checks, *backend_checks(Settings()), Check(name="gpu", run=gpu_check)]
 
 
 def run_checks(settings: Settings, checks: list[Check]) -> DoctorReport:

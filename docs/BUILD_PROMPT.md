@@ -55,6 +55,8 @@ prompt stays accurate. Inline text below has been corrected where it was factual
 - New helper modules: `audio_smith/proc.py` (the only place subprocesses start: argument arrays, timeouts), `audio_smith/paths.py` (`safe_slug`, `ensure_inside`, `atomic_write`), `audio_smith/preflight.py` (`PreflightIssue`), `audio_smith/cli_commands.py` (stage commands; also a front door under the import-linter contract).
 - Dependencies: `selectolax>=1.0` with the lexbor backend; `typer` vendors click (do not import click); `audioop-lts` on Python 3.13 for pydub.
 
+- Sprint 2: in-process Maya 2 is selected with `AUDIO_SMITH_MAYA2_MODE=inproc`; Chatterbox, like Maya 2, applies rate after synthesis; `require_consent()` re-reads the voice record and re-hashes the clip inside every cloning backend; the installed `openai` SDK uses `httpx2`, so SDK calls are tested with an injected client and mock transport while plain httpx calls use respx; a minimal `render` command lands in Sprint 2 (per-chunk WAVs) and Sprint 3 extends it with the chunk planner, cache, QA, and mastering.
+
 **Tooling added**
 - `scripts/sync-test-plan.py` marks TEST_PLAN rows Automated when a test with that exact id exists and appends unplanned tests to section 5.28; CI runs it with `--check`.
 - `scripts/record-llm.py` (`make record-llm`) records real Ollama responses into `tests/fixtures/llm/` for the fake provider; the golden script is the replay of that recording.
