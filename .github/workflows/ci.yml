@@ -62,6 +62,9 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
+      - uses: FedericoCarboni/setup-ffmpeg@v3
+        with:
+          ffmpeg-version: release
       - run: uv sync --frozen ${{ env.PY_EXTRAS }}
         shell: bash
       - run: uv run pytest
