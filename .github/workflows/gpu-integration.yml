@@ -18,6 +18,6 @@ jobs:
       AUDIO_SMITH_IT_MAYA2_URL: ${{ vars.AUDIO_SMITH_IT_MAYA2_URL || 'http://127.0.0.1:8080/v1' }}
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v7
       - run: uv sync --frozen --extra dev --extra qa
       - run: uv run pytest -m "gpu" -o addopts="-ra --strict-markers"
