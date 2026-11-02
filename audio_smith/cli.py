@@ -67,9 +67,11 @@ register(app, console)
 def _print_error(err: AudioSmithError, debug: bool) -> None:
     if debug:
         err_console.print_exception()
-    err_console.print(f"error [{err.code}]: {err.message}")
+    err_console.print(f"error [{err.code}]: {err.message}", markup=False)
+    for violation in getattr(err, "violations", []):
+        err_console.print(f"  - {violation}", markup=False)
     if err.hint:
-        err_console.print(f"hint: {err.hint}")
+        err_console.print(f"hint: {err.hint}", markup=False)
 
 
 def main() -> None:
