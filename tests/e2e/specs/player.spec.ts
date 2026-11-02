@@ -142,6 +142,17 @@ test("e2e_US006_player_remembers_position_per_src", async ({ page }) => {
   await page.locator("#default .play").click();
   await expect.poll(() => audioTime(page)).toBeGreaterThan(2.2);
   await page.locator("#default .play").click();
+  // The position is saved asynchronously; wait until it is stored before reloading (slow CI runners).
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          Object.entries(localStorage).find(([k]) =>
+            k.startsWith("as:pos:"),
+          )?.[1] ?? "0",
+      ),
+    )
+    .not.toBe("0");
   await page.reload();
   await expect.poll(() => audioTime(page)).toBeGreaterThanOrEqual(2);
 });
