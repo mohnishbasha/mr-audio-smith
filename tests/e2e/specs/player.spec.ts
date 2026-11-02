@@ -157,6 +157,9 @@ test("e2e_US006_player_remembers_position_per_src", async ({ page }) => {
     )
     .not.toBe("0");
   await page.reload();
+  // With preload="none" nothing loads until the listener presses play; the saved position is
+  // applied when metadata arrives, so playback resumes from about 2 s instead of 0:00.
+  await page.locator("#default .play").click();
   await expect
     .poll(() => audioTime(page), { timeout: 15_000 })
     .toBeGreaterThanOrEqual(2);
