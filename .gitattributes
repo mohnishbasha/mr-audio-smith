@@ -1,0 +1,7 @@
+* text=auto eol=lf
+*.wav binary
+*.mp3 binary
+*.opus binary
+*.png binary
+tests/fixtures/voices/*.wav filter=lfs diff=lfs merge=lfs -text
+assets/stings/*.wav filter=lfs diff=lfs merge=lfs -text

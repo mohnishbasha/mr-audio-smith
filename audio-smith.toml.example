@@ -1,0 +1,10 @@
+# Project configuration for mr-audio-smith. Discovered upward from the working directory.
+# Precedence: CLI flags > AUDIO_SMITH_* environment > this file > defaults.
+# Secrets (keys, tokens) are never read from this file; use environment variables.
+default_profile = "kid-5"
+default_voice = "dad"
+default_backend = "maya2"
+llm = "ollama:qwen3:14b"
+out_dir = "./media/audio"
+voices_dir = "~/.config/audio-smith/voices"
+qa_threshold = 0.75

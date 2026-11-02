@@ -1,0 +1,11 @@
+name: mr-audio-smith narrate
+description: Narrate new or changed pages of a static site with mr-audio-smith and commit the audio.
+inputs:
+  image-tag:
+    description: mr-audio-smith version to install
+    default: 0.0.1
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: echo "implemented in S4-T06"
