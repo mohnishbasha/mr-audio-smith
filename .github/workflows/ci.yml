@@ -62,9 +62,14 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
-      - uses: FedericoCarboni/setup-ffmpeg@v3
-        with:
-          ffmpeg-version: release
+      - name: Install ffmpeg
+        shell: bash
+        run: |
+          case "$RUNNER_OS" in
+            Linux) sudo apt-get update && sudo apt-get install -y ffmpeg ;;
+            macOS) brew install ffmpeg ;;
+            Windows) choco install ffmpeg -y --no-progress ;;
+          esac
       - run: uv sync --frozen ${{ env.PY_EXTRAS }}
         shell: bash
       - run: uv run pytest

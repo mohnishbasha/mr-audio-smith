@@ -5,6 +5,7 @@ Layout: `{voices_dir}/{id}/voice.yaml`, `reference.wav`, `reference.24k.wav`, di
 place a voice id becomes a `VoiceRef`, so every front door inherits consent enforcement.
 """
 
+import os
 import re
 import shutil
 import tempfile
@@ -184,6 +185,9 @@ def remove_voice(voices_dir: Path, voice_id: str) -> None:
 
 
 def _permission_warnings(target: Path, fix: bool) -> list[str]:
+    """POSIX permission audit; native Windows has no mode bits (WSL2 is the supported path there)."""
+    if os.name == "nt":
+        return []
     warnings: list[str] = []
     for path, want in [(target, DIR_MODE), *((p, FILE_MODE) for p in sorted(target.iterdir()))]:
         if path.stat().st_mode & BROAD_BITS:
