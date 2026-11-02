@@ -1,0 +1,92 @@
+# Local stack. GPU host (default):   AUDIO_SMITH_SERVER_TOKEN=change-me docker compose -f deploy/docker-compose.local.yml up --build
+# Laptop, no GPU (CPU + Kokoro):     AUDIO_SMITH_SERVER_TOKEN=change-me docker compose -f deploy/docker-compose.local.yml --profile cpu up --build audio-smith-cpu
+# Naming audio-smith-cpu starts only it and its dependencies (ollama-cpu, ollama-cpu-pull); no Maya 2, no GPU.
+# Do not run both audio-smith services at once: they publish the same port.
+# Maya 2 has NO authentication: it is never published, only reachable on the compose network.
+name: audio-smith
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    volumes: [ollama:/root/.ollama]
+    healthcheck: {test: ["CMD", "ollama", "list"], interval: 10s, retries: 30}
+    deploy: {resources: {reservations: {devices: [{capabilities: [gpu]}]}}}
+  ollama-pull:
+    image: ollama/ollama:latest
+    depends_on: {ollama: {condition: service_healthy}}
+    environment: {OLLAMA_HOST: http://ollama:11434}
+    entrypoint: ["ollama", "pull", "qwen3:14b"]
+    restart: "no"
+  maya2-pull:
+    # Pre-downloads (and optionally checksums) the weights so maya2 starts without network.
+    image: ghcr.io/serverless-ventures/maya2-server:79142d8
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.maya2
+    entrypoint: ["/usr/local/bin/pull-maya2-weights.sh"]
+    environment:
+      HF_HOME: /models/hf-cache
+      MAYA_WEIGHTS_REVISION: ${MAYA_WEIGHTS_REVISION:-main}
+    volumes:
+      - models:/models
+      - ./scripts/pull-maya2-weights.sh:/usr/local/bin/pull-maya2-weights.sh:ro
+    restart: "no"
+  maya2:
+    image: ghcr.io/serverless-ventures/maya2-server:79142d8   # built from upstream; pin digest
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.maya2
+    # The image binds 127.0.0.1; the private compose network needs 0.0.0.0. Nothing is published.
+    command: ["sh", "-c", "exec python -m maya3.server --ckpt maya-research/maya2-native --host 0.0.0.0 --port 8080 --max-seats $${MAYA_MAX_SEATS:-1}"]
+    volumes: [models:/models]
+    depends_on: {maya2-pull: {condition: service_completed_successfully}}
+    healthcheck: {test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"], interval: 15s, retries: 40}
+    deploy: {resources: {reservations: {devices: [{capabilities: [gpu]}]}}}
+  audio-smith:
+    image: ghcr.io/serverless-ventures/mr-audio-smith:${VERSION:-latest}-cuda
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.cuda
+    command: ["serve", "--host", "0.0.0.0"]
+    environment:
+      AUDIO_SMITH_DEFAULT_BACKEND: maya2
+      AUDIO_SMITH_MAYA2_URL: http://maya2:8080/v1
+      OLLAMA_HOST: http://ollama:11434
+      AUDIO_SMITH_SERVER_TOKEN: ${AUDIO_SMITH_SERVER_TOKEN:?set a token}
+    ports: ["127.0.0.1:7340:7340"]
+    volumes: [cache:/var/lib/audio-smith/cache, out:/var/lib/audio-smith/out, voices:/var/lib/audio-smith/voices]
+    depends_on:
+      maya2: {condition: service_healthy}
+      ollama-pull: {condition: service_completed_successfully}
+
+  # ---- CPU profile: laptop, no GPU, Kokoro narration -------------------------------------------------
+  ollama-cpu:
+    profiles: [cpu]
+    image: ollama/ollama:latest
+    volumes: [ollama:/root/.ollama]
+    healthcheck: {test: ["CMD", "ollama", "list"], interval: 10s, retries: 30}
+  ollama-cpu-pull:
+    profiles: [cpu]
+    image: ollama/ollama:latest
+    depends_on: {ollama-cpu: {condition: service_healthy}}
+    environment: {OLLAMA_HOST: http://ollama-cpu:11434}
+    entrypoint: ["ollama", "pull", "${AUDIO_SMITH_CPU_LLM_MODEL:-qwen3:4b}"]
+    restart: "no"
+  audio-smith-cpu:
+    profiles: [cpu]
+    image: ghcr.io/serverless-ventures/mr-audio-smith:${VERSION:-latest}
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.cpu
+    command: ["serve", "--host", "0.0.0.0"]
+    environment:
+      AUDIO_SMITH_DEFAULT_BACKEND: kokoro
+      AUDIO_SMITH_LLM: ollama:${AUDIO_SMITH_CPU_LLM_MODEL:-qwen3:4b}
+      OLLAMA_HOST: http://ollama-cpu:11434
+      AUDIO_SMITH_SERVER_TOKEN: ${AUDIO_SMITH_SERVER_TOKEN:?set a token}
+    ports: ["127.0.0.1:7340:7340"]
+    volumes: [cache:/var/lib/audio-smith/cache, out:/var/lib/audio-smith/out, voices:/var/lib/audio-smith/voices]
+    depends_on:
+      ollama-cpu-pull: {condition: service_completed_successfully}
+
+volumes: {ollama: {}, models: {}, cache: {}, out: {}, voices: {}}

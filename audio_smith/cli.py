@@ -1,9 +1,9 @@
 """Command line front door. A thin layer: parse flags, call the API, map errors to exit codes."""
 
 import sys
+from enum import StrEnum
 from typing import Annotated
 
-import click
 import typer
 from rich.console import Console
 from rich.table import Table
@@ -14,13 +14,20 @@ from audio_smith.config import load_settings
 from audio_smith.errors import AudioSmithError
 from audio_smith.logging import configure_logging
 
+
+class LogFormat(StrEnum):
+    """Choices for --log-format (typer vendors click, so click must not be imported directly)."""
+
+    PRETTY = "pretty"
+    JSON = "json"
+
+
 app = typer.Typer(
     name="mr-audio-smith",
     help="Turn any web page into an audience-tuned narration. Every page deserves a voice.",
     no_args_is_help=True,
     add_completion=False,
 )
-LOG_FORMATS = ["pretty", "json"]
 console = Console()
 err_console = Console(stderr=True)
 
@@ -38,16 +45,15 @@ def _root(
     ] = False,
     debug: Annotated[bool, typer.Option("--debug", help="Show stack traces on errors.")] = False,
     log_format: Annotated[
-        str | None,
+        LogFormat | None,
         typer.Option(
             "--log-format",
-            click_type=click.Choice(LOG_FORMATS),
             help="Log rendering on stderr: pretty or json (default: AUDIO_SMITH_LOG_FORMAT).",
         ),
     ] = None,
 ) -> None:
     """mr-audio-smith command line."""
-    settings = load_settings({"log_format": log_format})
+    settings = load_settings({"log_format": log_format.value if log_format else None})
     configure_logging(settings.log_format, settings.log_level)
 
 

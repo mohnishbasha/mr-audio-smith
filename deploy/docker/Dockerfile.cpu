@@ -1,0 +1,118 @@
+# syntax=docker/dockerfile:1.7
+#
+# mr-audio-smith CPU image: REST API + MCP + Kokoro (CPU) + QA. Default backend is kokoro so the
+# image works on a laptop with no GPU; point AUDIO_SMITH_MAYA2_URL at a Maya 2 server to use Maya 2.
+#
+# Build (from the repo root):   docker build -f deploy/docker/Dockerfile.cpu -t mr-audio-smith:cpu .
+# Multi-arch (amd64, arm64):    docker buildx build --platform linux/amd64,linux/arm64 -f deploy/docker/Dockerfile.cpu .
+#
+# Why not distroless: the pipeline shells out to ffmpeg (mastering, atempo, metadata) and Kokoro needs
+# espeak-ng, so a shell-less static base is not feasible. The runtime is python:3.12-slim with only those
+# packages, a non-root user (uid 10001), no package manager caches, and a read-only-rootfs friendly layout.
+# Python 3.12 is required by the Kokoro extra (ADR-017).
+
+ARG PYTHON_IMAGE=python:3.12-slim
+ARG NODE_IMAGE=node:22-slim
+ARG UV_VERSION=0.13.5
+
+# ---- Stage 1: UI bundles (Studio + player) ---------------------------------------------------------
+FROM ${NODE_IMAGE} AS ui
+WORKDIR /src
+# The player bundles with bun (package.json "build"); npm ci installs the rest.
+RUN npm install -g bun@1 --no-audit --no-fund
+COPY web/studio/package.json web/studio/package-lock.json web/studio/
+RUN cd web/studio && npm ci --no-audit --no-fund
+COPY player/package.json player/package-lock.json player/
+RUN cd player && npm ci --no-audit --no-fund
+COPY web/studio web/studio
+COPY player player
+# vite.config.ts writes to ../../audio_smith/studio/static
+RUN cd /src/web/studio && npm run build
+RUN cd /src/player && npm run build \
+ && mkdir -p /src/audio_smith/_assets/player \
+ && cp /src/player/dist/audio-smith-player.js /src/audio_smith/_assets/player/
+
+# ---- Stage 2: wheel + virtualenv --------------------------------------------------------------------
+FROM ${PYTHON_IMAGE} AS builder
+ARG UV_VERSION
+ENV UV_LINK_MODE=copy UV_COMPILE_BYTECODE=1 UV_PYTHON_DOWNLOADS=never PIP_DISABLE_PIP_VERSION_CHECK=1
+# A compiler is needed for sdist-only dependencies (webrtcvad, from resemblyzer); it stays in this stage.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends build-essential \
+ && rm -rf /var/lib/apt/lists/* \
+ && pip install --no-cache-dir "uv==${UV_VERSION}"
+WORKDIR /src
+COPY pyproject.toml uv.lock README.md LICENSE THIRD_PARTY_LICENSES.md CHANGELOG.md ./
+COPY audio_smith audio_smith
+COPY schemas schemas
+COPY assets assets
+COPY --from=ui /src/audio_smith/studio/static audio_smith/studio/static
+COPY --from=ui /src/audio_smith/_assets/player audio_smith/_assets/player
+RUN uv build --wheel --out-dir /wheels
+# CPU torch first (the PyPI torch pulls ~3 GB of nvidia-* wheels), then the locked dependency set
+# minus torch and its CUDA satellites, then the app wheel without re-resolving.
+RUN python -m venv /opt/venv \
+ && uv pip install --python /opt/venv/bin/python --index-url https://download.pytorch.org/whl/cpu "torch>=2.4" \
+ && uv export --frozen --no-dev --no-emit-project --no-hashes \
+      --extra server --extra mcp --extra kokoro \
+    | grep -Ev '^(torch|triton|nvidia-|cuda-)' > /tmp/requirements.txt \
+ && uv pip install --python /opt/venv/bin/python -r /tmp/requirements.txt \
+ && uv pip install --python /opt/venv/bin/python --no-deps /wheels/*.whl \
+ && SP=/opt/venv/lib/python3.12/site-packages \
+ && rm -rf "$SP/torch/include" "$SP/torch/test" \
+ && find "$SP" -type d \( -name tests -o -name test \) -prune -exec rm -rf {} + \
+ && find "$SP" -name '*.a' -delete \
+ && find "$SP" -name '*.so*' -type f -exec strip --strip-unneeded {} + 2>/dev/null || true
+
+# ---- Stage 3: runtime -------------------------------------------------------------------------------
+# Static ffmpeg/ffprobe (about 80 MB) instead of Debian's ffmpeg package (about 450 MB of shared
+# libraries) keeps the CPU image under the 1.5 GB target. Pin by digest in production builds.
+FROM mwader/static-ffmpeg:7.1 AS ffmpeg
+
+FROM ${PYTHON_IMAGE} AS runtime
+ARG VERSION=dev
+LABEL org.opencontainers.image.title="mr-audio-smith" \
+      org.opencontainers.image.description="Page-to-narration service (REST + MCP), CPU profile" \
+      org.opencontainers.image.source="https://github.com/mohnishbasha/mr-audio-smith" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.version="${VERSION}"
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends espeak-ng libsndfile1 ca-certificates \
+ && rm -rf /var/lib/apt/lists/* /var/cache/apt/* \
+ && groupadd --gid 10001 audio-smith \
+ && useradd --uid 10001 --gid 10001 --no-create-home --shell /usr/sbin/nologin --home-dir /var/lib/audio-smith/cache/home audio-smith \
+ && mkdir -p /var/lib/audio-smith/cache /var/lib/audio-smith/out /var/lib/audio-smith/voices \
+ && chmod 0700 /var/lib/audio-smith/voices \
+ && chown -R 10001:10001 /var/lib/audio-smith
+
+COPY --from=builder /opt/venv /opt/venv
+COPY --from=ffmpeg /ffmpeg /ffprobe /usr/local/bin/
+
+# Everything the process writes lives under /var/lib/audio-smith (mount volumes there) or /tmp (tmpfs),
+# so the root filesystem can be read-only.
+ENV PATH=/opt/venv/bin:$PATH \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    HOME=/var/lib/audio-smith/cache/home \
+    XDG_CACHE_HOME=/var/lib/audio-smith/cache/xdg \
+    XDG_CONFIG_HOME=/var/lib/audio-smith/cache/home/.config \
+    HF_HOME=/var/lib/audio-smith/cache/hf \
+    NUMBA_CACHE_DIR=/var/lib/audio-smith/cache/numba \
+    MPLCONFIGDIR=/var/lib/audio-smith/cache/mpl \
+    AUDIO_SMITH_ENV=stage \
+    AUDIO_SMITH_LOG_FORMAT=json \
+    AUDIO_SMITH_CACHE_DIR=/var/lib/audio-smith/cache \
+    AUDIO_SMITH_OUT_DIR=/var/lib/audio-smith/out \
+    AUDIO_SMITH_VOICES_DIR=/var/lib/audio-smith/voices \
+    AUDIO_SMITH_DEFAULT_BACKEND=kokoro
+
+USER 10001:10001
+WORKDIR /var/lib/audio-smith/out
+EXPOSE 7340
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD ["python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:7340/healthz', timeout=3).status == 200 else 1)"]
+
+ENTRYPOINT ["mr-audio-smith"]
+# Binding 0.0.0.0 requires AUDIO_SMITH_SERVER_TOKEN; the server refuses to start without it.
+CMD ["serve", "--host", "0.0.0.0"]

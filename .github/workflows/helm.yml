@@ -1,0 +1,75 @@
+name: helm
+
+# Chart checks: lint + template for every values file, then chart-testing install in kind with the CPU
+# profile (mock backend, no GPU). The CPU image is built in the job and loaded into the cluster.
+
+on:
+  pull_request:
+    paths:
+      - "charts/**"
+      - "deploy/**"
+      - "pyproject.toml"
+      - ".github/workflows/helm.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: helm-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-template:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - name: helm lint and template for each values file
+        run: |
+          C=charts/mr-audio-smith
+          helm lint "$C"
+          helm template t "$C" > /dev/null
+          for v in values-k3s-gpu.yaml values-ci.yaml; do
+            helm lint "$C" -f "$C/$v"
+            helm template t "$C" -f "$C/$v" > /dev/null
+          done
+      - name: Compose files validate
+        env:
+          AUDIO_SMITH_SERVER_TOKEN: ci
+          AUDIO_SMITH_DOMAIN: narrate.example.com
+          ACME_EMAIL: ops@example.com
+        run: |
+          docker compose -f deploy/docker-compose.local.yml config -q
+          docker compose -f deploy/docker-compose.local.yml --profile cpu config -q
+          docker compose -f deploy/docker-compose.prod.yml config -q
+
+  install-kind:
+    needs: lint-template
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: docker/setup-buildx-action@v3
+      - name: Build the CPU image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deploy/docker/Dockerfile.cpu
+          load: true
+          tags: mr-audio-smith:ci
+          cache-from: type=gha,scope=cpu
+          cache-to: type=gha,scope=cpu,mode=max
+      - uses: azure/setup-helm@v4
+      - uses: helm/chart-testing-action@v2.7.0
+      - uses: helm/kind-action@v1
+        with:
+          cluster_name: chart-testing
+      - name: Load the image into kind
+        run: kind load docker-image mr-audio-smith:ci --name chart-testing
+      - name: ct install (CPU profile)
+        run: |
+          ct install \
+            --charts charts/mr-audio-smith \
+            --helm-extra-args "--timeout 300s --values charts/mr-audio-smith/values-ci.yaml"

@@ -1,0 +1,13 @@
+# Goose extension for mr-audio-smith (MCP over stdio).
+# Merge the `extensions` entry into ~/.config/goose/config.yaml, or add it with
+# `goose configure` -> Add Extension -> Command-line Extension using the same command.
+extensions:
+  mr-audio-smith:
+    name: mr-audio-smith
+    type: stdio
+    cmd: mr-audio-smith
+    args: [mcp, --transport, stdio]
+    enabled: true
+    timeout: 1800 # narrating a long page on CPU can take several minutes
+    description: Turn a web page into an audience-tuned narration (MP3, captions, player embed).
+    envs: {}

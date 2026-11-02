@@ -1,0 +1,153 @@
+{{- if include "mr-audio-smith.mayaEnabled" . }}
+{{- if .Values.maya2.weights.sha256sums }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mr-audio-smith.fullname" . }}-maya2-weights
+  labels:
+    {{- include "mr-audio-smith.labels" (dict "ctx" . "component" "maya2") | nindent 4 }}
+data:
+  SHA256SUMS: |
+    {{- .Values.maya2.weights.sha256sums | nindent 4 }}
+---
+{{- end }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "mr-audio-smith.fullname" . }}-maya2
+  labels:
+    {{- include "mr-audio-smith.labels" (dict "ctx" . "component" "maya2") | nindent 4 }}
+spec:
+  serviceName: {{ include "mr-audio-smith.fullname" . }}-maya2
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "mr-audio-smith.selectorLabels" (dict "ctx" . "component" "maya2") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "mr-audio-smith.selectorLabels" (dict "ctx" . "component" "maya2") | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      {{- with .Values.maya2.runtimeClassName }}
+      runtimeClassName: {{ . }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: pull-weights
+          image: "{{ .Values.maya2.image.repository }}:{{ .Values.maya2.image.tag }}"
+          imagePullPolicy: {{ .Values.maya2.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          env:
+            - {name: HF_HOME, value: /models/hf-cache}
+            - {name: HOME, value: /tmp}
+            - {name: WEIGHTS_REPO, value: {{ .Values.maya2.weights.repo | quote }}}
+            - {name: WEIGHTS_REVISION, value: {{ .Values.maya2.weights.revision | quote }}}
+          command:
+            - sh
+            - -c
+            - |
+              set -eu
+              mkdir -p "$HF_HOME"
+              if command -v huggingface-cli >/dev/null 2>&1; then DL="huggingface-cli download"; else DL="hf download"; fi
+              echo "pulling $WEIGHTS_REPO@$WEIGHTS_REVISION into $HF_HOME"
+              SNAP="$($DL "$WEIGHTS_REPO" --revision "$WEIGHTS_REVISION" | tail -n 1)"
+              if [ -f /checksums/SHA256SUMS ]; then
+                echo "verifying checksums"
+                (cd "$SNAP" && sha256sum -c /checksums/SHA256SUMS)
+              else
+                echo "no checksum file configured; skipping verification"
+              fi
+              echo "weights ready: $SNAP"
+          volumeMounts:
+            - {name: models, mountPath: /models}
+            - {name: tmp, mountPath: /tmp}
+            {{- if .Values.maya2.weights.sha256sums }}
+            - {name: checksums, mountPath: /checksums, readOnly: true}
+            {{- end }}
+      containers:
+        - name: maya2
+          image: "{{ .Values.maya2.image.repository }}:{{ .Values.maya2.image.tag }}"
+          imagePullPolicy: {{ .Values.maya2.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          # The image binds 127.0.0.1 (no authentication). The Service and the NetworkPolicy need 0.0.0.0 here.
+          command: ["python", "-m", "maya3.server"]
+          args: ["--ckpt", "maya-research/maya2-native", "--host", "0.0.0.0", "--port", "8080", "--max-seats", {{ .Values.maya2.maxSeats | quote }}]
+          ports:
+            - name: maya2
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - {name: HF_HOME, value: /models/hf-cache}
+            - {name: HOME, value: /tmp}
+            - {name: TRITON_CACHE_DIR, value: /models/hf-cache/triton}
+            {{- if .Values.maya2.weights.offline }}
+            - {name: HF_HUB_OFFLINE, value: "1"}
+            {{- end }}
+            {{- with .Values.maya2.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          startupProbe:
+            httpGet: {path: /health, port: maya2}
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: {{ .Values.maya2.startupFailureThreshold }}
+          readinessProbe:
+            httpGet: {path: /health, port: maya2}
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet: {path: /health, port: maya2}
+            periodSeconds: 30
+            timeoutSeconds: 15
+            failureThreshold: 6
+          resources:
+            {{- $r := deepCopy .Values.maya2.resources }}
+            {{- $_ := set $r "limits" (merge (dict .Values.maya2.gpu.resourceName (.Values.maya2.gpu.count | int)) ($r.limits | default dict)) }}
+            {{- toYaml $r | nindent 12 }}
+          volumeMounts:
+            - {name: models, mountPath: /models}
+            - {name: tmp, mountPath: /tmp}
+      volumes:
+        - name: tmp
+          emptyDir: {sizeLimit: 2Gi}
+        {{- if .Values.maya2.weights.sha256sums }}
+        - name: checksums
+          configMap:
+            name: {{ include "mr-audio-smith.fullname" . }}-maya2-weights
+        {{- end }}
+        {{- if not .Values.maya2.persistence.enabled }}
+        - name: models
+          emptyDir: {}
+        {{- end }}
+      {{- with (default .Values.nodeSelector .Values.maya2.nodeSelector) }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with (default .Values.tolerations .Values.maya2.tolerations) }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  {{- if .Values.maya2.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: models
+      spec:
+        accessModes: [{{ .Values.maya2.persistence.accessMode | quote }}]
+        {{- with .Values.maya2.persistence.storageClass }}
+        storageClassName: {{ . | quote }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.maya2.persistence.size }}
+  {{- end }}
+{{- end }}

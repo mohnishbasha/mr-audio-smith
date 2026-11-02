@@ -1,0 +1,129 @@
+{{- if .Values.vllm.enabled }}
+# Optional OpenAI-compatible LLM endpoint (instead of Ollama), e.g. on NVIDIA Grace arm64 nodes.
+# The upstream image writes compile caches and is not read-only-rootfs clean, so this one container relaxes
+# readOnlyRootFilesystem; it is still non-root, has no extra capabilities, and is only reachable from the API pods.
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "mr-audio-smith.fullname" . }}-vllm
+  labels:
+    {{- include "mr-audio-smith.labels" (dict "ctx" . "component" "vllm") | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - {name: http, port: 8000, targetPort: http, protocol: TCP}
+  selector:
+    {{- include "mr-audio-smith.selectorLabels" (dict "ctx" . "component" "vllm") | nindent 4 }}
+{{- if .Values.vllm.persistence.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "mr-audio-smith.fullname" . }}-vllm
+  labels:
+    {{- include "mr-audio-smith.labels" (dict "ctx" . "component" "vllm") | nindent 4 }}
+  annotations:
+    helm.sh/resource-policy: keep
+spec:
+  accessModes: [{{ .Values.vllm.persistence.accessMode | quote }}]
+  {{- with .Values.vllm.persistence.storageClass }}
+  storageClassName: {{ . | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.vllm.persistence.size }}
+{{- end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mr-audio-smith.fullname" . }}-vllm
+  labels:
+    {{- include "mr-audio-smith.labels" (dict "ctx" . "component" "vllm") | nindent 4 }}
+spec:
+  replicas: 1
+  strategy: {type: Recreate}
+  selector:
+    matchLabels:
+      {{- include "mr-audio-smith.selectorLabels" (dict "ctx" . "component" "vllm") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "mr-audio-smith.selectorLabels" (dict "ctx" . "component" "vllm") | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      {{- with .Values.vllm.runtimeClassName }}
+      runtimeClassName: {{ . }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: vllm
+          image: "{{ .Values.vllm.image.repository }}:{{ .Values.vllm.image.tag }}"
+          imagePullPolicy: {{ .Values.vllm.image.pullPolicy }}
+          args:
+            - --model
+            - {{ .Values.vllm.model | quote }}
+            - --host
+            - 0.0.0.0
+            - --port
+            - "8000"
+            {{- range .Values.vllm.args }}
+            - {{ . | quote }}
+            {{- end }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities: {drop: [ALL]}
+          env:
+            - {name: HOME, value: /tmp}
+            - {name: HF_HOME, value: /cache/hf}
+            - {name: VLLM_CACHE_ROOT, value: /cache/vllm}
+            {{- if .Values.vllm.hfTokenSecret }}
+            - name: HF_TOKEN
+              valueFrom:
+                secretKeyRef: {name: {{ .Values.vllm.hfTokenSecret | quote }}, key: HF_TOKEN}
+            {{- end }}
+          ports:
+            - {name: http, containerPort: 8000, protocol: TCP}
+          startupProbe:
+            httpGet: {path: /health, port: http}
+            periodSeconds: 10
+            failureThreshold: 180
+          readinessProbe:
+            httpGet: {path: /health, port: http}
+            periodSeconds: 10
+          resources:
+            {{- $r := deepCopy .Values.vllm.resources }}
+            {{- $_ := set $r "limits" (merge (dict .Values.vllm.gpu.resourceName (.Values.vllm.gpu.count | int)) ($r.limits | default dict)) }}
+            {{- toYaml $r | nindent 12 }}
+          volumeMounts:
+            - {name: cache, mountPath: /cache}
+            - {name: tmp, mountPath: /tmp}
+            - {name: shm, mountPath: /dev/shm}
+      volumes:
+        - name: cache
+          {{- if .Values.vllm.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "mr-audio-smith.fullname" . }}-vllm
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        - name: tmp
+          emptyDir: {}
+        - name: shm
+          emptyDir: {medium: Memory, sizeLimit: 8Gi}
+      {{- with (default .Values.nodeSelector .Values.vllm.nodeSelector) }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with (default .Values.tolerations .Values.vllm.tolerations) }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

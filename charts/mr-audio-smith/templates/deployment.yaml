@@ -1,0 +1,147 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mr-audio-smith.fullname" . }}
+  labels:
+    {{- include "mr-audio-smith.labels" (dict "ctx" . "component" "api") | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "mr-audio-smith.selectorLabels" (dict "ctx" . "component" "api") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "mr-audio-smith.selectorLabels" (dict "ctx" . "component" "api") | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        checksum/secret: {{ .Values.auth.token | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      {{- with .Values.runtimeClassName }}
+      runtimeClassName: {{ . }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if .Values.initPermissions.enabled }}
+      initContainers:
+        - name: fix-permissions
+          image: "{{ .Values.initPermissions.image.repository }}:{{ .Values.initPermissions.image.tag }}"
+          imagePullPolicy: {{ .Values.initPermissions.image.pullPolicy }}
+          # Root only for this step: voices must be 0700 and owned by the app user (cloned voices are sensitive).
+          command:
+            - sh
+            - -c
+            - |
+              mkdir -p /var/lib/audio-smith/voices /var/lib/audio-smith/cache /var/lib/audio-smith/out
+              chown {{ .Values.podSecurityContext.runAsUser }}:{{ .Values.podSecurityContext.runAsGroup }} /var/lib/audio-smith/voices /var/lib/audio-smith/cache /var/lib/audio-smith/out
+              chmod 0700 /var/lib/audio-smith/voices
+          securityContext:
+            runAsUser: 0
+            runAsNonRoot: false
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL], add: [CHOWN, FOWNER, DAC_OVERRIDE]}
+          volumeMounts:
+            - {name: cache, mountPath: /var/lib/audio-smith/cache}
+            - {name: out, mountPath: /var/lib/audio-smith/out}
+            - {name: voices, mountPath: /var/lib/audio-smith/voices}
+      {{- end }}
+      containers:
+        - name: audio-smith
+          image: {{ include "mr-audio-smith.image" . | quote }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["serve", "--host", "0.0.0.0", "--port", {{ .Values.service.port | quote }}]
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          env:
+            - name: AUDIO_SMITH_ENV
+              value: stage
+            - name: AUDIO_SMITH_LOG_FORMAT
+              value: json
+            - name: AUDIO_SMITH_LOG_LEVEL
+              value: {{ .Values.config.logLevel | quote }}
+            - name: AUDIO_SMITH_DEFAULT_BACKEND
+              value: {{ include "mr-audio-smith.backend" . | quote }}
+            {{- with (include "mr-audio-smith.mayaUrl" .) }}
+            - name: AUDIO_SMITH_MAYA2_URL
+              value: {{ . | quote }}
+            {{- end }}
+            - name: AUDIO_SMITH_LLM
+              value: {{ include "mr-audio-smith.llm" . | quote }}
+            - name: OLLAMA_HOST
+              value: {{ include "mr-audio-smith.ollamaHost" . | quote }}
+            - name: AUDIO_SMITH_ALLOW_PRIVATE
+              value: {{ .Values.config.allowPrivate | quote }}
+            - name: AUDIO_SMITH_SERVER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "mr-audio-smith.secretName" . }}
+                  key: {{ .Values.auth.existingSecretKey }}
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          startupProbe:
+            httpGet: {path: {{ .Values.probes.livenessPath }}, port: http}
+            periodSeconds: 5
+            failureThreshold: 60
+          livenessProbe:
+            httpGet: {path: {{ .Values.probes.livenessPath }}, port: http}
+            periodSeconds: 20
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet: {path: {{ .Values.probes.readinessPath }}, port: http}
+            periodSeconds: 10
+            timeoutSeconds: 5
+          resources:
+            {{- $r := deepCopy .Values.resources }}
+            {{- if .Values.gpu.enabled }}
+            {{- $_ := set $r "limits" (merge (dict .Values.gpu.resourceName (.Values.gpu.count | int)) ($r.limits | default dict)) }}
+            {{- end }}
+            {{- toYaml $r | nindent 12 }}
+          volumeMounts:
+            - {name: cache, mountPath: /var/lib/audio-smith/cache}
+            - {name: out, mountPath: /var/lib/audio-smith/out}
+            - {name: voices, mountPath: /var/lib/audio-smith/voices}
+            - {name: tmp, mountPath: /tmp}
+      volumes:
+        {{- range $key := list "cache" "out" "voices" }}
+        {{- $p := index $.Values.persistence $key }}
+        - name: {{ $key }}
+          {{- if $p.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "mr-audio-smith.claimName" (dict "ctx" $ "key" $key) }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        {{- end }}
+        - name: tmp
+          emptyDir: {sizeLimit: 1Gi}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

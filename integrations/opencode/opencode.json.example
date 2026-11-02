@@ -1,0 +1,13 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "mr-audio-smith": {
+      "type": "local",
+      "command": ["mr-audio-smith", "mcp", "--transport", "stdio"],
+      "enabled": true,
+      "environment": {
+        "AUDIO_SMITH_DEFAULT_BACKEND": "maya2"
+      }
+    }
+  }
+}

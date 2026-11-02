@@ -71,3 +71,21 @@ record-llm:
 
 clean:
 	rm -rf dist build .pytest_cache .mypy_cache .ruff_cache htmlcov coverage.json coverage.xml out
+
+# ---- Packaging (Sprint 9) ----
+.PHONY: docker-cpu docker-cuda helm-lint
+VERSION_TAG ?= dev
+
+docker-cpu:
+	docker build -f deploy/docker/Dockerfile.cpu --build-arg VERSION=$(VERSION_TAG) -t mr-audio-smith:cpu .
+
+docker-cuda:
+	docker build -f deploy/docker/Dockerfile.cuda --build-arg VERSION=$(VERSION_TAG) -t mr-audio-smith:cuda .
+
+helm-lint:
+	helm lint charts/mr-audio-smith
+	helm template t charts/mr-audio-smith > /dev/null
+	@for v in values-k3s-gpu.yaml values-ci.yaml; do \
+	  helm lint charts/mr-audio-smith -f charts/mr-audio-smith/$$v && \
+	  helm template t charts/mr-audio-smith -f charts/mr-audio-smith/$$v > /dev/null || exit 1; \
+	done

@@ -1,0 +1,30 @@
+# Reverse proxy for docker-compose.prod.yml. Caddy obtains and renews a Let's Encrypt certificate
+# automatically for AUDIO_SMITH_DOMAIN (ports 80 and 443 must reach this host).
+{
+	email {$ACME_EMAIL}
+}
+
+{$AUDIO_SMITH_DOMAIN} {
+	encode zstd gzip
+
+	# Matches the Helm ingress limits: 10 MB bodies, 10 minute reads for long synthesis jobs.
+	request_body {
+		max_size 10MB
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		-Server
+	}
+
+	reverse_proxy audio-smith:7340 {
+		transport http {
+			read_timeout 600s
+			response_header_timeout 600s
+		}
+		health_uri /healthz
+		health_interval 30s
+	}
+}

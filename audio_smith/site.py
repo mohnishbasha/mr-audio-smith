@@ -138,6 +138,20 @@ def _narrate_page(
         )
 
 
+REMOTE_KEYS = ("profile", "voice", "backend", "langs", "llm", "force")
+
+
+def remote_narrator(server: str, token: str | None) -> Narrator:
+    """A narrator that runs each page on a remote `serve` (S7-T04); local-only kwargs are dropped."""
+
+    def run(page: str, **kwargs: Any) -> Any:
+        keep = {k: kwargs[k] for k in REMOTE_KEYS if kwargs.get(k) is not None}
+        out = kwargs.get("out") or kwargs["settings"].out_dir
+        return api.narrate_remote(page, server=server, token=token, out=out, **keep)
+
+    return run
+
+
 def narrate_site(
     index_url: str,
     *,
@@ -150,6 +164,8 @@ def narrate_site(
     narrate: Narrator = api.narrate,
     inject: Injector | None = None,
     embed: Embedder | None = None,
+    server: str | None = None,
+    token: str | None = None,
 ) -> list[SiteRow]:
     """Narrate every matching page of a site, sequentially, with one shared TTS backend.
 
@@ -161,6 +177,9 @@ def narrate_site(
     pages = discover_pages(index.content, index.url, match_glob=match_glob, max_pages=max_pages)
     kwargs = dict(narrate_kwargs)
     kwargs["settings"] = settings
+    if server:
+        remote = remote_narrator(server, token)
+        return [_narrate_page(p, remote, kwargs, inject_root, selector, inject, embed) for p in pages]
     if kwargs.get("tts") is None:
         kwargs["tts"] = get_backend(kwargs.get("backend") or settings.default_backend, settings)
     kwargs["fetcher"] = fetcher

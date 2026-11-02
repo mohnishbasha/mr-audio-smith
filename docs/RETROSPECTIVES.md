@@ -171,3 +171,48 @@ reachable.
 **What did not:** dependency advisories piled up inside an optional extra nobody needed by default.
 
 **What to change:** run `pip-audit` on every dependency bump (the CI security job now does).
+
+## Sprint 7: Server and MCP (2026-11-02, tag `sprint-7-complete`)
+
+**Built** (issues #56 to #59): `audio_smith/jobs.py` (SQLite job store that survives restarts, one asyncio
+worker running the sync pipeline in a thread); the REST API from ARCHITECTURE with bearer tokens (required
+off loopback), per-token rate limits, `/healthz` and `/readyz`, and problem+json; the MCP server with the
+eight Appendix E tools over stdio and streamable HTTP, each stating the consent rule; remote mode for `run`
+and `site` (`--server`, `--token`) that downloads the artifacts and injects locally.
+
+**Gate evidence:** remote mode is tested end to end against a real local `serve` process (uvicorn in a
+thread) and a local web server; the MCP stdio integration test narrates the fixture with mocks. A laptop
+narrating through the GPU box and Claude Code driving the tools interactively are owner steps.
+
+**What worked:** the server and MCP agents built in parallel with the lead adding remote mode afterwards.
+
+**What did not:** the installed MCP SDK is 2.x, where FastMCP no longer exists; the `mcp` extra now pins
+`mcp>=2.3,<3`. Catalog helpers ended up implemented twice (server and MCP); merge them in a follow-up.
+
+## Sprint 8: Harness Integrations (2026-11-02, tag `sprint-8-complete`)
+
+**Built** (issues #60 to #64): the Pi extension on the real `@earendil-works/pi-coding-agent` API (TypeBox
+tools mirroring MCP, `/narrate`, `/voices`, `/audio-status`, streaming progress, a session-start context
+message); Goose `toolkit.yaml`; the OpenCode config; Claude Code MCP setup and the `narrate-page` skill;
+harness smoke tests that launch each config's exact command and complete the MCP handshake; a CI job for
+staging and release; docs/guide/agents.md.
+
+**Gate evidence:** every harness config lists all eight tools over stdio; Pi unit tests (13) pass with a
+mocked server. Recorded sessions inside each harness are manual (the harness binaries are not installed
+here).
+
+## Sprint 9: Packaging (2026-11-02, tag `sprint-9-complete`)
+
+**Built** (issues #65 to #68): CPU, CUDA, and Maya 2 Dockerfiles; local and production Compose files (Caddy
+TLS, internal network, read-only root filesystems); the Helm chart with a GPU Maya 2 StatefulSet, optional
+Ollama or vLLM, NetworkPolicy, HPA, and ingress, with k3s GPU and kind CPU values; release jobs for
+multi-arch images, cosign keyless signing, and the OCI chart (gated on `IMAGES_PUBLISH`).
+
+**Gate evidence:** the CPU image is 0.46 GB compressed and 1.4 GB unpacked after replacing Debian's ffmpeg
+with a static build, dropping the `qa` extra from the CPU image, and stripping shared libraries; inside it,
+with a read-only root filesystem, the fixture narrates end to end at -16.4 LUFS and `doctor` is green.
+`helm lint` and `helm template` pass for all three values files. Not verified here: CUDA and Maya 2 image
+builds, a GPU Compose run, a Helm install on the GPU cluster, `ct install` in kind (the helm workflow runs
+it), and publishing and signing (gated on owner setup for GHCR).
+
+**What to change:** pin the Maya 2 weights revision and the production image digests before a real deploy.

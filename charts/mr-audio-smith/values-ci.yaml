@@ -1,0 +1,34 @@
+# CPU profile for kind / chart-testing: mock TTS backend, no GPU, no Maya 2, no Ollama.
+# The image is built in the job and loaded into kind (see .github/workflows/helm.yml).
+image:
+  repository: mr-audio-smith
+  tag: ci
+  variant: ""
+  pullPolicy: IfNotPresent
+
+config:
+  defaultBackend: mock
+  llm: fake
+
+auth:
+  token: ci-test-token
+
+maya2:
+  enabled: false
+ollama:
+  enabled: false
+
+networkPolicy:
+  enabled: true
+
+persistence:
+  cache: {enabled: false}
+  out: {enabled: false}
+  voices: {enabled: false}
+
+initPermissions:
+  enabled: false
+
+resources:
+  requests: {cpu: 100m, memory: 256Mi}
+  limits: {cpu: "1", memory: 1Gi}
