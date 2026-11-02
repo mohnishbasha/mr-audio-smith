@@ -7,6 +7,20 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.0.0-rc.1] - 2026-11-02
+
+### Added
 - `mr-audio-smith --version` and `mr-audio-smith doctor` (Python, ffmpeg, cache directory, disk space checks, `--json` output).
 - Configuration through `AUDIO_SMITH_*` environment variables and an `audio-smith.toml` project file.
 - `mr-audio-smith script <url|file>` extracts a page and writes a reviewable Script Markdown file tuned to a listener profile, plus a separate parent script when the page has parent-only content.
@@ -39,11 +53,8 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 - The signature and other verbatim passages are always kept exactly as written, even when the language model blanks or rephrases them.
 
-### Changed
 
-### Deprecated
 
-### Removed
 
 ### Security
 - Logs redact any field whose name contains key, token, or secret; `--log-format json` for structured logs.
@@ -51,4 +62,5 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - The Chatterbox backend is no longer an installable extra (its pinned dependencies carry unpatched advisories); install `chatterbox-tts` yourself to use it.
 - ID3 tags are written with ffmpeg instead of a GPL-licensed library, keeping the MIT core free of copyleft code.
 
-[Unreleased]: https://github.com/mohnishbasha/mr-audio-smith/compare/main...develop
+[Unreleased]: https://github.com/mohnishbasha/mr-audio-smith/compare/v1.0.0-rc.1...develop
+[1.0.0-rc.1]: https://github.com/mohnishbasha/mr-audio-smith/releases/tag/v1.0.0-rc.1
