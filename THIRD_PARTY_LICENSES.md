@@ -160,6 +160,9 @@ model weight, and bundled asset. It is regenerated with `make licenses` and chec
 | webrtcvad | 2.0.10 | MIT License | https://github.com/wiseman/py-webrtcvad |
 | websockets | 17.4 | BSD-3-Clause | https://github.com/python-websockets/websockets |
 | wrapt | 2.5.2 | BSD-2-Clause | https://github.com/GrahamDumpleton/wrapt |
+| jeepney | 0.9.0 | MIT | https://gitlab.com/takluyver/jeepney |
+| SecretStorage | 3.5.0 | BSD-3-Clause | https://github.com/mitya57/secretstorage |
+| pywin32-ctypes | 0.2.3 | BSD-3-Clause | https://github.com/enthought/pywin32-ctypes |
 
 ## npm packages
 

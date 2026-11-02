@@ -220,12 +220,23 @@ def runtime_names() -> set[str] | None:
     return names or None
 
 
+# Runtime dependencies installed only on some platforms (keyring's Linux and Windows backends), so the
+# inventory generated on one OS still covers the others. Versions are those in uv.lock.
+PLATFORM_PACKAGES: tuple[Package, ...] = (
+    Package("jeepney", "0.9.0", "MIT", "https://gitlab.com/takluyver/jeepney"),
+    Package("SecretStorage", "3.5.0", "BSD-3-Clause", "https://github.com/mitya57/secretstorage"),
+    Package("pywin32-ctypes", "0.2.3", "BSD-3-Clause", "https://github.com/enthought/pywin32-ctypes"),
+)
+
+
 def python_packages() -> list[Package]:
-    """Installed runtime dependencies with their licenses."""
+    """Installed runtime dependencies with their licenses, plus platform-specific ones."""
     out = run_tool([sys.executable, "-m", "piplicenses", "--format=json", "--with-urls"], ROOT)
     if out is None:
         raise SystemExit("pip-licenses failed; run `uv sync --all-extras` first")
-    return parse_pip_licenses(out, runtime_names())
+    found = parse_pip_licenses(out, runtime_names())
+    names = {normalize_name(p.name) for p in found}
+    return found + [p for p in PLATFORM_PACKAGES if normalize_name(p.name) not in names]
 
 
 def render_table(packages: list[Package]) -> str:
