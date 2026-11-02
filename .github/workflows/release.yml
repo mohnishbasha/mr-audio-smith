@@ -73,7 +73,7 @@ jobs:
           mkdir -p dist/npm
           for p in player integrations/pi; do
             if [ -f "$p/package.json" ] && [ -f "$p/package-lock.json" ]; then
-              (cd "$p" && npm ci && npm run --if-present build && npm pack --pack-destination ../../dist/npm)
+              (cd "$p" && npm ci && npm run --if-present build && npm pack --pack-destination "$GITHUB_WORKSPACE/dist/npm")
             fi
           done
       - name: SBOMs (CycloneDX)
