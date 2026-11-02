@@ -397,6 +397,19 @@ describe("storage and media session", () => {
     expect(window.localStorage.getItem("as:pos:a.mp3")).toBeNull();
   });
 
+  test("regression_player_resume_when_metadata_loaded_before_upgrade", () => {
+    // A cached file can fire loadedmetadata before the element upgrades (seen as an e2e flake).
+    window.localStorage.setItem("as:pos:b.mp3", "30");
+    const proto = HTMLAudioElement.prototype;
+    Object.defineProperty(proto, "readyState", { get: () => 1, configurable: true });
+    try {
+      const m = mount({ src: "b.mp3" });
+      expect(m.audio.currentTime).toBe(30);
+    } finally {
+      Reflect.deleteProperty(proto, "readyState");
+    }
+  });
+
   test("test_player_localstorage_blocked_still_works", () => {
     const boom = (): never => {
       throw new DOMException("blocked", "SecurityError");

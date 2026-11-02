@@ -63,6 +63,7 @@ jobs:
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org
+      - uses: oven-sh/setup-bun@v2
       - name: Build UI bundles into the package
         run: make studio-build player-assets
       - name: Build sdist and wheel

@@ -35,5 +35,8 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "coverage": "vitest run --coverage"
+  },
+  "overrides": {
+    "undici": "^8.12.3"
   }
 }

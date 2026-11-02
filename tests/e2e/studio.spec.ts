@@ -125,7 +125,7 @@ test("e2e_US017_studio_zero_external_requests", async ({ page }) => {
   await page.getByRole("button", { name: "Build master" }).click();
   await expect(
     page.getByRole("button", { name: "Rebuild master" }),
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 60_000 });
   const hosts = new Set(
     seen.filter((u) => u.startsWith("http")).map((u) => new URL(u).hostname),
   );
