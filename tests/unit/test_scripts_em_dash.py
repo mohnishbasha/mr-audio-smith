@@ -10,7 +10,7 @@ spec.loader.exec_module(mod)
 
 def test_harness_em_dash_hook_fails_on_u2014(tmp_path: Path) -> None:
     f = tmp_path / "bad.md"
-    f.write_text("calm — storm\n", encoding="utf-8")
+    f.write_text(f"calm {chr(0x2014)} storm\n", encoding="utf-8")
     assert mod.main([str(f)]) == 1
 
 

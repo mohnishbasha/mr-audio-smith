@@ -8,7 +8,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-EM_DASH = "—"
+EM_DASH = chr(0x2014)
 PATTERNS = ("*.md", "*.py", "*.ts", "*.tsx", "*.yaml", "*.yml")
 EXCLUDE = ("docs/BUILD_PROMPT.md",)
 
