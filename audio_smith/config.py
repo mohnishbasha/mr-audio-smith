@@ -50,6 +50,7 @@ class Settings(BaseSettings):
     server_port: int = 7340
     server_token: SecretStr | None = None
     server_rate_limit_per_hour: int = 30
+    server_cors_origins: list[str] = Field(default_factory=list)
     studio_port: int = 7341
     qa_threshold: float = Field(default=0.75, ge=0.0, le=1.0)
     takes_per_chunk: int = Field(default=2, ge=1, le=10)

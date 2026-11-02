@@ -48,6 +48,9 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `run --lang en,hi` (or `languages` in the profile) adds translated tracks in the same voice, with chunks and pauses kept aligned.
 - `mr-audio-smith site <index-url> --match "letter-*.html"` narrates every linked page, skips unchanged ones, and can inject into a local static-site checkout with `--inject-root`.
 - `mr-audio-smith studio`: a local review UI on 127.0.0.1 (per-session token, strict Content-Security-Policy, no external requests). Edit chunks with live validation, render takes, compare two takes side by side and keep the better one, re-master and preview in the real player, approve, and inject with a diff preview.
+- `mr-audio-smith serve`: REST API with an on-disk job queue (survives restarts), bearer-token auth (required off localhost), per-token rate limits, `/healthz` and `/readyz`, problem+json errors.
+- `mr-audio-smith mcp` (stdio or streamable HTTP): eight tools for agent harnesses (narrate with progress, script, render, list voices, profiles, backends, status, recommend); every tool respects voice consent.
+- `run --server URL --token ...` and `site --server ...` narrate on a remote server and download the results, so a laptop or CI runner without a GPU can use a GPU box.
 - GitHub Action (`mohnishbasha/mr-audio-smith/action@v1`) narrates new or changed pages on push and commits the audio; example workflow and a complete letters-to-a-child example project.
 
 ### Fixed

@@ -68,6 +68,8 @@ mr-audio-smith run [OPTIONS] <source>
 | `--out`, `-o` | path |  | no | Output root directory. |
 | `--llm` | str |  | no | LLM provider string, e.g. ollama:qwen3:14b or fake. |
 | `--lang` | str |  | no | Languages, e.g. en,hi. |
+| `--server` | str |  | no | Remote serve URL. |
+| `--token` | str |  | no | Token for --server. |
 | `--inject` | path |  | no | Local page to add the player to. |
 | `--selector` | str | `h1` | no | Where markers go if absent. |
 | `--approve` | flag |  | no | Review the script in $EDITOR. |
@@ -121,6 +123,8 @@ mr-audio-smith site [OPTIONS] <index_url>
 | `--llm` | str |  | no | LLM provider string. |
 | `--out`, `-o` | path |  | no | Output root directory. |
 | `--force` | flag |  | no | Bypass the cache. |
+| `--server` | str |  | no | Remote serve URL. |
+| `--token` | str |  | no | Token for --server. |
 | `--allow-private` | flag |  | no | Allow private hosts. |
 | `--accept-noncommercial` | flag |  | no | Allow non-commercial weights. |
 
@@ -158,6 +162,34 @@ mr-audio-smith studio [OPTIONS]
 | `--port` | int | `7341` | no | Port on 127.0.0.1. |
 | `--out` | path |  | no | Output directory to review. |
 | `--no-open` | flag |  | no | Do not open a browser. |
+
+### `mr-audio-smith serve`
+
+Serve the REST API: POST /v1/jobs, poll, download. Set AUDIO_SMITH_SERVER_TOKEN to require auth.
+
+```text
+mr-audio-smith serve [OPTIONS]
+```
+
+| Option | Type | Default | Required | Description |
+|---|---|---|---|---|
+| `--host` | str | `127.0.0.1` | no | Bind address; non-loopback needs a token. |
+| `--port` | int | `7340` | no | Port. |
+| `--out` | path |  | no | Output directory (jobs.db and jobs/). |
+
+### `mr-audio-smith mcp`
+
+Serve the MCP tools. stdio keeps stdout for the protocol; logs go to stderr.
+
+```text
+mr-audio-smith mcp [OPTIONS]
+```
+
+| Option | Type | Default | Required | Description |
+|---|---|---|---|---|
+| `--transport` | str | `stdio` | no | stdio or http. |
+| `--host` | str | `127.0.0.1` | no | HTTP bind address. |
+| `--port` | int | `7342` | no | HTTP port. |
 
 ### `mr-audio-smith profile`
 

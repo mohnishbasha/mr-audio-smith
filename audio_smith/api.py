@@ -16,10 +16,21 @@ from audio_smith import review, review_render, review_state
 from audio_smith.blocks import BlockDoc, Track, content_hash
 from audio_smith.cache import CacheStore
 from audio_smith.cache.keys import blocks_key, script_key
+from audio_smith.catalog import (
+    check_script_text,
+    list_backends_summary,
+    list_profiles_summary,
+    list_voices_summary,
+    precheck_voice,
+    readiness,
+    require_ready,
+    script_preview,
+)
 from audio_smith.config import Settings, load_settings
 from audio_smith.errors import PreflightError, UsageError
 from audio_smith.extract import extract as extract_html
 from audio_smith.fetch import FetchResult, fetch
+from audio_smith.jobs import Job, JobRunner, JobStore, problem_for
 from audio_smith.llm import get_provider, provider_label
 from audio_smith.llm.base import LLMProvider
 from audio_smith.paths import atomic_write, ensure_inside, safe_slug
@@ -45,7 +56,22 @@ from audio_smith.voices import registry as voice_registry
 if TYPE_CHECKING:
     from audio_smith.orchestrate import NarrateResult
 
-__all__ = ["Progress", "rich_progress"]
+__all__ = [
+    "Job",
+    "JobRunner",
+    "JobStore",
+    "Progress",
+    "check_script_text",
+    "list_backends_summary",
+    "list_profiles_summary",
+    "list_voices_summary",
+    "precheck_voice",
+    "problem_for",
+    "readiness",
+    "require_ready",
+    "rich_progress",
+    "script_preview",
+]
 
 Fetcher = Callable[[str, Settings], FetchResult]
 _MD_HEADING = re.compile(r"^(#{1,6})\s+(.*)$")
@@ -323,3 +349,10 @@ review_approve = review.approve
 review_inject_from_studio = review.inject_from_studio
 review_media_path = review.media_path
 review_player_bundle = review.player_bundle
+
+
+def narrate_remote(source: str, **kwargs: Any) -> "NarrateResult":
+    """Run the pipeline on a remote `mr-audio-smith serve` (S7-T04); see audio_smith.remote."""
+    from audio_smith.remote import narrate_remote as _remote  # noqa: PLC0415
+
+    return _remote(source, **kwargs)

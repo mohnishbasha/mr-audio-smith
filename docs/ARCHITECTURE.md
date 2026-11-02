@@ -730,7 +730,7 @@ FastAPI, prefix `/v1`. JSON bodies unless stated. All endpoints except `/healthz
 
 | Method and path | Request | Response |
 |---|---|---|
-| `POST /v1/jobs` | `{"source": str, "profile": str?, "voice": str?, "backend": str?, "langs": [str]?, "options": {"llm": str?, "approve": bool?, "force": bool?, "inject_html": str?, "selector": str?}}` | `202 {"job_id": str}` with `Location: /v1/jobs/{id}` |
+| `POST /v1/jobs` | `{"source": str, "profile": str?, "voice": str?, "backend": str?, "langs": [str]?, "options": {"llm": str?, "force": bool?}}` (`approve: true` is rejected with 422, approval needs Studio; `source` must be an http(s) URL; `inject_html` is not offered, the server never writes outside the job directory) | `202 {"job_id": str}` with `Location: /v1/jobs/{id}` |
 | `GET /v1/jobs/{id}` | none | `{"job_id": str, "status": "queued\|running\|done\|failed", "stage": "fetch\|script\|synth\|master\|publish\|null", "progress": {"stage_pct": number, "chunk": int?, "chunks_total": int?}, "created_at": str, "error": problem-object\|null}` |
 | `GET /v1/jobs/{id}/manifest` | none | Manifest JSON (section 5.4); 404 until the job is `done` |
 | `GET /v1/jobs/{id}/files/{name}` | none | Binary stream (MP3), VTT, or embed snippet; content type by extension |

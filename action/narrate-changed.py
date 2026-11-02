@@ -20,7 +20,7 @@ ZERO_SHA = "0" * 40
 CLI = "mr-audio-smith"
 SLUG_MAX = 80
 SLUG_BAD = re.compile(r"[^a-z0-9-]+")
-REMOTE_NOTE = "remote mode arrives with S7-T04 (--server); narrating on this runner instead"
+REMOTE_NOTE = "this mr-audio-smith has no --server flag (older than 1.1); narrating on this runner instead"
 COMMIT_TEMPLATE = "chore(audio): narrate {n} pages [skip ci]"
 NEVER_COMMIT = (":(exclude,glob)**/*.wav", ":(exclude,glob)**/*.flac", ":(exclude,glob)**/voices/**")
 

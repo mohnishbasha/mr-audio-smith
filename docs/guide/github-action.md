@@ -63,7 +63,7 @@ The reference clip never leaves that machine.
 
 **Hosted runner plus a server.** Set `server-url` and `server-token` (from a repository secret) to
 send synthesis to your own `mr-audio-smith serve` instance behind TLS. The server holds the voices.
-The `serve` command arrives after v1.0.0; until then use the self-hosted runner option.
+Start the server on the GPU box with `AUDIO_SMITH_SERVER_TOKEN=... mr-audio-smith serve --host 0.0.0.0` (a token is required for any non-loopback bind).
 
 Either way, voice clips are never staged: the commit step only adds the output directory and the
 pages it edited.

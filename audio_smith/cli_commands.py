@@ -2,7 +2,7 @@
 
 import sys
 from pathlib import Path
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
 
 import typer
 from rich.console import Console
@@ -13,12 +13,19 @@ from audio_smith import api
 from audio_smith.cache.store import CacheStore, parse_age
 from audio_smith.config import Settings, load_settings
 from audio_smith.errors import UsageError
+from audio_smith.mcp_server.cli import register_mcp_commands
 from audio_smith.profiles import load_all, load_file
 from audio_smith.profiles.loader import json_schema
 from audio_smith.publish.cli import register_publish_commands
+from audio_smith.server.cli import register_server_commands
 from audio_smith.site_cli import register_site_commands
 from audio_smith.studio.cli import register_studio_commands
 from audio_smith.voices.cli import register_voice_commands
+
+if TYPE_CHECKING:
+    from audio_smith.orchestrate import NarrateResult
+
+_console = Console()
 
 ProfileOpt = Annotated[
     str | None, typer.Option("--profile", "-p", help="Profile id (kid-5, adult-brief, ...).")
@@ -43,6 +50,26 @@ def progress_callback() -> api.Progress | None:
     return api.rich_progress() if sys.stderr.isatty() else None
 
 
+def _print_run(res: "NarrateResult") -> None:
+    """Shared output for local and remote runs."""
+    for line in res.plan:
+        typer.echo(line)
+    for t in res.tracks:
+        state = "cached" if t.cached else "rendered"
+        typer.echo(
+            f"{t.track.kind} {t.track.lang} ({state}): {t.mp3} {t.track.duration_s:.1f}s "
+            f"{t.track.loudness_lufs:.1f} LUFS"
+        )
+    if res.manifest_path:
+        typer.echo(f"manifest: {res.manifest_path}")
+    if res.embed_path:
+        typer.echo(f"embed: {res.embed_path}")
+    if res.injected:
+        typer.echo(f"injected: {res.injected} ({'updated' if res.inject_changed else 'unchanged'})")
+    for w in res.warnings:
+        _console.print(f"[yellow]warning:[/yellow] {escape(w)}")
+
+
 def settings_from(**overrides: object) -> Settings:
     return load_settings(overrides={k: v for k, v in overrides.items() if v not in (None, False)})
 
@@ -56,6 +83,8 @@ def register(app: typer.Typer, console: Console) -> None:
     register_site_commands(app, console)
     register_publish_commands(app, console)
     register_studio_commands(app, console)
+    register_server_commands(app, console)
+    register_mcp_commands(app, console)
 
 
 def register_stage_commands(app: typer.Typer, console: Console) -> None:
@@ -104,6 +133,10 @@ def register_stage_commands(app: typer.Typer, console: Console) -> None:
         out: OutOpt = None,
         llm: LlmOpt = None,
         lang: Annotated[str | None, typer.Option("--lang", help="Languages, e.g. en,hi.")] = None,
+        server: Annotated[str | None, typer.Option("--server", help="Remote serve URL.")] = None,
+        token: Annotated[
+            str | None, typer.Option("--token", envvar="AUDIO_SMITH_SERVER_TOKEN", help="Token for --server.")
+        ] = None,
         inject: Annotated[
             Path | None, typer.Option("--inject", help="Local page to add the player to.")
         ] = None,
@@ -116,6 +149,24 @@ def register_stage_commands(app: typer.Typer, console: Console) -> None:
     ) -> None:
         """Narrate a page end to end: MP3, captions, and manifest in OUT/<slug>/."""
         settings = settings_from(allow_private=allow_private, accept_noncommercial=accept_noncommercial)
+        langs = [x.strip() for x in lang.split(",") if x.strip()] if lang else None
+        if server:
+            res = api.narrate_remote(
+                source,
+                server=server,
+                token=token,
+                out=out or settings.out_dir,
+                profile=profile,
+                voice=voice,
+                backend=backend,
+                langs=langs,
+                llm=llm,
+                force=force,
+                inject=inject,
+                selector=selector,
+            )
+            _print_run(res)
+            return
         res = api.narrate(
             source,
             profile=profile,
@@ -124,7 +175,7 @@ def register_stage_commands(app: typer.Typer, console: Console) -> None:
             out=out,
             llm=llm,
             approve=approve,
-            langs=[x.strip() for x in lang.split(",") if x.strip()] if lang else None,
+            langs=langs,
             inject=inject,
             selector=selector,
             force=force,
@@ -132,22 +183,7 @@ def register_stage_commands(app: typer.Typer, console: Console) -> None:
             settings=settings,
             progress=progress_callback(),
         )
-        for line in res.plan:
-            typer.echo(line)
-        for t in res.tracks:
-            state = "cached" if t.cached else "rendered"
-            typer.echo(
-                f"{t.track.kind} {t.track.lang} ({state}): {t.mp3} {t.track.duration_s:.1f}s "
-                f"{t.track.loudness_lufs:.1f} LUFS"
-            )
-        if res.manifest_path:
-            typer.echo(f"manifest: {res.manifest_path}")
-        if res.embed_path:
-            typer.echo(f"embed: {res.embed_path}")
-        if res.injected:
-            typer.echo(f"injected: {res.injected} ({'updated' if res.inject_changed else 'unchanged'})")
-        for w in res.warnings:
-            console.print(f"[yellow]warning:[/yellow] {escape(w)}")
+        _print_run(res)
 
     @app.command("render")
     def render_cmd(

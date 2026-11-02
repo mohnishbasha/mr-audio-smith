@@ -45,6 +45,10 @@ def register_site_commands(app: typer.Typer, console: Console) -> None:
         llm: Annotated[str | None, typer.Option("--llm", help="LLM provider string.")] = None,
         out: Annotated[Path | None, typer.Option("--out", "-o", help="Output root directory.")] = None,
         force: Annotated[bool, typer.Option("--force", help="Bypass the cache.")] = False,
+        server: Annotated[str | None, typer.Option("--server", help="Remote serve URL.")] = None,
+        token: Annotated[
+            str | None, typer.Option("--token", envvar="AUDIO_SMITH_SERVER_TOKEN", help="Token for --server.")
+        ] = None,
         allow_private: Annotated[bool, typer.Option("--allow-private", help="Allow private hosts.")] = False,
         accept_noncommercial: Annotated[
             bool, typer.Option("--accept-noncommercial", help="Allow non-commercial weights.")
@@ -59,6 +63,8 @@ def register_site_commands(app: typer.Typer, console: Console) -> None:
             max_pages=max_pages,
             inject_root=inject_root,
             selector=selector,
+            server=server,
+            token=token,
             narrate_kwargs={
                 "profile": profile,
                 "voice": voice,

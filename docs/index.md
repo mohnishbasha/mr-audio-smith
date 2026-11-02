@@ -72,9 +72,9 @@ Without JavaScript, visitors still get the native audio controls.
 
 ## Use from your agent
 
-Claude Code, Goose, OpenCode: add the MCP server (`mr-audio-smith mcp`). Pi: install
-`@mr-audio-smith/pi-extension`. Both arrive with the integrations release; the CLI and the
-GitHub Action work today.
+Claude Code, Goose, OpenCode: add the MCP server (`mr-audio-smith mcp`, stdio or streamable
+HTTP; install the `mcp` extra). Pi: install `@mr-audio-smith/pi-extension`. A GPU box can run
+`mr-audio-smith serve` so laptops and CI narrate through it with `run --server URL --token ...`.
 
 ## Voice cloning ethics
 

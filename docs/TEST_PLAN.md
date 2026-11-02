@@ -592,24 +592,24 @@ Conventions: ids follow section 3. Types are Unit, Integration, Smoke, E2E, Regr
 
 | ID | Scenario | Type | Status |
 |---|---|---|---|
-| `test_server_post_job_returns_job_id_async` | Job accepted asynchronously | Unit | ⚠️ Deferred |
-| `test_server_job_status_endpoint_states` | queued, running, done, failed | Unit | ⚠️ Deferred |
-| `test_server_artifacts_downloadable_after_done` | MP3, VTT, manifest download | Unit | ⚠️ Deferred |
-| `test_server_bearer_token_required_when_configured` | 401 without token | Unit | ⚠️ Deferred |
-| `test_server_no_auth_when_token_unset_binds_loopback` | Safe default bind | Unit | ⚠️ Deferred |
-| `test_server_clone_request_unregistered_voice_403` | Consent enforced over HTTP | Unit | ⚠️ Deferred |
-| `test_server_ssrf_guard_applies_to_submitted_urls` | Private URLs refused | Unit | ⚠️ Deferred |
+| `test_server_post_job_returns_job_id_async` | Job accepted asynchronously | Unit | ✅ Automated |
+| `test_server_job_status_endpoint_states` | queued, running, done, failed | Unit | ✅ Automated |
+| `test_server_artifacts_downloadable_after_done` | MP3, VTT, manifest download | Unit | ✅ Automated |
+| `test_server_bearer_token_required_when_configured` | 401 without token | Unit | ✅ Automated |
+| `test_server_no_auth_when_token_unset_binds_loopback` | Safe default bind | Unit | ✅ Automated |
+| `test_server_clone_request_unregistered_voice_403` | Consent enforced over HTTP | Unit | ✅ Automated |
+| `test_server_ssrf_guard_applies_to_submitted_urls` | Private URLs refused | Unit | ✅ Automated |
 | `it_server_job_roundtrip_with_mock_backend` | Submit, poll, download with real uvicorn | Integration | ⚠️ Deferred |
 
 ### 5.24 MCP server (FR-024)
 
 | ID | Scenario | Type | Status |
 |---|---|---|---|
-| `test_mcp_tools_listed_match_appendix_e` | All Appendix E tools present | Unit | ⚠️ Deferred |
-| `test_mcp_tool_input_schemas_valid_json_schema` | Schemas are valid | Unit | ⚠️ Deferred |
-| `test_mcp_tool_call_narrate_returns_manifest_summary` | Tool executes with mocks | Unit | ⚠️ Deferred |
-| `test_mcp_clone_tool_enforces_consent` | Same registry guard | Unit | ⚠️ Deferred |
-| `it_mcp_stdio_transport_list_tools` | Real stdio session lists tools | Integration | ⚠️ Deferred |
+| `test_mcp_tools_listed_match_appendix_e` | All Appendix E tools present | Unit | ✅ Automated |
+| `test_mcp_tool_input_schemas_valid_json_schema` | Schemas are valid | Unit | ✅ Automated |
+| `test_mcp_tool_call_narrate_returns_manifest_summary` | Tool executes with mocks | Unit | ✅ Automated |
+| `test_mcp_clone_tool_enforces_consent` | Same registry guard | Unit | ✅ Automated |
+| `it_mcp_stdio_transport_list_tools` | Real stdio session lists tools | Integration | ✅ Automated |
 | `it_mcp_streamable_http_transport_list_tools` | Real streamable HTTP session lists tools | Integration | ⚠️ Deferred |
 
 ### 5.25 Agent harness (Appendix K, S0-T08)
@@ -1071,6 +1071,64 @@ Row count: more than 120 scenarios across 27 tables.
 | `test_logging_redacts_nested_and_listed_values_and_secretstr` | logging redacts nested and listed values and secretstr | Unit | ✅ Automated |
 | `test_logging_redacts_secret_named_keys` | logging redacts secret named keys | Unit | ✅ Automated |
 | `test_tags_write_failure_raises_mastering_error` | tags write failure raises mastering error | Unit | ✅ Automated |
+| `e2e_US006_player_axe_core_dark_error_state_zero_violations` | US006 player axe core dark error state zero violations | E2E | ✅ Automated |
+| `e2e_US006_player_axe_core_zero_violations` | US006 player axe core zero violations | E2E | ✅ Automated |
+| `e2e_US006_player_keyboard_arrows_seek_5s` | US006 player keyboard arrows seek 5s | E2E | ✅ Automated |
+| `e2e_US006_player_keyboard_play_pause` | US006 player keyboard play pause | E2E | ✅ Automated |
+| `e2e_US006_player_kid_size_variant_renders` | US006 player kid size variant renders | E2E | ✅ Automated |
+| `e2e_US006_player_language_toggle_switches_track` | US006 player language toggle switches track | E2E | ✅ Automated |
+| `e2e_US006_player_media_session_metadata_set` | US006 player media session metadata set | E2E | ✅ Automated |
+| `e2e_US006_player_no_js_fallback_native_audio_plays` | US006 player no js fallback native audio plays | E2E | ✅ Automated |
+| `e2e_US006_player_no_js_fallback_plays` | US006 player no js fallback plays | E2E | ✅ Automated |
+| `e2e_US006_player_reduced_motion_disables_breathing` | US006 player reduced motion disables breathing | E2E | ✅ Automated |
+| `e2e_US006_player_remembers_position_per_src` | US006 player remembers position per src | E2E | ✅ Automated |
+| `e2e_US006_player_storage_blocked_still_plays` | US006 player storage blocked still plays | E2E | ✅ Automated |
+| `e2e_US006_player_theme_auto_light_dark` | US006 player theme auto light dark | E2E | ✅ Automated |
+| `e2e_US012_player_captions_toggle` | US012 player captions toggle | E2E | ✅ Automated |
+| `e2e_US017_studio_approve_persists_in_manifest` | US017 studio approve persists in manifest | E2E | ✅ Automated |
+| `e2e_US017_studio_compare_takes_keep_best` | US017 studio compare takes keep best | E2E | ✅ Automated |
+| `e2e_US017_studio_edit_validate_save_chunk` | US017 studio edit validate save chunk | E2E | ✅ Automated |
+| `e2e_US017_studio_inject_diff_preview_before_write` | US017 studio inject diff preview before write | E2E | ✅ Automated |
+| `e2e_US017_studio_marker_autocomplete_pause` | US017 studio marker autocomplete pause | E2E | ✅ Automated |
+| `e2e_US017_studio_zero_external_requests` | US017 studio zero external requests | E2E | ✅ Automated |
+| `it_mcp_stdio_narrate_with_mocks` | mcp stdio narrate with mocks | Integration | ✅ Automated |
+| `test_cli_run_server_flag` | cli run server flag | Unit | ✅ Automated |
+| `test_mcp_bearer_auth_rejects_and_accepts` | mcp bearer auth rejects and accepts | Unit | ✅ Automated |
+| `test_mcp_catalog_tools` | mcp catalog tools | Unit | ✅ Automated |
+| `test_mcp_cli_rejects_unknown_transport` | mcp cli rejects unknown transport | Unit | ✅ Automated |
+| `test_mcp_http_non_loopback_requires_token` | mcp http non loopback requires token | Unit | ✅ Automated |
+| `test_mcp_inject_path_outside_working_directory_refused` | mcp inject path outside working directory refused | Unit | ✅ Automated |
+| `test_mcp_invalid_input_becomes_usage_tool_error` | mcp invalid input becomes usage tool error | Unit | ✅ Automated |
+| `test_mcp_monotonic_progress_skips_repeats_and_missing_context` | mcp monotonic progress skips repeats and missing context | Unit | ✅ Automated |
+| `test_mcp_narrate_progress_is_monotonic` | mcp narrate progress is monotonic | Unit | ✅ Automated |
+| `test_mcp_recommend_backend_fallback_to_mock` | mcp recommend backend fallback to mock | Unit | ✅ Automated |
+| `test_mcp_recommend_requires_input` | mcp recommend requires input | Unit | ✅ Automated |
+| `test_mcp_recommend_rules` | mcp recommend rules | Unit | ✅ Automated |
+| `test_mcp_render_script_outside_allowed_dirs_refused` | mcp render script outside allowed dirs refused | Unit | ✅ Automated |
+| `test_mcp_runtime_defaults_to_empty_env` | mcp runtime defaults to empty env | Unit | ✅ Automated |
+| `test_mcp_script_then_render_chunks_and_full` | mcp script then render chunks and full | Unit | ✅ Automated |
+| `test_remote_local_file_source_rejected` | remote local file source rejected | Unit | ✅ Automated |
+| `test_remote_run_downloads_artifacts_from_local_server` | remote run downloads artifacts from local server | Unit | ✅ Automated |
+| `test_remote_run_inject_locally` | remote run inject locally | Unit | ✅ Automated |
+| `test_remote_wrong_token_is_usage_error` | remote wrong token is usage error | Unit | ✅ Automated |
+| `test_server_catalog_endpoints` | server catalog endpoints | Unit | ✅ Automated |
+| `test_server_concurrent_jobs_run_in_submission_order` | server concurrent jobs run in submission order | Unit | ✅ Automated |
+| `test_server_cors_disabled_by_default_and_allowlist` | server cors disabled by default and allowlist | Unit | ✅ Automated |
+| `test_server_fetch_error_becomes_failed_job` | server fetch error becomes failed job | Unit | ✅ Automated |
+| `test_server_file_path_traversal_rejected` | server file path traversal rejected | Unit | ✅ Automated |
+| `test_server_job_survives_restart` | server job survives restart | Unit | ✅ Automated |
+| `test_server_missing_bearer_returns_401_problem_json` | server missing bearer returns 401 problem json | Unit | ✅ Automated |
+| `test_server_non_localhost_bind_requires_token` | server non localhost bind requires token | Unit | ✅ Automated |
+| `test_server_problem_json_shapes` | server problem json shapes | Unit | ✅ Automated |
+| `test_server_progress_reported_per_stage` | server progress reported per stage | Unit | ✅ Automated |
+| `test_server_rate_limit_returns_429` | server rate limit returns 429 | Unit | ✅ Automated |
+| `test_server_rate_limit_window_slides` | server rate limit window slides | Unit | ✅ Automated |
+| `test_server_readyz_flips_when_backend_down` | server readyz flips when backend down | Unit | ✅ Automated |
+| `test_server_readyz_reports_missing_ffmpeg` | server readyz reports missing ffmpeg | Unit | ✅ Automated |
+| `test_server_requeued_jobs_run_after_restart` | server requeued jobs run after restart | Unit | ✅ Automated |
+| `test_server_scripts_and_render_roundtrip` | server scripts and render roundtrip | Unit | ✅ Automated |
+| `test_server_serve_command_needs_server_extra_hint` | server serve command needs server extra hint | Unit | ✅ Automated |
+| `test_server_serve_command_starts_uvicorn` | server serve command starts uvicorn | Unit | ✅ Automated |
 
 ## 6. Listening test protocol
 

@@ -109,7 +109,7 @@ def test_action_remote_server_url_mode_uses_jobs_api(capsys: pytest.CaptureFixtu
     without = FakeRunner(help_text="--out --voice")
     nc.process_pages(["letter-a.html"], cfg, without)
     assert not any("--server" in c for c in without.calls)
-    assert "S7-T04" in capsys.readouterr().out
+    assert "no --server flag" in capsys.readouterr().out
     with_flag = FakeRunner(help_text="--server TEXT")
     nc.process_pages(["letter-a.html"], cfg, with_flag)
     run = next(c for c in with_flag.calls if c[:2] == ["mr-audio-smith", "run"] and "--help" not in c)
