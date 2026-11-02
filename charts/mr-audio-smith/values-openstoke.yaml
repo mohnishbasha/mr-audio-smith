@@ -52,7 +52,7 @@ maya2:
   persistence: {size: 50Gi, storageClass: local-path}
   gpu:
     mode: cdi
-    cdiDevices: all
+    cdiDevices: "nvidia.com/gpu=all"
   startupFailureThreshold: 180
 
 ollama:

@@ -180,7 +180,7 @@ maya2:
     mode: device-plugin
     count: 1
     resourceName: nvidia.com/gpu
-    cdiDevices: all
+    cdiDevices: "nvidia.com/gpu=all"
   extraEnv: []
   startupFailureThreshold: 180   # x10s: first start downloads and loads the model
   resources:

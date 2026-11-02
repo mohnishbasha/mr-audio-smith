@@ -34,7 +34,7 @@ app.kubernetes.io/component: {{ .component }}
 {{- end }}
 
 {{- define "mr-audio-smith.image" -}}
-{{- printf "%s:%s%s" .Values.image.repository (default .Chart.AppVersion .Values.image.tag) .Values.image.variant }}
+{{- printf "%s:%s%s" .Values.image.repository (toString (default .Chart.AppVersion .Values.image.tag)) .Values.image.variant }}
 {{- end }}
 
 {{- define "mr-audio-smith.secretName" -}}

@@ -307,7 +307,7 @@ echo "3/6 apply on $HOME_UNIT"
 # Remember what is running now: the prune below keeps it, so a rollback still has its image.
 previous=$(running_image)
 # shellcheck disable=SC2086
-{ namespace_manifest; echo ---; render values-openstoke.yaml --set image.tag="$tag" --set maya2.image.tag="$MAYA_TAG" $HELM_EXTRA; } \
+{ namespace_manifest; echo ---; render values-openstoke.yaml --set-string image.tag="$tag" --set-string maya2.image.tag="$MAYA_TAG" $HELM_EXTRA; } \
   | on "$HOME_UNIT" "$KUBE apply -n $NAMESPACE -f -"
 
 echo "4/6 stand-ins and routes on the other platform clusters"
