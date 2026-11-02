@@ -1,0 +1,11 @@
+id: custom-commute
+version: 0.2.0
+description: Commuter, eight minutes max
+audience:
+  attention_minutes: 8
+writing:
+  target_minutes: 8
+  spoken_transitions: true
+speech:
+  rate: 1.1
+languages: [en]

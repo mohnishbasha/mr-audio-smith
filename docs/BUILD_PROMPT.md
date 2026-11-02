@@ -25,6 +25,54 @@
 
 ---
 
+## Amendments recorded during execution (2026-11-02)
+
+The executing agent verified facts and made decisions that change or sharpen this prompt. The spec
+documents in `docs/` are the source of truth (Spec Change Protocol); this section mirrors them so the
+prompt stays accurate. Inline text below has been corrected where it was factually wrong.
+
+**Verified upstream facts (Maya 2 Native, github.com/MayaResearch/maya2-native, `maya3/client.py` and `maya3/server.py`)**
+- Server: `python -m maya3.server --ckpt maya-research/maya2-native --host 127.0.0.1 --port 8080 --max-seats N`. Default port is **8080**, not 8000, so `AUDIO_SMITH_MAYA2_URL` defaults to `http://127.0.0.1:8080/v1` and compose and Helm probes use 8080.
+- Speech: `POST /v1/audio/speech` `{model: "maya3", input, voice, language, response_format: "wav", normalize, seed, temperature (0.1..1.5), top_k, top_p, repetition_penalty, speed}`; **`speed` must be 1.0**, so speaking rate is applied after synthesis with ffmpeg `atempo` (ADR-016). Same seed, text, and voice give the same audio. 24 kHz mono.
+- Cloning: `POST /v1/voices` `{voice_id, ref_audio_b64, ref_text, lang, mode: icl_spk|icl|spk, replace}`; `GET /v1/voices`; `DELETE /v1/voices/{id}`. The adapter registers each consented clip as `as-{voice_id}-{clip_hash[:8]}`.
+- Health: `GET /health` returns 503 while loading and 200 when ready. Errors are `{"error": {message, type, code, param}}`; 503 is retryable.
+- In-process: `maya3.Maya3TTS.from_pretrained(...)`, `.generate(text, lang, voice)`, `.register_voice(...)`. `maya3` is **not on PyPI**, so the `maya2` extra only adds torch and the README documents the git install. Needs a Linux NVIDIA GPU (about 8 GB VRAM); no Apple MPS.
+
+**New decisions (ADRs added to docs/ARCHITECTURE.md)**
+- ADR-015: speaker similarity uses resemblyzer (`qa` extra), lazy-imported; skipped with a manifest warning when absent.
+- ADR-016: Maya 2 speaking rate is applied post-synthesis with ffmpeg `atempo`.
+- ADR-017: Kokoro does not install on Python 3.13+; the `kokoro` and `chatterbox` extras carry `python_version < "3.13"` markers and doctor hints to use 3.12.
+- ADR-018: delivery is one feature branch and one PR per sprint (`feature/sprint-N-<slug>`) that closes all of that sprint's issues, instead of one PR per task, because a single autonomous agent executes the plan. TDD, the Spec Change Protocol, and per-issue implementation comments still apply.
+
+**Contract and default changes**
+- Default profile is `kid-5` (the flagship listener), configurable with `AUDIO_SMITH_DEFAULT_PROFILE`.
+- LLM provider strings keep this prompt's format: `ollama:<model>`, `anthropic:<model-id>`, `openai_compat:<base_url>#<model>`, plus `fake` or `fake:<fixture-dir>` for tests.
+- Blocks cache key is `H(page bytes, extractor version, parent_headings)` (the content hash cannot be known before extraction); scripts, chunks, and tracks keep the keys in the Caching model, and the script key also includes the writer prompt template version and the track.
+- Local `.md` sources are converted to HTML and use the same extractor.
+- Script writer: the target-length check (plus or minus 20 percent) triggers the single corrective retry; if the retry is still off-length the result is kept with a warning (only grammar violations fail the run).
+- Profiles: `writing.parent_headings` routes a container whose first child is a matching label (or an `h2`-`h6` section with a matching heading) to the parent track; it is opt-in and the core has no magic strings.
+- Typed errors gain `LLMError` (code `llm_failed`, stage `script`, exit 5).
+- New helper modules: `audio_smith/proc.py` (the only place subprocesses start: argument arrays, timeouts), `audio_smith/paths.py` (`safe_slug`, `ensure_inside`, `atomic_write`), `audio_smith/preflight.py` (`PreflightIssue`), `audio_smith/cli_commands.py` (stage commands; also a front door under the import-linter contract).
+- Dependencies: `selectolax>=1.0` with the lexbor backend; `typer` vendors click (do not import click); `audioop-lts` on Python 3.13 for pydub.
+
+**Tooling added**
+- `scripts/sync-test-plan.py` marks TEST_PLAN rows Automated when a test with that exact id exists and appends unplanned tests to section 5.28; CI runs it with `--check`.
+- `scripts/record-llm.py` (`make record-llm`) records real Ollama responses into `tests/fixtures/llm/` for the fake provider; the golden script is the replay of that recording.
+- `scripts/check_em_dash.py` is the em dash hook; `scripts/create-issues.py` retries `gh` with backoff (GitHub rate-limits issue bursts).
+- pytest collects `test_*`, `it_*`, `smoke_*`, `e2e_*`, `regression_*` functions so TEST_PLAN ids are real test names.
+- `gpu-integration` lives in its own workflow and runs only when the repository variable `GPU_RUNNER_ENABLED` is `true`, so PRs never wait for a runner that does not exist.
+
+**GitHub setup as executed**
+- The repo was created from the local first commit (not with `--license/--gitignore`, which would have created a conflicting initial commit). Issues #1 to #68 are the sprint tasks in plan order (S0-T01 is #1, S9-T04 is #68); #69 to #80 are the out-of-scope enhancements.
+- The label taxonomy is 50 labels (the "44" count above undercounts the list); GitHub's default labels were removed.
+- The project board needs the `project` token scope (`gh auth refresh -s project,read:project`); `scripts/create-issues.py --project-only --project N` adds existing issues afterwards.
+- Branch protection: required approvals cannot be satisfied by a single-maintainer agent, so `enforce_admins` is false and release PRs into `staging`/`main` are merged by the admin; status checks are still required.
+
+**Cannot be completed by the agent (tracked as manual steps)**
+- GPU-runner Maya 2 integration, human listening tests, publishing to PyPI, npm, and GHCR (owner must configure trusted publishing), DNS for getaudiosmith.com.
+
+---
+
 ## EXECUTION ORDER: THIS IS MANDATORY
 
 The first action you take when executing this prompt is to generate the five product specification documents listed in Step 1 below. No GitHub setup, no scaffolding, no code of any kind is written before those documents exist on disk and are committed.
@@ -1368,7 +1416,7 @@ Regression tests are never deleted.
 
 ### S2-T03: Maya 2 Native backend
 - **Labels:** type: feature, area: tts, priority: p0, size: L, sprint: 2
-- **Description:** Adapter over S2-T02 pointed at the local Maya 2 server (`AUDIO_SMITH_MAYA2_URL`, default `http://127.0.0.1:8000/v1`). Built-in voice ids pass through. Cloned voices: upload or reference the registered clip per the server's documented mechanism (verify against the Maya 2 Native README at implementation time; the Python package and class are named `maya3` / `Maya3TTS` in the current release). Optional `--maya2-mode inproc` loads the model in-process via the Python package when the `maya2` extra is installed. Capabilities: 12 languages (en plus as, bn, gu, hi, kn, ml, mr, or, pa, ta, te), cloning true, 24 kHz, license Apache-2.0, commercial_ok true. Pause markers become separate requests joined by silence (Maya 2 has no inline tags); `*emphasis*` stripped.
+- **Description:** Adapter over S2-T02 pointed at the local Maya 2 server (`AUDIO_SMITH_MAYA2_URL`, default `http://127.0.0.1:8080/v1`, verified upstream default port). Built-in voice ids pass through. Cloned voices: register the consented `reference.24k.wav` once with `POST /v1/voices` `{voice_id, ref_audio_b64, ref_text, lang, mode, replace}` using voice id `as-{voice_id}-{clip_hash[:8]}` (idempotent), then pass that id as `voice` to `POST /v1/audio/speech`. The server requires `speed: 1.0`, so the profile speaking rate is applied after synthesis with ffmpeg `atempo` (ADR-016). The Python package and class are `maya3` / `Maya3TTS`; `maya3` is not on PyPI (install from git). Optional `--maya2-mode inproc` loads the model in-process via the Python package when the `maya2` extra is installed. Capabilities: 12 languages (en plus as, bn, gu, hi, kn, ml, mr, or, pa, ta, te), cloning true, 24 kHz, license Apache-2.0, commercial_ok true. Pause markers become separate requests joined by silence (Maya 2 has no inline tags); `*emphasis*` stripped.
 - **AC:** FR-010 ACs; `it_maya2_synth_clone_returns_24khz_mono` passes on the GPU runner; doctor reports server reachability and loaded model
 - **Depends on:** S2-T02, S2-T05
 
@@ -1970,7 +2018,7 @@ Three environments.
 | `AUDIO_SMITH_OUT_DIR` | `./out` | `/var/lib/audio-smith/out` | `./audio` | |
 | `AUDIO_SMITH_VOICES_DIR` | `./voices` | `/var/lib/audio-smith/voices` | `~/.config/audio-smith/voices` | 0700 dir |
 | `AUDIO_SMITH_DEFAULT_BACKEND` | `mock` | `maya2` | `maya2` | |
-| `AUDIO_SMITH_MAYA2_URL` | `http://127.0.0.1:8000/v1` | `http://maya2:8000/v1` | `http://127.0.0.1:8000/v1` | |
+| `AUDIO_SMITH_MAYA2_URL` | `http://127.0.0.1:8080/v1` | `http://maya2:8080/v1` | `http://127.0.0.1:8080/v1` | Maya 2 server default port is 8080 (verified) |
 | `AUDIO_SMITH_LLM` | `ollama:qwen3:0.6b` | `ollama:qwen3:14b` | `ollama:qwen3:14b` | Any provider string |
 | `OLLAMA_HOST` | `http://127.0.0.1:11434` | `http://ollama:11434` | `http://127.0.0.1:11434` | |
 | `ANTHROPIC_API_KEY` | unset | optional | optional | Only if anthropic provider used |
@@ -2000,7 +2048,7 @@ dependencies = [
   "typer>=0.12",
   "rich>=13.7",
   "httpx>=0.27",
-  "selectolax>=0.3.21",
+  "selectolax>=1.0",        # lexbor backend; the modest backend was removed in 1.0
   "trafilatura>=1.12",
   "emoji>=2.12",
   "pydantic>=2.8",
@@ -2016,8 +2064,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-maya2     = ["maya3"]                       # Maya 2 Native in-process; package name per its README
-kokoro    = ["kokoro>=0.9", "torch>=2.4"]
+maya2     = ["torch>=2.4"]                  # maya3 is not on PyPI (PyPI forbids URL deps); install it from git next to this extra
+kokoro    = ["kokoro>=0.9.4; python_version < '3.13'", "torch>=2.4; python_version < '3.13'"]  # ADR-017
 chatterbox= ["chatterbox-tts", "torch>=2.4"]
 qa        = ["resemblyzer>=0.1.4"]          # or speechbrain; decided by ADR in S3-T03
 cloud     = ["anthropic>=0.34"]
@@ -2433,13 +2481,13 @@ services:
   maya2:
     image: ghcr.io/serverless-ventures/maya2-server:pinned   # built from upstream; pin digest
     volumes: [models:/models]
-    healthcheck: {test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"], interval: 15s, retries: 40}
+    healthcheck: {test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"], interval: 15s, retries: 40}
     deploy: {resources: {reservations: {devices: [{capabilities: [gpu]}]}}}
   audio-smith:
     image: ghcr.io/serverless-ventures/mr-audio-smith:${VERSION:-latest}
     command: ["serve", "--host", "0.0.0.0"]
     environment:
-      AUDIO_SMITH_MAYA2_URL: http://maya2:8000/v1
+      AUDIO_SMITH_MAYA2_URL: http://maya2:8080/v1
       OLLAMA_HOST: http://ollama:11434
       AUDIO_SMITH_SERVER_TOKEN: ${AUDIO_SMITH_SERVER_TOKEN:?set a token}
     ports: ["127.0.0.1:7340:7340"]

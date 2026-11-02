@@ -1,0 +1,27 @@
+id: kid-8
+version: 1.0.0
+description: An eight-year-old listener who reads a little and loves stories and facts
+audience:
+  age: 8
+  attention_minutes: 10
+writing:
+  target_minutes: 7
+  max_sentence_words: 16
+  explain_big_words: true
+  spoken_transitions: true
+  interactive_moments: 1
+  keep_signature_verbatim: true
+  forbidden: [sarcasm, scary_detail]
+speech:
+  rate: 0.95
+  pause_after_heading_ms: 700
+  pause_between_chunks_ms: 320
+  max_chunk_chars: 380
+languages: [en]
+tracks:
+  parent: adult-brief
+mastering:
+  intro_sting: builtin:chime-soft
+  outro_sting: builtin:chime-soft
+  music_bed: null
+lexicon: {}

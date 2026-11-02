@@ -1,0 +1,275 @@
+{
+  "$defs": {
+    "Audience": {
+      "additionalProperties": false,
+      "properties": {
+        "age": {
+          "anyOf": [
+            {
+              "maximum": 99,
+              "minimum": 3,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Age"
+        },
+        "attention_minutes": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Attention Minutes"
+        }
+      },
+      "title": "Audience",
+      "type": "object"
+    },
+    "Mastering": {
+      "additionalProperties": false,
+      "properties": {
+        "intro_sting": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Intro Sting"
+        },
+        "music_bed": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Music Bed"
+        },
+        "outro_sting": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Outro Sting"
+        }
+      },
+      "title": "Mastering",
+      "type": "object"
+    },
+    "QA": {
+      "additionalProperties": false,
+      "properties": {
+        "takes_per_chunk": {
+          "default": 2,
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Takes Per Chunk",
+          "type": "integer"
+        },
+        "threshold": {
+          "default": 0.75,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Threshold",
+          "type": "number"
+        }
+      },
+      "title": "QA",
+      "type": "object"
+    },
+    "Speech": {
+      "additionalProperties": false,
+      "properties": {
+        "max_chunk_chars": {
+          "default": 400,
+          "maximum": 400,
+          "minimum": 80,
+          "title": "Max Chunk Chars",
+          "type": "integer"
+        },
+        "pause_after_heading_ms": {
+          "default": 600,
+          "maximum": 3000,
+          "minimum": 0,
+          "title": "Pause After Heading Ms",
+          "type": "integer"
+        },
+        "pause_between_chunks_ms": {
+          "default": 300,
+          "maximum": 3000,
+          "minimum": 0,
+          "title": "Pause Between Chunks Ms",
+          "type": "integer"
+        },
+        "rate": {
+          "default": 1.0,
+          "maximum": 2.0,
+          "minimum": 0.5,
+          "title": "Rate",
+          "type": "number"
+        }
+      },
+      "title": "Speech",
+      "type": "object"
+    },
+    "Writing": {
+      "additionalProperties": false,
+      "properties": {
+        "explain_big_words": {
+          "default": false,
+          "title": "Explain Big Words",
+          "type": "boolean"
+        },
+        "forbidden": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Forbidden",
+          "type": "array"
+        },
+        "interactive_moments": {
+          "default": 0,
+          "maximum": 10,
+          "minimum": 0,
+          "title": "Interactive Moments",
+          "type": "integer"
+        },
+        "keep_signature_verbatim": {
+          "default": true,
+          "title": "Keep Signature Verbatim",
+          "type": "boolean"
+        },
+        "max_sentence_words": {
+          "default": 20,
+          "maximum": 60,
+          "minimum": 4,
+          "title": "Max Sentence Words",
+          "type": "integer"
+        },
+        "parent_headings": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent Headings"
+        },
+        "spoken_transitions": {
+          "default": false,
+          "title": "Spoken Transitions",
+          "type": "boolean"
+        },
+        "target_minutes": {
+          "default": 5,
+          "maximum": 60,
+          "minimum": 0.5,
+          "title": "Target Minutes",
+          "type": "number"
+        }
+      },
+      "title": "Writing",
+      "type": "object"
+    }
+  },
+  "$id": "https://getaudiosmith.com/schemas/profile.schema.json",
+  "additionalProperties": false,
+  "description": "One listener description. Unknown keys are errors so typos never change behavior silently.",
+  "properties": {
+    "audience": {
+      "$ref": "#/$defs/Audience"
+    },
+    "description": {
+      "default": "",
+      "maxLength": 200,
+      "title": "Description",
+      "type": "string"
+    },
+    "id": {
+      "pattern": "^[a-z0-9][a-z0-9-]{0,39}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "languages": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Languages",
+      "type": "array"
+    },
+    "lexicon": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Lexicon",
+      "type": "object"
+    },
+    "mastering": {
+      "$ref": "#/$defs/Mastering"
+    },
+    "qa": {
+      "$ref": "#/$defs/QA"
+    },
+    "schema": {
+      "default": "audio-smith/profile@1",
+      "pattern": "^audio-smith/profile@1$",
+      "title": "Schema",
+      "type": "string"
+    },
+    "speech": {
+      "$ref": "#/$defs/Speech"
+    },
+    "tracks": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "propertyNames": {
+        "const": "parent"
+      },
+      "title": "Tracks",
+      "type": "object"
+    },
+    "version": {
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "title": "Version",
+      "type": "string"
+    },
+    "writing": {
+      "$ref": "#/$defs/Writing"
+    }
+  },
+  "required": [
+    "id",
+    "version"
+  ],
+  "title": "audio-smith/profile@1",
+  "type": "object"
+}

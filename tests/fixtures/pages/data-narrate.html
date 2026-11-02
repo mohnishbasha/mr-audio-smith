@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en-US">
+<head><title>Data narrate fixture</title><meta name="author" content="Test Parent"></head>
+<body>
+  <nav><a href="/">Home</a> <a href="/letters">Letters</a></nav>
+  <header><p>Site header text that must not be read</p></header>
+  <article><h1>Decoy article title</h1><p>Decoy article body should be ignored.</p></article>
+  <main data-narrate>
+    <h1>Our Rainy Day 🌧️</h1>
+    <p>Hello my little explorer 🇺🇸, today it rained all day.</p>
+    <aside>Sidebar promo</aside>
+    <div data-narrate="skip"><p>Subscribe to my newsletter!</p></div>
+    <h2>Three rainy day games</h2>
+    <ol>
+      <li><h3>Puddle jumping</h3><p>Find the biggest puddle and jump.</p></li>
+      <li><h3>Paper boats</h3><p>Fold a boat and race it.</p></li>
+    </ol>
+    <blockquote>Rain makes the flowers grow.</blockquote>
+    <p data-narrate-verbatim>Keep this sentence exactly as written.</p>
+    <section data-narrate="parent">
+      <h2>A grown-up note</h2>
+      <p>Wet shoes go by the door, please.</p>
+    </section>
+    <form><input name="q"><button>Search</button></form>
+    <script>document.write("never read")</script>
+    <style>p { color: red }</style>
+    <div data-narrate-role="signature">Love you to the moon, Mom</div>
+  </main>
+  <footer><p>Copyright footer</p></footer>
+</body>
+</html>

@@ -75,6 +75,15 @@ class ScriptInvalidError(AudioSmithError):
         self.violations = violations or []
 
 
+class LLMError(AudioSmithError):
+    """An LLM provider call failed (network, HTTP status, malformed reply, missing fixture)."""
+
+    code = "llm_failed"
+    stage = "script"
+    exit_code = 5
+    http_status = 502
+
+
 class SynthesisError(AudioSmithError):
     code = "synthesis_failed"
     stage = "synth"
