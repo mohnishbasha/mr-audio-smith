@@ -1201,6 +1201,27 @@ Row count: more than 120 scenarios across 27 tables.
 | `e2e_US017_studio_inject_diff_preview_before_write` | US017 studio inject diff preview before write | E2E | ✅ Automated |
 | `e2e_US017_studio_marker_autocomplete_pause` | US017 studio marker autocomplete pause | E2E | ✅ Automated |
 | `e2e_US017_studio_zero_external_requests` | US017 studio zero external requests | E2E | ✅ Automated |
+| `e2e_US006_player_axe_core_dark_error_state_zero_violations` | US006 player axe core dark error state zero violations | E2E | ✅ Automated |
+| `e2e_US006_player_axe_core_zero_violations` | US006 player axe core zero violations | E2E | ✅ Automated |
+| `e2e_US006_player_keyboard_arrows_seek_5s` | US006 player keyboard arrows seek 5s | E2E | ✅ Automated |
+| `e2e_US006_player_keyboard_play_pause` | US006 player keyboard play pause | E2E | ✅ Automated |
+| `e2e_US006_player_kid_size_variant_renders` | US006 player kid size variant renders | E2E | ✅ Automated |
+| `e2e_US006_player_language_toggle_switches_track` | US006 player language toggle switches track | E2E | ✅ Automated |
+| `e2e_US006_player_media_session_metadata_set` | US006 player media session metadata set | E2E | ✅ Automated |
+| `e2e_US006_player_no_js_fallback_native_audio_plays` | US006 player no js fallback native audio plays | E2E | ✅ Automated |
+| `e2e_US006_player_no_js_fallback_plays` | US006 player no js fallback plays | E2E | ✅ Automated |
+| `e2e_US006_player_reduced_motion_disables_breathing` | US006 player reduced motion disables breathing | E2E | ✅ Automated |
+| `e2e_US006_player_remembers_position_per_src` | US006 player remembers position per src | E2E | ✅ Automated |
+| `e2e_US006_player_storage_blocked_still_plays` | US006 player storage blocked still plays | E2E | ✅ Automated |
+| `e2e_US006_player_theme_auto_light_dark` | US006 player theme auto light dark | E2E | ✅ Automated |
+| `e2e_US012_player_captions_toggle` | US012 player captions toggle | E2E | ✅ Automated |
+| `e2e_US017_studio_approve_persists_in_manifest` | US017 studio approve persists in manifest | E2E | ✅ Automated |
+| `e2e_US017_studio_compare_takes_keep_best` | US017 studio compare takes keep best | E2E | ✅ Automated |
+| `e2e_US017_studio_edit_validate_save_chunk` | US017 studio edit validate save chunk | E2E | ✅ Automated |
+| `e2e_US017_studio_inject_diff_preview_before_write` | US017 studio inject diff preview before write | E2E | ✅ Automated |
+| `e2e_US017_studio_marker_autocomplete_pause` | US017 studio marker autocomplete pause | E2E | ✅ Automated |
+| `e2e_US017_studio_zero_external_requests` | US017 studio zero external requests | E2E | ✅ Automated |
+| `regression_cli_never_imports_click_directly` | cli never imports click directly | Regression | ✅ Automated |
 
 ## 6. Listening test protocol
 
