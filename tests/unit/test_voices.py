@@ -328,6 +328,7 @@ def test_voices_gitignore_blocks_reference_wav() -> None:
 # doctor
 
 
+@POSIX_ONLY
 def test_doctor_voices_check(vdir: Path) -> None:
     s = load_settings()
     assert doctor.voices_check(s).ok
@@ -344,6 +345,7 @@ def test_doctor_voices_check(vdir: Path) -> None:
 # CLI
 
 
+@POSIX_ONLY
 def test_voices_cli_add_list_check_remove(vdir: Path) -> None:
     add = ["voice", "add", "dad", "--clip", str(CLEAN), "--name", "Fixture Tone", "--relationship", "self"]
     r = runner.invoke(app, [*add, "--yes", "--text", "hello there"])
