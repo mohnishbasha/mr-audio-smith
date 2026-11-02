@@ -1,0 +1,10 @@
+# Project settings for the letters site. Secrets never go here.
+default_profile = "kid-5"
+default_voice = "dad"
+out_dir = "media/audio"
+profiles_dir = "./profiles"
+# Player snippet: a big friendly button for a five-year-old, media served from /media/audio/<slug>/.
+embed_label = "Listen to Dad read this letter"
+embed_size = "kid"
+embed_media_base = "/media/audio/"
+embed_script_path = "/media/audio/audio-smith-player.js"

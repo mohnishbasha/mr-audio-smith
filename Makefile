@@ -3,7 +3,13 @@ UV ?= uv
 PY_EXTRAS ?= --extra dev --extra server --extra mcp --extra cloud
 TS_PACKAGES := $(wildcard player/package-lock.json web/studio/package-lock.json integrations/pi/package-lock.json)
 
-.PHONY: install lint format typecheck test test-int coverage smoke e2e check-versions build licenses docs clean record-llm
+studio-build:
+	cd web/studio && npm ci && npm run build
+
+player-build:
+	cd player && npm ci && npm run build
+
+.PHONY: studio-build player-build install lint format typecheck test test-int coverage smoke e2e check-versions build licenses docs clean record-llm
 
 install:
 	$(UV) sync $(PY_EXTRAS)
@@ -39,7 +45,7 @@ smoke:
 	bash tests/smoke/smoke.sh
 
 e2e:
-	cd tests/e2e && npm ci && npx playwright test
+	cd tests/e2e && npm ci && npx playwright test && npx playwright test -c playwright.studio.config.ts
 
 check-versions:
 	./scripts/check-versions.sh

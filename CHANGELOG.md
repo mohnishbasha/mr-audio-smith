@@ -28,6 +28,13 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `render <script.md>` now produces the mastered track; `--chunks 3,7` previews just those chunks as WAV files.
 - Published JSON Schemas for blocks, scripts, profiles, voices, and manifests in `schemas/`.
 - Python API: `audio_smith.narrate(source, profile=..., voice=..., backend=...)`.
+- `<audio-smith-player>` web component (`@mr-audio-smith/player`, about 6.5 KB gzipped, no dependencies): breathing waveform, captions, language toggle, kid size, keyboard control, remembers your place, and a native audio fallback that works with JavaScript off.
+- Every run writes `<slug>.embed.html` and copies the player script; `run --inject page.html` and `mr-audio-smith inject` add the player between `<!-- audio-smith:start -->` and `<!-- audio-smith:end -->` without touching anything else in the page.
+- `embed_label`, `embed_size`, `embed_media_base`, and `embed_script_path` settings so a site configures its player once in `audio-smith.toml`.
+- `run --lang en,hi` (or `languages` in the profile) adds translated tracks in the same voice, with chunks and pauses kept aligned.
+- `mr-audio-smith site <index-url> --match "letter-*.html"` narrates every linked page, skips unchanged ones, and can inject into a local static-site checkout with `--inject-root`.
+- `mr-audio-smith studio`: a local review UI on 127.0.0.1 (per-session token, strict Content-Security-Policy, no external requests). Edit chunks with live validation, render takes, compare two takes side by side and keep the better one, re-master and preview in the real player, approve, and inject with a diff preview.
+- GitHub Action (`mohnishbasha/mr-audio-smith/action@v1`) narrates new or changed pages on push and commits the audio; example workflow and a complete letters-to-a-child example project.
 
 ### Fixed
 - The signature and other verbatim passages are always kept exactly as written, even when the language model blanks or rephrases them.

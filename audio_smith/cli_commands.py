@@ -15,6 +15,9 @@ from audio_smith.config import Settings, load_settings
 from audio_smith.errors import UsageError
 from audio_smith.profiles import load_all, load_file
 from audio_smith.profiles.loader import json_schema
+from audio_smith.publish.cli import register_publish_commands
+from audio_smith.site_cli import register_site_commands
+from audio_smith.studio.cli import register_studio_commands
 from audio_smith.voices.cli import register_voice_commands
 
 ProfileOpt = Annotated[
@@ -50,6 +53,9 @@ def register(app: typer.Typer, console: Console) -> None:
     register_profile_commands(app, console)
     register_cache_commands(app, console)
     register_voice_commands(app, console)
+    register_site_commands(app, console)
+    register_publish_commands(app, console)
+    register_studio_commands(app, console)
 
 
 def register_stage_commands(app: typer.Typer, console: Console) -> None:
@@ -97,6 +103,11 @@ def register_stage_commands(app: typer.Typer, console: Console) -> None:
         backend: BackendOpt = None,
         out: OutOpt = None,
         llm: LlmOpt = None,
+        lang: Annotated[str | None, typer.Option("--lang", help="Languages, e.g. en,hi.")] = None,
+        inject: Annotated[
+            Path | None, typer.Option("--inject", help="Local page to add the player to.")
+        ] = None,
+        selector: Annotated[str, typer.Option("--selector", help="Where markers go if absent.")] = "h1",
         approve: Annotated[bool, typer.Option("--approve", help="Review the script in $EDITOR.")] = False,
         force: ForceOpt = False,
         dry_run: Annotated[bool, typer.Option("--dry-run", help="Show the plan and cache status.")] = False,
@@ -113,6 +124,9 @@ def register_stage_commands(app: typer.Typer, console: Console) -> None:
             out=out,
             llm=llm,
             approve=approve,
+            langs=[x.strip() for x in lang.split(",") if x.strip()] if lang else None,
+            inject=inject,
+            selector=selector,
             force=force,
             dry_run=dry_run,
             settings=settings,
@@ -128,6 +142,10 @@ def register_stage_commands(app: typer.Typer, console: Console) -> None:
             )
         if res.manifest_path:
             typer.echo(f"manifest: {res.manifest_path}")
+        if res.embed_path:
+            typer.echo(f"embed: {res.embed_path}")
+        if res.injected:
+            typer.echo(f"injected: {res.injected} ({'updated' if res.inject_changed else 'unchanged'})")
         for w in res.warnings:
             console.print(f"[yellow]warning:[/yellow] {escape(w)}")
 

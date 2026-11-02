@@ -2,5 +2,32 @@
   "name": "@mr-audio-smith/player",
   "version": "0.0.1",
   "private": false,
-  "license": "MIT"
+  "license": "MIT",
+  "description": "Accessible, dependency-free <audio-smith-player> web component",
+  "type": "module",
+  "main": "dist/audio-smith-player.js",
+  "module": "dist/audio-smith-player.js",
+  "files": [
+    "dist"
+  ],
+  "sideEffects": true,
+  "scripts": {
+    "build": "bun build src/index.ts --minify --target=browser --format=esm --outfile=dist/audio-smith-player.js && bun build src/index.ts --minify --target=browser --format=iife --outfile=dist/audio-smith-player.iife.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . && prettier --check .",
+    "test": "vitest run",
+    "coverage": "vitest run --coverage",
+    "size": "node scripts/size.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.12.0",
+    "@types/node": "^22.7.0",
+    "@vitest/coverage-v8": "^2.1.0",
+    "eslint": "^9.12.0",
+    "happy-dom": "^15.7.0",
+    "prettier": "^3.3.0",
+    "typescript": "^5.6.0",
+    "typescript-eslint": "^8.8.0",
+    "vitest": "^2.1.0"
+  }
 }

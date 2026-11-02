@@ -1,11 +1,95 @@
 name: mr-audio-smith narrate
 description: Narrate new or changed pages of a static site with mr-audio-smith and commit the audio.
+branding:
+  icon: headphones
+  color: green
 inputs:
+  pages-glob:
+    description: Glob of page files to narrate, matched against changed files (for example "letter-*.html").
+    default: "*.html"
+  site-url:
+    description: Public base URL of the site, used to map files to page URLs.
+    default: ""
+  profile:
+    description: Profile id (kid-5, adult-brief, or a project profile).
+    default: ""
+  voice:
+    description: Registered voice id. Voice clips live on the runner or server and are never committed.
+    default: ""
+  backend:
+    description: TTS backend id.
+    default: ""
+  llm:
+    description: LLM provider string, for example ollama:qwen3:14b.
+    default: ""
+  server-url:
+    description: Remote mr-audio-smith serve URL instead of a local GPU (needs S7-T04).
+    default: ""
+  server-token:
+    description: Bearer token for server-url. Pass it from a secret.
+    default: ""
+  commit:
+    description: Commit the generated audio and edited pages.
+    default: "true"
+  output-dir:
+    description: Directory for generated audio, captions, and manifests.
+    default: media/audio
   image-tag:
     description: mr-audio-smith version to install
     default: 0.0.1
+  python-version:
+    description: Python version for the tool environment.
+    default: "3.12"
+outputs:
+  count:
+    description: Number of pages narrated.
+    value: ${{ steps.narrate.outputs.count }}
 runs:
   using: composite
   steps:
-    - shell: bash
-      run: echo "implemented in S4-T06"
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+    - name: Install mr-audio-smith
+      shell: bash
+      env:
+        AS_VERSION: ${{ inputs.image-tag }}
+        AS_PYTHON: ${{ inputs.python-version }}
+        AS_ACTION_PATH: ${{ github.action_path }}
+      run: |
+        uv tool install --python "$AS_PYTHON" "mr-audio-smith==${AS_VERSION}" \
+          || uv tool install --python "$AS_PYTHON" "${AS_ACTION_PATH}/.."
+        echo "$(uv tool dir --bin)" >> "$GITHUB_PATH"
+    - name: Narrate changed pages
+      id: narrate
+      shell: bash
+      env:
+        AS_PAGES_GLOB: ${{ inputs.pages-glob }}
+        AS_SITE_URL: ${{ inputs.site-url }}
+        AS_PROFILE: ${{ inputs.profile }}
+        AS_VOICE: ${{ inputs.voice }}
+        AS_BACKEND: ${{ inputs.backend }}
+        AS_LLM: ${{ inputs.llm }}
+        AS_SERVER_URL: ${{ inputs.server-url }}
+        AS_SERVER_TOKEN: ${{ inputs.server-token }}
+        AS_OUTPUT_DIR: ${{ inputs.output-dir }}
+        AS_PYTHON: ${{ inputs.python-version }}
+        AS_ACTION_PATH: ${{ github.action_path }}
+      run: uv run --no-project --python "$AS_PYTHON" python "${AS_ACTION_PATH}/narrate-changed.py"
+    - name: Commit audio
+      if: ${{ inputs.commit == 'true' && steps.narrate.outputs.count != '0' }}
+      shell: bash
+      env:
+        AS_MESSAGE: ${{ steps.narrate.outputs.message }}
+        AS_PATHS_FILE: ${{ steps.narrate.outputs.paths-file }}
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git add --pathspec-from-file="$AS_PATHS_FILE"
+        if git diff --cached --quiet; then
+          echo "No audio changes to commit."
+          exit 0
+        fi
+        git commit -m "$AS_MESSAGE"
+        git push

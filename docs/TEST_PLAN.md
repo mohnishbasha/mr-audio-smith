@@ -317,11 +317,11 @@ Conventions: ids follow section 3. Types are Unit, Integration, Smoke, E2E, Regr
 
 | ID | Scenario | Type | Status |
 |---|---|---|---|
-| `test_translate_preserves_chunk_count_and_pauses` | Translation alignment | Unit | ⚠️ Deferred |
-| `test_translate_output_named_slug_lang_script_md` | `{slug}.hi.script.md` written | Unit | ⚠️ Deferred |
-| `test_translate_misaligned_output_retried_then_fails` | Chunk count mismatch triggers corrective retry | Unit | ⚠️ Deferred |
-| `test_translate_backend_lacking_language_fails_preflight` | Clear message for unsupported language | Unit | ⚠️ Deferred |
-| `test_translate_manifest_lists_language_tracks` | Manifest `tracks` has one entry per language | Unit | ⚠️ Deferred |
+| `test_translate_preserves_chunk_count_and_pauses` | Translation alignment | Unit | ✅ Automated |
+| `test_translate_output_named_slug_lang_script_md` | `{slug}.hi.script.md` written | Unit | ✅ Automated |
+| `test_translate_misaligned_output_retried_then_fails` | Chunk count mismatch triggers corrective retry | Unit | ✅ Automated |
+| `test_translate_backend_lacking_language_fails_preflight` | Clear message for unsupported language | Unit | ✅ Automated |
+| `test_translate_manifest_lists_language_tracks` | Manifest `tracks` has one entry per language | Unit | ✅ Automated |
 | `it_maya2_translate_hindi_track_rendered` | Hindi track rendered with cross-lingual cloned voice | Integration | ❌ Skipped: requires NVIDIA GPU runner. Manual step: on a GPU machine run `mr-audio-smith run <letter> --langs en,hi --voice <clone>` and confirm `{slug}.hi.mp3` plays in the cloned voice |
 
 ### 5.8 TTS backends (FR-009, FR-010)
@@ -519,9 +519,9 @@ Conventions: ids follow section 3. Types are Unit, Integration, Smoke, E2E, Regr
 | `e2e_US006_player_remembers_position_per_src` | Resume position from localStorage | E2E | ⚠️ Deferred |
 | `e2e_US006_player_localstorage_blocked_still_works` | try/catch around storage | E2E | ⚠️ Deferred |
 | `e2e_US006_player_media_session_metadata_set` | Media Session API title and artwork | E2E | ⚠️ Deferred |
-| `test_player_attributes_parse_tracks_json` | `tracks` JSON parsed; invalid JSON handled | Unit | ⚠️ Deferred |
-| `test_player_captions_cue_active_class_follows_time` | Active cue tracking (vitest) | Unit | ⚠️ Deferred |
-| `test_player_no_external_network_requests` | Player makes no third-party requests | Unit | ⚠️ Deferred |
+| `test_player_attributes_parse_tracks_json` | `tracks` JSON parsed; invalid JSON handled | Unit | ✅ Automated |
+| `test_player_captions_cue_active_class_follows_time` | Active cue tracking (vitest) | Unit | ✅ Automated |
+| `test_player_no_external_network_requests` | Player makes no third-party requests | Unit | ✅ Automated |
 | `e2e_US006_player_browser_matrix_chrome_firefox_safari` | Playback in Chromium, Firefox, WebKit | E2E | ❌ Skipped: WebKit and real Safari audio behavior needs a human. Manual step: open the example page in current Safari (macOS and iOS), Firefox, and Chrome; verify play, seek, captions, and language toggle |
 | `e2e_US006_player_screen_reader_announcements` | Screen reader labels and live-region announcements | E2E | ❌ Skipped: human required. Manual step: with VoiceOver (macOS) and NVDA (Windows), tab to the player and confirm labels, state changes, and caption toggle are announced |
 
@@ -529,45 +529,45 @@ Conventions: ids follow section 3. Types are Unit, Integration, Smoke, E2E, Regr
 
 | ID | Scenario | Type | Status |
 |---|---|---|---|
-| `test_embed_snippet_wraps_audio_fallback_inside_component` | Plain `<audio>` inside `<audio-smith-player>` | Unit | ⚠️ Deferred |
-| `test_embed_snippet_includes_captions_track` | `<track kind="captions">` present | Unit | ⚠️ Deferred |
-| `test_embed_snippet_language_toggle_only_when_multiple_languages` | Toggle conditional | Unit | ⚠️ Deferred |
-| `test_embed_snippet_valid_html` | Parses cleanly | Unit | ⚠️ Deferred |
-| `test_embed_script_ref_self_hosted_default_path` | `/media/audio/audio-smith-player.js` and file copied | Unit | ⚠️ Deferred |
-| `test_embed_script_ref_jsdelivr_pinned_exact_version` | jsDelivr URL pins the exact version | Unit | ⚠️ Deferred |
-| `test_inject_idempotent_second_run_no_diff` | Inject idempotence | Unit | ⚠️ Deferred |
-| `test_inject_outside_markers_untouched` | Inject safety (byte-identical outside markers) | Unit | ⚠️ Deferred |
-| `test_inject_creates_markers_after_selector_when_absent` | Default selector `h1` | Unit | ⚠️ Deferred |
-| `test_inject_custom_selector_flag` | `--selector` honored | Unit | ⚠️ Deferred |
-| `test_inject_dry_run_prints_unified_diff_writes_nothing` | Dry run | Unit | ⚠️ Deferred |
-| `test_inject_replaces_existing_marker_content` | Stale snippet replaced | Unit | ⚠️ Deferred |
-| `test_inject_preserves_original_formatting_no_dom_reserialize` | Splice on offsets | Unit | ⚠️ Deferred |
-| `test_inject_reference_letter_fixture_idempotent` | Sprint 4 gate on `letter-calm.html` | Unit | ⚠️ Deferred |
+| `test_embed_snippet_wraps_audio_fallback_inside_component` | Plain `<audio>` inside `<audio-smith-player>` | Unit | ✅ Automated |
+| `test_embed_snippet_includes_captions_track` | `<track kind="captions">` present | Unit | ✅ Automated |
+| `test_embed_snippet_language_toggle_only_when_multiple_languages` | Toggle conditional | Unit | ✅ Automated |
+| `test_embed_snippet_valid_html` | Parses cleanly | Unit | ✅ Automated |
+| `test_embed_script_ref_self_hosted_default_path` | `/media/audio/audio-smith-player.js` and file copied | Unit | ✅ Automated |
+| `test_embed_script_ref_jsdelivr_pinned_exact_version` | jsDelivr URL pins the exact version | Unit | ✅ Automated |
+| `test_inject_idempotent_second_run_no_diff` | Inject idempotence | Unit | ✅ Automated |
+| `test_inject_outside_markers_untouched` | Inject safety (byte-identical outside markers) | Unit | ✅ Automated |
+| `test_inject_creates_markers_after_selector_when_absent` | Default selector `h1` | Unit | ✅ Automated |
+| `test_inject_custom_selector_flag` | `--selector` honored | Unit | ✅ Automated |
+| `test_inject_dry_run_prints_unified_diff_writes_nothing` | Dry run | Unit | ✅ Automated |
+| `test_inject_replaces_existing_marker_content` | Stale snippet replaced | Unit | ✅ Automated |
+| `test_inject_preserves_original_formatting_no_dom_reserialize` | Splice on offsets | Unit | ✅ Automated |
+| `test_inject_reference_letter_fixture_idempotent` | Sprint 4 gate on `letter-calm.html` | Unit | ✅ Automated |
 
 ### 5.20 Site batch mode (FR-019)
 
 | ID | Scenario | Type | Status |
 |---|---|---|---|
-| `test_site_same_origin_links_only` | Cross-origin links dropped | Unit | ⚠️ Deferred |
-| `test_site_match_glob_filters_links` | `--match` applied | Unit | ⚠️ Deferred |
-| `test_site_max_pages_limit_respected` | Stops at the limit | Unit | ⚠️ Deferred |
-| `test_site_unchanged_page_skipped_by_hash` | Skips on identical hash | Unit | ⚠️ Deferred |
-| `test_site_fixture_index_second_run_renders_zero` | 3-page fixture, second run renders 0 | Unit | ⚠️ Deferred |
-| `test_site_summary_table_columns_page_status_duration` | Table shape and statuses (cached, rendered, failed) | Unit | ⚠️ Deferred |
-| `test_site_one_page_failure_does_not_abort_batch` | Failure recorded, run continues | Unit | ⚠️ Deferred |
-| `test_site_inject_root_maps_urls_to_local_files` | `--inject-root` mapping | Unit | ⚠️ Deferred |
-| `test_examples_letters_to_a_child_runs_with_mock` | Example project runs end to end with mocks in CI | Smoke | ⚠️ Deferred |
+| `test_site_same_origin_links_only` | Cross-origin links dropped | Unit | ✅ Automated |
+| `test_site_match_glob_filters_links` | `--match` applied | Unit | ✅ Automated |
+| `test_site_max_pages_limit_respected` | Stops at the limit | Unit | ✅ Automated |
+| `test_site_unchanged_page_skipped_by_hash` | Skips on identical hash | Unit | ✅ Automated |
+| `test_site_fixture_index_second_run_renders_zero` | 3-page fixture, second run renders 0 | Unit | ✅ Automated |
+| `test_site_summary_table_columns_page_status_duration` | Table shape and statuses (cached, rendered, failed) | Unit | ✅ Automated |
+| `test_site_one_page_failure_does_not_abort_batch` | Failure recorded, run continues | Unit | ✅ Automated |
+| `test_site_inject_root_maps_urls_to_local_files` | `--inject-root` mapping | Unit | ✅ Automated |
+| `test_examples_letters_to_a_child_runs_with_mock` | Example project runs end to end with mocks in CI | Smoke | ✅ Automated |
 
 ### 5.21 GitHub Action (FR-025)
 
 | ID | Scenario | Type | Status |
 |---|---|---|---|
-| `test_action_yml_inputs_and_composite_steps_valid` | `action/action.yml` schema valid (actionlint) | Unit | ⚠️ Deferred |
-| `test_action_only_files_matching_glob_processed` | Glob filter on changed files | Unit | ⚠️ Deferred |
+| `test_action_yml_inputs_and_composite_steps_valid` | `action/action.yml` schema valid (actionlint) | Unit | ✅ Automated |
+| `test_action_only_files_matching_glob_processed` | Glob filter on changed files | Unit | ✅ Automated |
 | `test_action_noop_when_hashes_unchanged` | No commit when nothing changed | Unit | ⚠️ Deferred |
-| `test_action_commit_message_format_skip_ci` | `chore(audio): narrate {n} pages [skip ci]` | Unit | ⚠️ Deferred |
-| `test_action_remote_server_url_mode_uses_jobs_api` | `server-url` and `server-token` path | Unit | ⚠️ Deferred |
-| `test_action_no_voice_clips_in_site_repo` | Clips never committed | Unit | ⚠️ Deferred |
+| `test_action_commit_message_format_skip_ci` | `chore(audio): narrate {n} pages [skip ci]` | Unit | ✅ Automated |
+| `test_action_remote_server_url_mode_uses_jobs_api` | `server-url` and `server-token` path | Unit | ✅ Automated |
+| `test_action_no_voice_clips_in_site_repo` | Clips never committed | Unit | ✅ Automated |
 | `it_action_throwaway_repo_run_green` | Action green in a test repo (via `act` or test repo) | Integration | ❌ Skipped: needs a GitHub test repo or a self-hosted GPU runner. Manual step: push a change to the throwaway repo and confirm the workflow commits outputs, then re-push and confirm a no-op |
 
 ### 5.22 Studio (FR-022)
@@ -581,12 +581,12 @@ Conventions: ids follow section 3. Types are Unit, Integration, Smoke, E2E, Regr
 | `e2e_US017_studio_approve_persists_in_manifest` | Approve writes `approved: true` | E2E | ⚠️ Deferred |
 | `e2e_US017_studio_inject_diff_preview_before_write` | Diff shown before the file changes | E2E | ⚠️ Deferred |
 | `e2e_US017_studio_zero_external_requests` | Request interception shows no external hosts | E2E | ⚠️ Deferred |
-| `test_studio_binds_127_0_0_1_by_default` | Loopback default | Unit | ⚠️ Deferred |
-| `test_studio_routes_require_session_token` | Missing or wrong token gets 401/403 | Unit | ⚠️ Deferred |
-| `test_studio_save_script_runs_validation` | Invalid script rejected with chunk numbers | Unit | ⚠️ Deferred |
-| `test_studio_render_chunk_returns_take_id` | Take id returned | Unit | ⚠️ Deferred |
-| `test_studio_list_takes_includes_similarity_scores` | Scores in listing | Unit | ⚠️ Deferred |
-| `test_studio_select_take_and_remaster` | Selection triggers re-master | Unit | ⚠️ Deferred |
+| `test_studio_binds_127_0_0_1_by_default` | Loopback default | Unit | ✅ Automated |
+| `test_studio_routes_require_session_token` | Missing or wrong token gets 401/403 | Unit | ✅ Automated |
+| `test_studio_save_script_runs_validation` | Invalid script rejected with chunk numbers | Unit | ✅ Automated |
+| `test_studio_render_chunk_returns_take_id` | Take id returned | Unit | ✅ Automated |
+| `test_studio_list_takes_includes_similarity_scores` | Scores in listing | Unit | ✅ Automated |
+| `test_studio_select_take_and_remaster` | Selection triggers re-master | Unit | ✅ Automated |
 
 ### 5.23 HTTP server (FR-023)
 
@@ -769,7 +769,6 @@ Row count: more than 120 scenarios across 27 tables.
 | `test_script_verbatim_signature_moved_to_end` | script verbatim signature moved to end | Unit | ✅ Automated |
 | `test_api_render_applies_lexicon_at_synthesis_only` | api render applies lexicon at synthesis only | Unit | ✅ Automated |
 | `test_api_render_default_voice_is_backend_builtin` | api render default voice is backend builtin | Unit | ✅ Automated |
-| `test_api_render_mock_writes_one_wav_per_chunk` | api render mock writes one wav per chunk | Unit | ✅ Automated |
 | `test_api_render_noncommercial_backend_requires_flag` | api render noncommercial backend requires flag | Unit | ✅ Automated |
 | `test_api_render_registered_voice_with_consent_renders` | api render registered voice with consent renders | Unit | ✅ Automated |
 | `test_api_render_subset_chunks` | api render subset chunks | Unit | ✅ Automated |
@@ -890,6 +889,141 @@ Row count: more than 120 scenarios across 27 tables.
 | `test_vtt_empty_text_yields_no_cues_and_write` | vtt empty text yields no cues and write | Unit | ✅ Automated |
 | `test_vtt_escapes_markup` | vtt escapes markup | Unit | ✅ Automated |
 | `test_vtt_long_sentence_split_at_comma` | vtt long sentence split at comma | Unit | ✅ Automated |
+| `test_action_changed_files_mapped_to_urls` | action changed files mapped to urls | Unit | ✅ Automated |
+| `test_action_command_construction_run_then_inject` | action command construction run then inject | Unit | ✅ Automated |
+| `test_action_failed_page_does_not_stop_the_rest` | action failed page does not stop the rest | Unit | ✅ Automated |
+| `test_action_falls_back_to_all_files` | action falls back to all files | Unit | ✅ Automated |
+| `test_action_noop_when_nothing_changed` | action noop when nothing changed | Unit | ✅ Automated |
+| `test_action_slug_matches_package_slug` | action slug matches package slug | Unit | ✅ Automated |
+| `test_embed_copy_player_script_none_when_not_built` | embed copy player script none when not built | Unit | ✅ Automated |
+| `test_embed_escapes_hostile_label` | embed escapes hostile label | Unit | ✅ Automated |
+| `test_embed_excludes_parent_track` | embed excludes parent track | Unit | ✅ Automated |
+| `test_embed_find_player_returns_path_or_none` | embed find player returns path or none | Unit | ✅ Automated |
+| `test_embed_media_base_prefix_and_write` | embed media base prefix and write | Unit | ✅ Automated |
+| `test_embed_no_captions_omits_track_and_attr` | embed no captions omits track and attr | Unit | ✅ Automated |
+| `test_embed_no_main_track_raises` | embed no main track raises | Unit | ✅ Automated |
+| `test_embed_works_without_js` | embed works without js | Unit | ✅ Automated |
+| `test_examples_letters_to_a_child_profile_override_loads` | examples letters to a child profile override loads | Unit | ✅ Automated |
+| `test_inject_bad_markers_raise` | inject bad markers raise | Unit | ✅ Automated |
+| `test_inject_cli_rejects_bad_size` | inject cli rejects bad size | Unit | ✅ Automated |
+| `test_inject_cli_writes_then_reports_unchanged` | inject cli writes then reports unchanged | Unit | ✅ Automated |
+| `test_inject_file_crlf_bytes_preserved` | inject file crlf bytes preserved | Unit | ✅ Automated |
+| `test_inject_preserves_crlf` | inject preserves crlf | Unit | ✅ Automated |
+| `test_inject_selector_not_found_or_bad` | inject selector not found or bad | Unit | ✅ Automated |
+| `test_inject_self_closing_and_unclosed_target` | inject self closing and unclosed target | Unit | ✅ Automated |
+| `test_site_cli_exit_code_6_when_any_page_failed` | site cli exit code 6 when any page failed | Unit | ✅ Automated |
+| `test_site_inject_root_rejects_path_traversal` | site inject root rejects path traversal | Unit | ✅ Automated |
+| `test_site_missing_local_file_is_a_failed_row` | site missing local file is a failed row | Unit | ✅ Automated |
+| `test_site_shares_one_backend_instance_across_pages` | site shares one backend instance across pages | Unit | ✅ Automated |
+| `test_translate_alignment_detects_heading_changes` | translate alignment detects heading changes | Unit | ✅ Automated |
+| `test_translate_retry_fixes_dropped_pause` | translate retry fixes dropped pause | Unit | ✅ Automated |
+| `test_unified_diff_labels_path` | unified diff labels path | Unit | ✅ Automated |
+| `e2e_US006_player_axe_core_dark_error_state_zero_violations` | US006 player axe core dark error state zero violations | E2E | ✅ Automated |
+| `e2e_US006_player_axe_core_zero_violations` | US006 player axe core zero violations | E2E | ✅ Automated |
+| `e2e_US006_player_keyboard_arrows_seek_5s` | US006 player keyboard arrows seek 5s | E2E | ✅ Automated |
+| `e2e_US006_player_keyboard_play_pause` | US006 player keyboard play pause | E2E | ✅ Automated |
+| `e2e_US006_player_kid_size_variant_renders` | US006 player kid size variant renders | E2E | ✅ Automated |
+| `e2e_US006_player_language_toggle_switches_track` | US006 player language toggle switches track | E2E | ✅ Automated |
+| `e2e_US006_player_media_session_metadata_set` | US006 player media session metadata set | E2E | ✅ Automated |
+| `e2e_US006_player_no_js_fallback_native_audio_plays` | US006 player no js fallback native audio plays | E2E | ✅ Automated |
+| `e2e_US006_player_no_js_fallback_plays` | US006 player no js fallback plays | E2E | ✅ Automated |
+| `e2e_US006_player_reduced_motion_disables_breathing` | US006 player reduced motion disables breathing | E2E | ✅ Automated |
+| `e2e_US006_player_remembers_position_per_src` | US006 player remembers position per src | E2E | ✅ Automated |
+| `e2e_US006_player_storage_blocked_still_plays` | US006 player storage blocked still plays | E2E | ✅ Automated |
+| `e2e_US006_player_theme_auto_light_dark` | US006 player theme auto light dark | E2E | ✅ Automated |
+| `e2e_US012_player_captions_toggle` | US012 player captions toggle | E2E | ✅ Automated |
+| `e2e_US017_studio_approve_persists_in_manifest` | US017 studio approve persists in manifest | E2E | ✅ Automated |
+| `e2e_US017_studio_compare_takes_keep_best` | US017 studio compare takes keep best | E2E | ✅ Automated |
+| `e2e_US017_studio_edit_validate_save_chunk` | US017 studio edit validate save chunk | E2E | ✅ Automated |
+| `e2e_US017_studio_inject_diff_preview_before_write` | US017 studio inject diff preview before write | E2E | ✅ Automated |
+| `e2e_US017_studio_marker_autocomplete_pause` | US017 studio marker autocomplete pause | E2E | ✅ Automated |
+| `e2e_US017_studio_zero_external_requests` | US017 studio zero external requests | E2E | ✅ Automated |
+| `test_narrate_embed_options_from_settings` | narrate embed options from settings | Unit | ✅ Automated |
+| `test_narrate_inject_writes_markers_once` | narrate inject writes markers once | Unit | ✅ Automated |
+| `test_player_adopts_slotted_audio_and_hides_native_controls` | player adopts slotted audio and hides native controls | Unit | ✅ Automated |
+| `test_player_attributes_invalid_tracks_json_falls_back` | player attributes invalid tracks json falls back | Unit | ✅ Automated |
+| `test_player_captions_failure_hides_toggle_without_blocking_audio` | player captions failure hides toggle without blocking audio | Unit | ✅ Automated |
+| `test_player_captions_fetch_parses_body` | player captions fetch parses body | Unit | ✅ Automated |
+| `test_player_captions_fetch_rejects_on_http_error` | player captions fetch rejects on http error | Unit | ✅ Automated |
+| `test_player_captions_ignore_malformed_blocks` | player captions ignore malformed blocks | Unit | ✅ Automated |
+| `test_player_captions_labels_overridable` | player captions labels overridable | Unit | ✅ Automated |
+| `test_player_captions_parse_webvtt_cues` | player captions parse webvtt cues | Unit | ✅ Automated |
+| `test_player_captions_toggle_shows_cue_and_persists` | player captions toggle shows cue and persists | Unit | ✅ Automated |
+| `test_player_creates_audio_when_none_slotted` | player creates audio when none slotted | Unit | ✅ Automated |
+| `test_player_debug_attribute_logs_state_transitions` | player debug attribute logs state transitions | Unit | ✅ Automated |
+| `test_player_disconnect_saves_position_and_cleans_up` | player disconnect saves position and cleans up | Unit | ✅ Automated |
+| `test_player_download_is_opt_in` | player download is opt in | Unit | ✅ Automated |
+| `test_player_error_state_has_retry_and_custom_copy` | player error state has retry and custom copy | Unit | ✅ Automated |
+| `test_player_error_while_going_offline_switches_to_offline` | player error while going offline switches to offline | Unit | ✅ Automated |
+| `test_player_keyboard_arrows_seek_5s_and_clamp` | player keyboard arrows seek 5s and clamp | Unit | ✅ Automated |
+| `test_player_keyboard_c_and_l_ignored_without_captions_or_tracks` | player keyboard c and l ignored without captions or tracks | Unit | ✅ Automated |
+| `test_player_keyboard_ignores_modifiers_and_unknown_keys` | player keyboard ignores modifiers and unknown keys | Unit | ✅ Automated |
+| `test_player_keyboard_k_and_space_toggle` | player keyboard k and space toggle | Unit | ✅ Automated |
+| `test_player_keyboard_space_on_button_left_to_native_click` | player keyboard space on button left to native click | Unit | ✅ Automated |
+| `test_player_label_default_and_override` | player label default and override | Unit | ✅ Automated |
+| `test_player_language_switch_keeps_relative_position_and_playing` | player language switch keeps relative position and playing | Unit | ✅ Automated |
+| `test_player_language_switch_restarts_when_durations_differ` | player language switch restarts when durations differ | Unit | ✅ Automated |
+| `test_player_language_toggle_only_when_multiple_tracks` | player language toggle only when multiple tracks | Unit | ✅ Automated |
+| `test_player_loading_text_only_after_300ms` | player loading text only after 300ms | Unit | ✅ Automated |
+| `test_player_localstorage_blocked_still_works` | player localstorage blocked still works | Unit | ✅ Automated |
+| `test_player_media_session_metadata_set` | player media session metadata set | Unit | ✅ Automated |
+| `test_player_no_autoplay_on_connect` | player no autoplay on connect | Unit | ✅ Automated |
+| `test_player_no_captions_attribute_hides_toggle` | player no captions attribute hides toggle | Unit | ✅ Automated |
+| `test_player_offline_state_disables_retry_until_online` | player offline state disables retry until online | Unit | ✅ Automated |
+| `test_player_play_rejection_not_allowed_returns_to_idle` | player play rejection not allowed returns to idle | Unit | ✅ Automated |
+| `test_player_remembers_position_per_src` | player remembers position per src | Unit | ✅ Automated |
+| `test_player_replay_after_end_restarts_at_zero` | player replay after end restarts at zero | Unit | ✅ Automated |
+| `test_player_size_kid_sets_variant` | player size kid sets variant | Unit | ✅ Automated |
+| `test_player_state_idle_to_playing_to_paused_to_ended` | player state idle to playing to paused to ended | Unit | ✅ Automated |
+| `test_player_theme_attribute_reaches_stylesheet` | player theme attribute reaches stylesheet | Unit | ✅ Automated |
+| `test_player_time_format` | player time format | Unit | ✅ Automated |
+| `test_player_waveform_bar_height_range` | player waveform bar height range | Unit | ✅ Automated |
+| `test_player_waveform_bars_left_of_playhead_filled` | player waveform bars left of playhead filled | Unit | ✅ Automated |
+| `test_player_waveform_click_seeks` | player waveform click seeks | Unit | ✅ Automated |
+| `test_player_waveform_ended_fills_all_no_head` | player waveform ended fills all no head | Unit | ✅ Automated |
+| `test_player_waveform_flat_fallback_without_peaks` | player waveform flat fallback without peaks | Unit | ✅ Automated |
+| `test_player_waveform_parse_peaks_malformed_returns_null` | player waveform parse peaks malformed returns null | Unit | ✅ Automated |
+| `test_player_waveform_parse_peaks_valid` | player waveform parse peaks valid | Unit | ✅ Automated |
+| `test_player_waveform_slider_semantics` | player waveform slider semantics | Unit | ✅ Automated |
+| `test_studio_api_media_fetched_with_token_and_cached` | studio api media fetched with token and cached | Unit | ✅ Automated |
+| `test_studio_api_non_json_error_and_network_failure` | studio api non json error and network failure | Unit | ✅ Automated |
+| `test_studio_api_problem_json_error` | studio api problem json error | Unit | ✅ Automated |
+| `test_studio_api_request_shapes` | studio api request shapes | Unit | ✅ Automated |
+| `test_studio_api_sends_token_header_on_every_request` | studio api sends token header on every request | Unit | ✅ Automated |
+| `test_studio_approve_persists_in_manifest` | studio approve persists in manifest | Unit | ✅ Automated |
+| `test_studio_approve_without_manifest_is_400` | studio approve without manifest is 400 | Unit | ✅ Automated |
+| `test_studio_cli_explains_missing_server_extra` | studio cli explains missing server extra | Unit | ✅ Automated |
+| `test_studio_cli_opens_browser_unless_no_open` | studio cli opens browser unless no open | Unit | ✅ Automated |
+| `test_studio_failed_render_marks_chunk_failed` | studio failed render marks chunk failed | Unit | ✅ Automated |
+| `test_studio_inject_diff_preview_before_write` | studio inject diff preview before write | Unit | ✅ Automated |
+| `test_studio_inject_rejects_paths_outside_project_root` | studio inject rejects paths outside project root | Unit | ✅ Automated |
+| `test_studio_insert_emphasis_wraps_selection` | studio insert emphasis wraps selection | Unit | ✅ Automated |
+| `test_studio_insert_marker_at_caret` | studio insert marker at caret | Unit | ✅ Automated |
+| `test_studio_lists_and_loads_projects` | studio lists and loads projects | Unit | ✅ Automated |
+| `test_studio_media_rejects_traversal_and_unknown_types` | studio media rejects traversal and unknown types | Unit | ✅ Automated |
+| `test_studio_player_bundle_route` | studio player bundle route | Unit | ✅ Automated |
+| `test_studio_queue_fail_and_clear` | studio queue fail and clear | Unit | ✅ Automated |
+| `test_studio_queue_is_sequential_and_dedupes` | studio queue is sequential and dedupes | Unit | ✅ Automated |
+| `test_studio_reducer_edit_marks_draft_and_reverts` | studio reducer edit marks draft and reverts | Unit | ✅ Automated |
+| `test_studio_reducer_filter_and_counts` | studio reducer filter and counts | Unit | ✅ Automated |
+| `test_studio_reducer_loaded_selects_first` | studio reducer loaded selects first | Unit | ✅ Automated |
+| `test_studio_reducer_select_and_move` | studio reducer select and move | Unit | ✅ Automated |
+| `test_studio_reducer_take_added_and_kept` | studio reducer take added and kept | Unit | ✅ Automated |
+| `test_studio_reducer_track_and_approved` | studio reducer track and approved | Unit | ✅ Automated |
+| `test_studio_remaster_falls_back_to_fresh_render_for_stale_selection` | studio remaster falls back to fresh render for stale selection | Unit | ✅ Automated |
+| `test_studio_render_unknown_chunk_404` | studio render unknown chunk 404 | Unit | ✅ Automated |
+| `test_studio_render_unregistered_cloned_voice_is_403_consent` | studio render unregistered cloned voice is 403 consent | Unit | ✅ Automated |
+| `test_studio_save_valid_edit_marks_chunk_stale` | studio save valid edit marks chunk stale | Unit | ✅ Automated |
+| `test_studio_security_headers_and_placeholder_index` | studio security headers and placeholder index | Unit | ✅ Automated |
+| `test_studio_serves_built_static_files` | studio serves built static files | Unit | ✅ Automated |
+| `test_studio_toasts_add_dismiss` | studio toasts add dismiss | Unit | ✅ Automated |
+| `test_studio_token_stripped_from_url` | studio token stripped from url | Unit | ✅ Automated |
+| `test_studio_unknown_project_is_404_problem` | studio unknown project is 404 problem | Unit | ✅ Automated |
+| `test_studio_validate_accepts_allowed_markers` | studio validate accepts allowed markers | Unit | ✅ Automated |
+| `test_studio_validate_empty_and_stray` | studio validate empty and stray | Unit | ✅ Automated |
+| `test_studio_validate_max_chunk_chars` | studio validate max chunk chars | Unit | ✅ Automated |
+| `test_studio_validate_pause_range` | studio validate pause range | Unit | ✅ Automated |
+| `test_studio_validate_rejects_unknown_marker` | studio validate rejects unknown marker | Unit | ✅ Automated |
 
 ## 6. Listening test protocol
 

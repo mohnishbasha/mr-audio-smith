@@ -427,3 +427,14 @@ Studio keyboard additions: Up and Down move through ChunkList, Enter opens a chu
 - External fonts, scripts, analytics, or network calls from the player or Studio
 - Hijacking page-level keyboard shortcuts or scroll
 - Animations beyond the single breathing waveform
+
+## Implementation notes (Sprint 4, recorded from the built player)
+
+- Space on a focused button is left to the browser's native activation (no double toggle); Space elsewhere in the player and K anywhere toggle playback.
+- A captions fetch failure hides the CC toggle and emits an `as-error` event with `kind: "captions"`; audio keeps playing and the player does not enter the error state.
+- `tracks` entries accept `label` or `name` and fall back to the uppercased language code. The active track defaults to the one whose `src` matches the `src` attribute.
+- Switching language keeps the relative position only when the new track's duration is within 15 percent of the old one; otherwise it restarts at 0:00.
+- A saved position is restored only when it is at least 1 second in.
+- The CC button reads "CC"; `captions-on-label` and `captions-off-label` override it; pressed state is conveyed by `aria-pressed`.
+- Optional `artist` attribute feeds Media Session metadata.
+- Measured bundle: about 6.5 KB gzipped (NFR-011 limit 12 KB).

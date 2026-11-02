@@ -55,3 +55,6 @@ voices/*/reference.24k.wav
 jobs.db
 /Prompt.md
 coverage.json
+audio_smith/studio/static/
+audio_smith/_assets/player/
+tests/e2e/.studio-tmp/

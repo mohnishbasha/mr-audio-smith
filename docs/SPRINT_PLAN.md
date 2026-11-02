@@ -97,6 +97,7 @@ Milestones are created by Step 2.5 of the build prompt. Adjust due dates to the 
 - Script writer: an off-target length triggers the one corrective retry; a still off-length result is kept with a warning.
 - Tooling added in Sprint 0 and 1: `scripts/sync-test-plan.py` (TEST_PLAN statuses tied to real test names, checked in CI) and `scripts/record-llm.py` (`make record-llm`).
 - `gpu-integration` is a separate workflow gated by the `GPU_RUNNER_ENABLED` repository variable.
+- Sprint End Protocol step 5 (merge `develop` into `staging`) is done as a fast-forward of `staging` to the CI-verified `develop` commit, because squash merges made the two branches diverge.
 
 ---
 
