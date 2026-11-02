@@ -14,8 +14,6 @@
 #   - the namespace enforces PodSecurity restricted: no root init container (initPermissions off)
 #
 #   deploy/deploy.sh                      # build on the home unit, import, apply, routes, smoke test
-standIn:
-  enabled: false
 
 replicaCount: 1
 strategy:
