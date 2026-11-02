@@ -36,7 +36,7 @@ inputs:
     default: media/audio
   image-tag:
     description: mr-audio-smith version to install
-    default: 1.0.0-rc.1
+    default: 1.0.0-rc.2
   python-version:
     description: Python version for the tool environment.
     default: "3.12"
