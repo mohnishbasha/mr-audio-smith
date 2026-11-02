@@ -1,0 +1,22 @@
+# Per-module coverage floors. scripts/check-coverage.py fails CI when a module is under target.
+# Paths that do not exist yet are skipped until the sprint that creates them.
+[python]
+"audio_smith/extract.py" = 90
+"audio_smith/blocks.py" = 95
+"audio_smith/script" = 90
+"audio_smith/profiles" = 90
+"audio_smith/voices" = 90
+"audio_smith/tts" = 85
+"audio_smith/master" = 85
+"audio_smith/publish" = 90
+"audio_smith/cache" = 90
+"audio_smith/qa" = 80
+"audio_smith/server" = 80
+"audio_smith/mcp_server" = 80
+"audio_smith/cli.py" = 75
+overall = 85
+
+[typescript]
+"player/src" = 85
+"web/studio/src" = 75
+"integrations/pi/src" = 70

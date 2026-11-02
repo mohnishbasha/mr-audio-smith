@@ -1,0 +1,19 @@
+version: 2
+updates:
+  - package-ecosystem: uv
+    directory: /
+    schedule: {interval: weekly}
+    open-pull-requests-limit: 5
+    target-branch: develop
+  - package-ecosystem: npm
+    directories: [/player, /web/studio, /integrations/pi, /tests/e2e]
+    schedule: {interval: weekly}
+    target-branch: develop
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: {interval: weekly}
+    target-branch: develop
+  - package-ecosystem: docker
+    directory: /deploy/docker
+    schedule: {interval: weekly}
+    target-branch: develop

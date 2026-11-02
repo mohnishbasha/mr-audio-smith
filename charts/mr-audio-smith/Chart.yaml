@@ -1,0 +1,6 @@
+apiVersion: v2
+name: mr-audio-smith
+description: Page-to-narration service (REST + MCP) with optional Maya 2 and Ollama
+type: application
+version: 0.0.1
+appVersion: 0.0.1

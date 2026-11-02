@@ -142,14 +142,26 @@ def create(tasks: list[Task], dry_run: bool) -> dict[str, int]:
 def link_dependencies(tasks: list[Task], numbers: dict[str, int]) -> None:
     for t in tasks:
         deps = t.fields.get("Depends on", "none")
-        linked = TASK_ID_RE.sub(lambda m: f"#{numbers[m.group(0)]}" if m.group(0) in numbers else m.group(0), deps)
+        linked = TASK_ID_RE.sub(
+            lambda m: f"#{numbers[m.group(0)]}" if m.group(0) in numbers else m.group(0), deps
+        )
         if linked != deps and t.task_id in numbers:
             gh(["issue", "edit", str(numbers[t.task_id]), "--body", t.body(f"{linked} ({deps})")])
 
 
 def add_to_project(numbers: dict[str, int], owner: str, project: int, repo: str) -> None:
     for task_id, num in sorted(numbers.items()):
-        gh(["project", "item-add", str(project), "--owner", owner, "--url", f"https://github.com/{repo}/issues/{num}"])
+        gh(
+            [
+                "project",
+                "item-add",
+                str(project),
+                "--owner",
+                owner,
+                "--url",
+                f"https://github.com/{repo}/issues/{num}",
+            ]
+        )
         print(f"board: {task_id} #{num}")
 
 

@@ -476,7 +476,7 @@ Conventions: ids follow section 3. Types are Unit, Integration, Smoke, E2E, Regr
 
 | ID | Scenario | Type | Status |
 |---|---|---|---|
-| `test_cli_version_prints_pyproject_version` | `--version` output | Unit | ⚠️ Deferred |
+| `test_cli_version_prints_pyproject_version` | `--version` output | Unit | ✅ Automated |
 | `test_cli_base_install_does_not_import_torch` | Base install has no torch dependency | Unit | ⚠️ Deferred |
 | `test_cli_script_command_writes_blocks_and_script_files` | `{slug}.blocks.json`, `{slug}.en.script.md` | Unit | ⚠️ Deferred |
 | `test_cli_slug_from_url_path_stem_sanitized` | Slug rules | Unit | ⚠️ Deferred |
@@ -486,23 +486,23 @@ Conventions: ids follow section 3. Types are Unit, Integration, Smoke, E2E, Regr
 | `test_cli_run_parent_track_rendered_when_blocks_exist` | `{slug}.parent.mp3` using adult-brief | Unit | ⚠️ Deferred |
 | `test_api_narrate_returns_manifest` | `audio_smith.narrate(...)` returns Manifest | Unit | ⚠️ Deferred |
 | `test_api_stage_functions_exposed` | extract, write_script, render_script, master, publish importable | Unit | ⚠️ Deferred |
-| `test_doctor_all_required_pass_exit_0` | Exit 0 when green | Unit | ⚠️ Deferred |
-| `test_doctor_required_failure_exit_3` | Exit 3 on a required failure | Unit | ⚠️ Deferred |
-| `test_doctor_each_failure_has_fix_hint` | Hints present for every check | Unit | ⚠️ Deferred |
-| `test_doctor_json_output_schema` | `--json` output is valid | Unit | ⚠️ Deferred |
-| `test_doctor_ffmpeg_older_than_6_fails` | ffmpeg below 6.0 flagged | Unit | ⚠️ Deferred |
+| `test_doctor_all_required_pass_exit_0` | Exit 0 when green | Unit | ✅ Automated |
+| `test_doctor_required_failure_exit_3` | Exit 3 on a required failure | Unit | ✅ Automated |
+| `test_doctor_each_failure_has_fix_hint` | Hints present for every check | Unit | ✅ Automated |
+| `test_doctor_json_output_schema` | `--json` output is valid | Unit | ✅ Automated |
+| `test_doctor_ffmpeg_older_than_6_fails` | ffmpeg below 6.0 flagged | Unit | ✅ Automated |
 | `test_doctor_python_313_hints_kokoro_use_312` | ADR-017 hint | Unit | ⚠️ Deferred |
-| `test_doctor_disk_space_and_cache_writable_checks` | Both checks registered | Unit | ⚠️ Deferred |
+| `test_doctor_disk_space_and_cache_writable_checks` | Both checks registered | Unit | ✅ Automated |
 | `test_doctor_gpu_visibility_reported_when_torch_installed` | CUDA check conditional on torch | Unit | ⚠️ Deferred |
 | `test_doctor_backend_and_llm_and_voices_rows_present` | Each backend, LLM provider, voices checked | Unit | ⚠️ Deferred |
-| `test_config_precedence_flags_over_env_over_file_over_defaults` | Full precedence chain | Unit | ⚠️ Deferred |
-| `test_config_audio_smith_toml_discovered_upward_from_cwd` | Upward discovery | Unit | ⚠️ Deferred |
-| `test_config_unknown_key_warns_not_crashes` | Unknown keys warn | Unit | ⚠️ Deferred |
-| `test_config_env_prefix_audio_smith` | `AUDIO_SMITH_` prefix | Unit | ⚠️ Deferred |
+| `test_config_precedence_flags_over_env_over_file_over_defaults` | Full precedence chain | Unit | ✅ Automated |
+| `test_config_audio_smith_toml_discovered_upward_from_cwd` | Upward discovery | Unit | ✅ Automated |
+| `test_config_unknown_key_warns_not_crashes` | Unknown keys warn | Unit | ✅ Automated |
+| `test_config_env_prefix_audio_smith` | `AUDIO_SMITH_` prefix | Unit | ✅ Automated |
 | `smoke_run_mock_outputs_exist` | End to end with mocks | Smoke | ⚠️ Deferred |
 | `smoke_doctor_exit_0_on_clean_machine` | `doctor` exits 0 first | Smoke | ⚠️ Deferred |
 | `smoke_run_mock_manifest_validates` | Manifest passes the schema in the smoke run | Smoke | ⚠️ Deferred |
-| `smoke_version_prints_semver` | `--version` smoke | Smoke | ⚠️ Deferred |
+| `smoke_version_prints_semver` | `--version` smoke | Smoke | ✅ Automated |
 
 ### 5.18 Player (FR-017, NFR-007, NFR-011)
 
@@ -619,8 +619,8 @@ Conventions: ids follow section 3. Types are Unit, Integration, Smoke, E2E, Regr
 | `test_harness_claude_md_first_line_imports_agents_md` | First line is `@import AGENTS.md` | Unit | ⚠️ Deferred |
 | `test_harness_soul_md_has_6_constraints_no_commands_or_paths` | SOUL.md rules | Unit | ⚠️ Deferred |
 | `test_harness_required_skills_run_and_exit_0` | `run-tests` and `check-types` skills exit 0 | Unit | ⚠️ Deferred |
-| `test_harness_no_em_dash_in_repo_text_files` | Em dash check over md, py, ts, yaml | Unit | ⚠️ Deferred |
-| `test_harness_em_dash_hook_fails_on_u2014` | Pre-commit hook rejects the character | Unit | ⚠️ Deferred |
+| `test_harness_no_em_dash_in_repo_text_files` | Em dash check over md, py, ts, yaml | Unit | ✅ Automated |
+| `test_harness_em_dash_hook_fails_on_u2014` | Pre-commit hook rejects the character | Unit | ✅ Automated |
 | `smoke_harness_narrate_fixture_skill_exits_0` | `narrate-fixture` skill runs with mocks | Smoke | ⚠️ Deferred |
 | `it_harness_pi_extension_loads_and_lists_commands` | `integrations/pi` extension loads (vitest) | Integration | ⚠️ Deferred |
 
@@ -628,12 +628,12 @@ Conventions: ids follow section 3. Types are Unit, Integration, Smoke, E2E, Regr
 
 | ID | Scenario | Type | Status |
 |---|---|---|---|
-| `test_versions_check_exits_1_naming_mismatched_file` | `check-versions.sh` failure message | Unit | ⚠️ Deferred |
-| `test_versions_extract_changelog_prints_only_section` | `extract-changelog.sh 0.1.0` | Unit | ⚠️ Deferred |
+| `test_versions_check_exits_1_naming_mismatched_file` | `check-versions.sh` failure message | Unit | ✅ Automated |
+| `test_versions_extract_changelog_prints_only_section` | `extract-changelog.sh 0.1.0` | Unit | ✅ Automated |
 | `test_packaging_uv_sync_all_extras_succeeds` | `uv sync --all-extras --dev` on macOS arm64 and Linux x86_64 | Integration | ⚠️ Deferred |
 | `test_packaging_wheel_contains_studio_static_and_schemas` | Built wheel includes `audio_smith/studio/static/` and schemas | Integration | ⚠️ Deferred |
 | `test_packaging_third_party_licenses_covers_all_deps` | CI fails when a dependency has no entry | Unit | ⚠️ Deferred |
-| `test_packaging_uv_tool_install_runs_version_and_doctor` | Clean `uv tool install .` works | Integration | ⚠️ Deferred |
+| `test_packaging_uv_tool_install_runs_version_and_doctor` | Clean `uv tool install .` works | Integration | ✅ Automated |
 | `test_security_gitleaks_pip_audit_npm_audit_clean` | Zero high or critical findings | Integration | ⚠️ Deferred |
 | `it_release_testpypi_dry_run_from_rc_tag` | `v1.0.0-rc.1` publishes to TestPyPI | Integration | ❌ Skipped: needs the owner to configure PyPI trusted publishing and push a tag. Manual step: owner pushes `v1.0.0-rc.1` and verifies the TestPyPI release |
 | `it_release_npm_provenance_published` | npm packages carry provenance | Integration | ❌ Skipped: requires the owner's npm publishing setup. Manual step: after the release run, verify the provenance badge on npmjs.com |
@@ -652,6 +652,46 @@ Conventions: ids follow section 3. Types are Unit, Integration, Smoke, E2E, Regr
 Row count: more than 120 scenarios across 27 tables.
 
 ---
+
+### 5.28 Additional automated scenarios
+
+| ID | Scenario | Type | Status |
+|---|---|---|---|
+| `smoke_doctor_json_parses` | doctor json parses | Smoke | ✅ Automated |
+| `test_cli_doctor_table_output_ok` | cli doctor table output ok | Unit | ✅ Automated |
+| `test_cli_main_keyboard_interrupt_exits_130` | cli main keyboard interrupt exits 130 | Unit | ✅ Automated |
+| `test_cli_main_maps_audio_smith_error_to_exit_code` | cli main maps audio smith error to exit code | Unit | ✅ Automated |
+| `test_cli_main_unknown_command_is_usage_exit_2` | cli main unknown command is usage exit 2 | Unit | ✅ Automated |
+| `test_config_cli_none_override_ignored` | config cli none override ignored | Unit | ✅ Automated |
+| `test_config_cli_overrides_env` | config cli overrides env | Unit | ✅ Automated |
+| `test_config_defaults_when_nothing_set` | config defaults when nothing set | Unit | ✅ Automated |
+| `test_config_env_overrides_file` | config env overrides file | Unit | ✅ Automated |
+| `test_config_explicit_config_path` | config explicit config path | Unit | ✅ Automated |
+| `test_config_file_overrides_defaults` | config file overrides defaults | Unit | ✅ Automated |
+| `test_config_invalid_toml_raises_usage_error` | config invalid toml raises usage error | Unit | ✅ Automated |
+| `test_config_ollama_host_standard_env_honored` | config ollama host standard env honored | Unit | ✅ Automated |
+| `test_config_redacted_dump_hides_secrets` | config redacted dump hides secrets | Unit | ✅ Automated |
+| `test_config_secret_keys_in_file_ignored_with_warning` | config secret keys in file ignored with warning | Unit | ✅ Automated |
+| `test_config_settings_is_pydantic_model` | config settings is pydantic model | Unit | ✅ Automated |
+| `test_doctor_cache_dir_writable` | doctor cache dir writable | Unit | ✅ Automated |
+| `test_doctor_check_exception_becomes_failure` | doctor check exception becomes failure | Unit | ✅ Automated |
+| `test_doctor_disk_space_low_fails` | doctor disk space low fails | Unit | ✅ Automated |
+| `test_doctor_ffmpeg_missing_has_hint` | doctor ffmpeg missing has hint | Unit | ✅ Automated |
+| `test_doctor_ffmpeg_parse_version` | doctor ffmpeg parse version | Unit | ✅ Automated |
+| `test_doctor_python_version_check_ok` | doctor python version check ok | Unit | ✅ Automated |
+| `test_doctor_run_all_fails_when_required_fails` | doctor run all fails when required fails | Unit | ✅ Automated |
+| `test_errors_exit_code_mapping_matches_spec` | errors exit code mapping matches spec | Unit | ✅ Automated |
+| `test_errors_fetch_error_is_extract_error` | errors fetch error is extract error | Unit | ✅ Automated |
+| `test_errors_problem_json_has_rfc9457_fields` | errors problem json has rfc9457 fields | Unit | ✅ Automated |
+| `test_init_version_matches_package_metadata` | init version matches package metadata | Unit | ✅ Automated |
+| `test_proc_run_nonzero_raises` | proc run nonzero raises | Unit | ✅ Automated |
+| `test_proc_run_rejects_shell_string` | proc run rejects shell string | Unit | ✅ Automated |
+| `test_proc_run_returns_stdout` | proc run returns stdout | Unit | ✅ Automated |
+| `test_scripts_check_coverage_directory_prefix_aggregates` | scripts check coverage directory prefix aggregates | Unit | ✅ Automated |
+| `test_scripts_check_coverage_module_under_target_fails` | scripts check coverage module under target fails | Unit | ✅ Automated |
+| `test_scripts_check_coverage_overall_under_target_fails` | scripts check coverage overall under target fails | Unit | ✅ Automated |
+| `test_scripts_check_versions_consistent_passes` | scripts check versions consistent passes | Unit | ✅ Automated |
+| `test_scripts_em_dash_clean_file_passes` | scripts em dash clean file passes | Unit | ✅ Automated |
 
 ## 6. Listening test protocol
 

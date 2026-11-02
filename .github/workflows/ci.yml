@@ -1,0 +1,163 @@
+name: ci
+
+on:
+  push:
+    branches: [develop, staging, main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  UV_PYTHON: "3.12"
+  PY_EXTRAS: --extra dev --extra server --extra mcp --extra cloud
+
+jobs:
+  lint-and-typecheck:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --frozen ${{ env.PY_EXTRAS }}
+        shell: bash
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run python scripts/check_em_dash.py
+      - run: uv run python scripts/sync-test-plan.py --check
+      - run: uv run lint-imports
+      - run: uv run mypy
+      - name: TypeScript lint and typecheck
+        shell: bash
+        run: |
+          for p in player web/studio integrations/pi; do
+            if [ -f "$p/package-lock.json" ]; then
+              (cd "$p" && npm ci && npm run --if-present lint && npm run --if-present typecheck)
+            fi
+          done
+
+  unit-tests:
+    needs: lint-and-typecheck
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.12", "3.13"]
+    runs-on: ${{ matrix.os }}
+    env:
+      UV_PYTHON: ${{ matrix.python }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --frozen ${{ env.PY_EXTRAS }}
+        shell: bash
+      - run: uv run pytest
+      - name: TypeScript unit tests
+        if: matrix.python == '3.12'
+        shell: bash
+        run: |
+          for p in player web/studio integrations/pi; do
+            if [ -f "$p/package-lock.json" ]; then (cd "$p" && npm ci && npm run --if-present test); fi
+          done
+
+  coverage:
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: uv sync --frozen ${{ env.PY_EXTRAS }}
+      - run: uv run pytest --cov --cov-report=term --cov-report=json:coverage.json --cov-report=xml
+      - run: uv run python scripts/check-coverage.py coverage.json .coverage-thresholds.toml
+      - name: TypeScript coverage
+        run: |
+          for p in player web/studio integrations/pi; do
+            if [ -f "$p/package-lock.json" ]; then (cd "$p" && npm ci && npm run --if-present coverage); fi
+          done
+      - uses: codecov/codecov-action@v5
+        with:
+          files: coverage.xml
+          fail_ci_if_error: false
+
+  smoke:
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: uv sync --frozen ${{ env.PY_EXTRAS }}
+      - run: bash tests/smoke/smoke.sh
+
+  integration-tests:
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    env:
+      OLLAMA_HOST: http://127.0.0.1:11434
+      AUDIO_SMITH_IT_OLLAMA_MODEL: qwen3:0.6b
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg espeak-ng
+      - name: Install Ollama and a tiny model
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          (ollama serve > /tmp/ollama.log 2>&1 &)
+          for i in $(seq 1 30); do curl -fsS $OLLAMA_HOST/api/tags && break; sleep 2; done
+          ollama pull qwen3:0.6b
+      - name: Install with Kokoro on CPU torch
+        run: |
+          uv sync --frozen ${{ env.PY_EXTRAS }} --extra kokoro --extra qa
+        env:
+          UV_TORCH_BACKEND: cpu
+      - name: Integration tests (exit 5 means none collected yet)
+        run: uv run pytest -m integration -o addopts="-ra --strict-markers" || [ $? -eq 5 ]
+
+  e2e-tests:
+    needs: integration-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: uv sync --frozen ${{ env.PY_EXTRAS }}
+      - name: Playwright
+        run: |
+          if [ -f tests/e2e/package-lock.json ]; then
+            for p in player web/studio; do
+              if [ -f "$p/package-lock.json" ]; then (cd "$p" && npm ci && npm run build); fi
+            done
+            cd tests/e2e && npm ci && npx playwright install --with-deps chromium && npx playwright test
+          else
+            echo "no e2e suite yet"
+          fi
+
+  check-versions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./scripts/check-versions.sh
