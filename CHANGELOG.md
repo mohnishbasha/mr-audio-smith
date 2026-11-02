@@ -7,11 +7,6 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
-- `mr-audio-smith serve`: REST API with an on-disk job queue (survives restarts), bearer-token auth (required off localhost), per-token rate limits, `/healthz` and `/readyz`, problem+json errors.
-- `mr-audio-smith mcp` (stdio or streamable HTTP): eight tools for agent harnesses (narrate with progress, script, render, list voices, profiles, backends, status, recommend); every tool respects voice consent.
-- `run --server URL --token ...` and `site --server ...` narrate on a remote server and download the results, so a laptop or CI runner without a GPU can use a GPU box.
-- Agent integrations: Claude Code (MCP config and a `narrate-page` skill), Goose (`toolkit.yaml`), OpenCode (`opencode.json` snippet), and the Pi extension `@mr-audio-smith/pi-extension` with `/narrate`, `/voices`, `/audio-status` and streaming progress.
-- Docker images (CPU, CUDA, and a Maya 2 server image), local and production Compose files, and a Helm chart with a GPU Maya 2 StatefulSet, optional Ollama or vLLM, NetworkPolicy, and ingress; release jobs sign images and the chart with cosign.
 
 ### Changed
 
@@ -22,6 +17,18 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 
 ### Security
+
+## [1.0.0-rc.2] - 2026-11-02
+### Added
+- `mr-audio-smith serve`: REST API with an on-disk job queue (survives restarts), bearer-token auth (required off localhost), per-token rate limits, `/healthz` and `/readyz`, problem+json errors.
+- `mr-audio-smith mcp` (stdio or streamable HTTP): eight tools for agent harnesses (narrate with progress, script, render, list voices, profiles, backends, status, recommend); every tool respects voice consent.
+- `run --server URL --token ...` and `site --server ...` narrate on a remote server and download the results, so a laptop or CI runner without a GPU can use a GPU box.
+- Agent integrations: Claude Code (MCP config and a `narrate-page` skill), Goose (`toolkit.yaml`), OpenCode (`opencode.json` snippet), and the Pi extension `@mr-audio-smith/pi-extension` with `/narrate`, `/voices`, `/audio-status` and streaming progress.
+- Docker images (CPU, CUDA, and a Maya 2 server image), local and production Compose files, and a Helm chart with a GPU Maya 2 StatefulSet, optional Ollama or vLLM, NetworkPolicy, and ingress; release jobs sign images and the chart with cosign.
+
+### Fixed
+- A clean install from v1.0.0-rc.1 failed to start (`mr-audio-smith` imported `click` directly; typer vendors it). Use v1.0.0-rc.2.
+- The player now resumes your saved position even when the audio file loaded before the player itself.
 
 ## [1.0.0-rc.1] - 2026-11-02
 
@@ -67,5 +74,6 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - The Chatterbox backend is no longer an installable extra (its pinned dependencies carry unpatched advisories); install `chatterbox-tts` yourself to use it.
 - ID3 tags are written with ffmpeg instead of a GPL-licensed library, keeping the MIT core free of copyleft code.
 
-[Unreleased]: https://github.com/mohnishbasha/mr-audio-smith/compare/v1.0.0-rc.1...develop
+[Unreleased]: https://github.com/mohnishbasha/mr-audio-smith/compare/v1.0.0-rc.2...develop
+[1.0.0-rc.2]: https://github.com/mohnishbasha/mr-audio-smith/compare/v1.0.0-rc.1...v1.0.0-rc.2
 [1.0.0-rc.1]: https://github.com/mohnishbasha/mr-audio-smith/releases/tag/v1.0.0-rc.1
