@@ -18,6 +18,7 @@ import json
 import re
 import subprocess
 import sys
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -26,6 +27,8 @@ TASK_RE = re.compile(r"^### (S\d-T\d\d|OOS-\d\d): (.+)$")
 FIELD_RE = re.compile(r"^- \*\*(.+?):\*\*\s*(.*)$")
 TASK_ID_RE = re.compile(r"\bS\d-T\d\d\b")
 GH_TIMEOUT_S = 60
+GH_RETRIES = 5
+GH_BACKOFF_S = 30
 MILESTONES = {
     "0": "Sprint 0: Scaffold",
     "1": "Sprint 1: Extract and Script",
@@ -95,8 +98,14 @@ def parse(text: str) -> list[Task]:
 
 
 def gh(args: list[str]) -> str:
-    out = subprocess.run(["gh", *args], check=True, capture_output=True, text=True, timeout=GH_TIMEOUT_S)
-    return out.stdout.strip()
+    """Run gh, retrying with backoff because GitHub rate-limits bursts of issue creation."""
+    for attempt in range(GH_RETRIES):
+        out = subprocess.run(["gh", *args], check=False, capture_output=True, text=True, timeout=GH_TIMEOUT_S)
+        if out.returncode == 0:
+            return out.stdout.strip()
+        print(f"gh failed (attempt {attempt + 1}): {out.stderr.strip()[:200]}", file=sys.stderr)
+        time.sleep(GH_BACKOFF_S * (attempt + 1))
+    raise RuntimeError(f"gh {' '.join(args[:2])} failed after {GH_RETRIES} attempts")
 
 
 def existing_issues() -> dict[str, int]:
