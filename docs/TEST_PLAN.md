@@ -622,7 +622,7 @@ Conventions: ids follow section 3. Types are Unit, Integration, Smoke, E2E, Regr
 | `test_harness_no_em_dash_in_repo_text_files` | Em dash check over md, py, ts, yaml | Unit | ✅ Automated |
 | `test_harness_em_dash_hook_fails_on_u2014` | Pre-commit hook rejects the character | Unit | ✅ Automated |
 | `smoke_harness_narrate_fixture_skill_exits_0` | `narrate-fixture` skill runs with mocks | Smoke | ⚠️ Deferred |
-| `it_harness_pi_extension_loads_and_lists_commands` | `integrations/pi` extension loads (vitest) | Integration | ⚠️ Deferred |
+| `it_harness_pi_extension_loads_and_lists_commands` | `integrations/pi` extension loads (vitest) | Integration | ✅ Automated |
 
 ### 5.26 Packaging, release, and versions
 
@@ -1129,6 +1129,58 @@ Row count: more than 120 scenarios across 27 tables.
 | `test_server_scripts_and_render_roundtrip` | server scripts and render roundtrip | Unit | ✅ Automated |
 | `test_server_serve_command_needs_server_extra_hint` | server serve command needs server extra hint | Unit | ✅ Automated |
 | `test_server_serve_command_starts_uvicorn` | server serve command starts uvicorn | Unit | ✅ Automated |
+| `e2e_US006_player_axe_core_dark_error_state_zero_violations` | US006 player axe core dark error state zero violations | E2E | ✅ Automated |
+| `e2e_US006_player_axe_core_zero_violations` | US006 player axe core zero violations | E2E | ✅ Automated |
+| `e2e_US006_player_keyboard_arrows_seek_5s` | US006 player keyboard arrows seek 5s | E2E | ✅ Automated |
+| `e2e_US006_player_keyboard_play_pause` | US006 player keyboard play pause | E2E | ✅ Automated |
+| `e2e_US006_player_kid_size_variant_renders` | US006 player kid size variant renders | E2E | ✅ Automated |
+| `e2e_US006_player_language_toggle_switches_track` | US006 player language toggle switches track | E2E | ✅ Automated |
+| `e2e_US006_player_media_session_metadata_set` | US006 player media session metadata set | E2E | ✅ Automated |
+| `e2e_US006_player_no_js_fallback_native_audio_plays` | US006 player no js fallback native audio plays | E2E | ✅ Automated |
+| `e2e_US006_player_no_js_fallback_plays` | US006 player no js fallback plays | E2E | ✅ Automated |
+| `e2e_US006_player_reduced_motion_disables_breathing` | US006 player reduced motion disables breathing | E2E | ✅ Automated |
+| `e2e_US006_player_remembers_position_per_src` | US006 player remembers position per src | E2E | ✅ Automated |
+| `e2e_US006_player_storage_blocked_still_plays` | US006 player storage blocked still plays | E2E | ✅ Automated |
+| `e2e_US006_player_theme_auto_light_dark` | US006 player theme auto light dark | E2E | ✅ Automated |
+| `e2e_US012_player_captions_toggle` | US012 player captions toggle | E2E | ✅ Automated |
+| `e2e_US017_studio_approve_persists_in_manifest` | US017 studio approve persists in manifest | E2E | ✅ Automated |
+| `e2e_US017_studio_compare_takes_keep_best` | US017 studio compare takes keep best | E2E | ✅ Automated |
+| `e2e_US017_studio_edit_validate_save_chunk` | US017 studio edit validate save chunk | E2E | ✅ Automated |
+| `e2e_US017_studio_inject_diff_preview_before_write` | US017 studio inject diff preview before write | E2E | ✅ Automated |
+| `e2e_US017_studio_marker_autocomplete_pause` | US017 studio marker autocomplete pause | E2E | ✅ Automated |
+| `e2e_US017_studio_zero_external_requests` | US017 studio zero external requests | E2E | ✅ Automated |
+| `it_harness_claude_code_mcp_add_command_lists_tools` | harness claude code mcp add command lists tools | Integration | ✅ Automated |
+| `it_harness_goose_toolkit_lists_tools` | harness goose toolkit lists tools | Integration | ✅ Automated |
+| `it_harness_opencode_config_lists_tools` | harness opencode config lists tools | Integration | ✅ Automated |
+| `test_app_dockerfiles_are_non_root_with_serve_entrypoint` | app dockerfiles are non root with serve entrypoint | Unit | ✅ Automated |
+| `test_chart_version_equals_pyproject_version` | chart version equals pyproject version | Unit | ✅ Automated |
+| `test_compose_local_cpu_profile_has_no_gpu_or_maya` | compose local cpu profile has no gpu or maya | Unit | ✅ Automated |
+| `test_compose_local_requires_token_and_localhost_only` | compose local requires token and localhost only | Unit | ✅ Automated |
+| `test_compose_maya2_uses_port_8080` | compose maya2 uses port 8080 | Unit | ✅ Automated |
+| `test_compose_prod_images_pinned_by_digest` | compose prod images pinned by digest | Unit | ✅ Automated |
+| `test_compose_prod_internal_network_and_read_only` | compose prod internal network and read only | Unit | ✅ Automated |
+| `test_compose_prod_no_published_ports_for_internal_services` | compose prod no published ports for internal services | Unit | ✅ Automated |
+| `test_compose_prod_requires_token` | compose prod requires token | Unit | ✅ Automated |
+| `test_harness_agent_skills_have_frontmatter_and_runner` | harness agent skills have frontmatter and runner | Unit | ✅ Automated |
+| `test_harness_claude_code_skill_frontmatter_valid` | harness claude code skill frontmatter valid | Unit | ✅ Automated |
+| `test_harness_pyproject_mcp_extra_present` | harness pyproject mcp extra present | Unit | ✅ Automated |
+| `test_helm_ci_values_use_mock_backend_without_gpu_services` | helm ci values use mock backend without gpu services | Unit | ✅ Automated |
+| `test_helm_k3s_values_use_nvidia_runtime` | helm k3s values use nvidia runtime | Unit | ✅ Automated |
+| `test_helm_maya2_template_uses_port_8080_and_gpu` | helm maya2 template uses port 8080 and gpu | Unit | ✅ Automated |
+| `test_helm_values_safe_defaults` | helm values safe defaults | Unit | ✅ Automated |
+| `test_maya2_dockerfile_pinned_and_loopback_by_default` | maya2 dockerfile pinned and loopback by default | Unit | ✅ Automated |
+| `test_pi_client_unreachable_and_unauthorized` | pi client unreachable and unauthorized | Unit | ✅ Automated |
+| `test_pi_config_from_env_and_overrides` | pi config from env and overrides | Unit | ✅ Automated |
+| `test_pi_context_hook_fails_soft_when_server_down` | pi context hook fails soft when server down | Unit | ✅ Automated |
+| `test_pi_context_hook_lists_voices_and_profiles` | pi context hook lists voices and profiles | Unit | ✅ Automated |
+| `test_pi_list_and_status_tools` | pi list and status tools | Unit | ✅ Automated |
+| `test_pi_narrate_command_reports_failure` | pi narrate command reports failure | Unit | ✅ Automated |
+| `test_pi_narrate_command_streams_progress` | pi narrate command streams progress | Unit | ✅ Automated |
+| `test_pi_narrate_tool_streams_on_update` | pi narrate tool streams on update | Unit | ✅ Automated |
+| `test_pi_problem_json_maps_to_readable_error` | pi problem json maps to readable error | Unit | ✅ Automated |
+| `test_pi_schemas_match_mcp_tools` | pi schemas match mcp tools | Unit | ✅ Automated |
+| `test_pi_voices_and_status_commands` | pi voices and status commands | Unit | ✅ Automated |
+| `test_pi_wait_for_job_aborts_with_signal` | pi wait for job aborts with signal | Unit | ✅ Automated |
 
 ## 6. Listening test protocol
 

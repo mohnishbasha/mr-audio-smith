@@ -1,0 +1,27 @@
+mr-audio-smith {{ .Chart.AppVersion }} installed as {{ include "mr-audio-smith.fullname" . }}.
+
+API token (required for every request except /healthz):
+  kubectl get secret {{ include "mr-audio-smith.secretName" . }} -n {{ .Release.Namespace }} -o jsonpath='{.data.{{ .Values.auth.existingSecretKey }}}' | base64 -d; echo
+
+Reach the API:
+{{- if .Values.ingress.enabled }}
+{{- range .Values.ingress.hosts }}
+  https://{{ .host }}/
+{{- end }}
+{{- else }}
+  kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "mr-audio-smith.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }}
+  curl http://127.0.0.1:{{ .Values.service.port }}/healthz
+{{- end }}
+
+Backend: {{ include "mr-audio-smith.backend" . }}   LLM: {{ include "mr-audio-smith.llm" . }}
+{{- if include "mr-audio-smith.mayaEnabled" . }}
+
+Maya 2 loads weights on first start (several minutes). Watch it with:
+  kubectl logs -n {{ .Release.Namespace }} -f statefulset/{{ include "mr-audio-smith.fullname" . }}-maya2 -c pull-weights
+  kubectl rollout status -n {{ .Release.Namespace }} statefulset/{{ include "mr-audio-smith.fullname" . }}-maya2
+Maya 2 has no authentication: it is a ClusterIP Service guarded by a NetworkPolicy. Do not expose it.
+{{- end }}
+{{- if not .Values.networkPolicy.enabled }}
+
+WARNING: networkPolicy.enabled=false leaves Maya 2 and the LLM server open to every pod in the cluster.
+{{- end }}

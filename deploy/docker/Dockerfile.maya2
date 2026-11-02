@@ -1,0 +1,82 @@
+# syntax=docker/dockerfile:1.7
+#
+# Maya 2 Native TTS server (Maya Research, Apache-2.0): an OpenAI-compatible speech endpoint that
+# mr-audio-smith talks to over HTTP (AUDIO_SMITH_MAYA2_URL=http://maya2:8080/v1).
+#   POST /v1/audio/speech  -> 24 kHz mono WAV      GET /health -> 503 while loading, 200 when ready
+#
+# The upstream server has NO authentication. This image binds 127.0.0.1 by default; compose and the Helm
+# chart override the command with --host 0.0.0.0 on a private network only. Never publish port 8080.
+#
+# Needs a Linux NVIDIA GPU (about 8 GB VRAM per seat). No Apple/MPS path. Weights (~5 GB) download from
+# Hugging Face on first start into HF_HOME (mount a volume at /models) or are pre-pulled (compose
+# `maya2-pull` service, Helm init container).
+#
+# CUDA 13 / cu130 so the DGX Spark GB10 (sm_121) works: torch comes from the cu130 index BEFORE maya3 so
+# the resolver keeps it, and the build asserts a CUDA 13 torch. For an x86 CUDA 12.8 host build with:
+#   --build-arg CUDA_IMAGE=nvidia/cuda:12.8.1-cudnn-runtime-ubuntu24.04 \
+#   --build-arg TORCH_INDEX_URL=https://download.pytorch.org/whl/cu128 --build-arg CUDA_MAJOR=12
+#
+# Build (run on the GPU host, the image is ~10 GB):
+#   docker build -f deploy/docker/Dockerfile.maya2 -t ghcr.io/serverless-ventures/maya2-server:79142d8 .
+#   docker build -f deploy/docker/Dockerfile.maya2 --build-arg MAYA_REF=<tag|sha> -t maya2-server:<ref> .
+
+ARG CUDA_IMAGE=nvidia/cuda:13.0.2-cudnn-runtime-ubuntu24.04
+FROM ${CUDA_IMAGE}
+
+ARG MAYA_REF=79142d835fc745537fc5ab71a007eba8f425c74c
+ARG TORCH_INDEX_URL=https://download.pytorch.org/whl/cu130
+ARG CUDA_MAJOR=13
+# maya3 pins torch==2.8.0, which has no CUDA 13 build (cu130 starts at 2.9.0); uv --override swaps it.
+ARG TORCH_OVERRIDE=2.9.0+cu130
+ARG TORCHAUDIO_OVERRIDE=2.9.0
+ARG APP_UID=10001
+ARG APP_GID=10001
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    VIRTUAL_ENV=/opt/venv \
+    PATH=/opt/venv/bin:$PATH
+
+# git: maya3 installs from GitHub. build-essential: a C compiler for anything that JIT-builds at runtime.
+# curl: used by the compose health check.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+      python3 python3-dev python3-pip python3-venv git build-essential libsndfile1 ca-certificates curl \
+ && rm -rf /var/lib/apt/lists/*
+
+# Ubuntu 24.04 images ship a default "ubuntu" user at 1000:1000; replace it with a fixed non-root user.
+RUN (userdel -r ubuntu 2>/dev/null || true) \
+ && (getent group ${APP_GID} >/dev/null || groupadd -g ${APP_GID} app) \
+ && useradd -u ${APP_UID} -g ${APP_GID} -M -s /usr/sbin/nologin -d /models/home app \
+ && mkdir -p /models/home /models/hf-cache \
+ && chown -R ${APP_UID}:${APP_GID} /models
+
+RUN python3 -m venv ${VIRTUAL_ENV} \
+ && pip install --upgrade pip uv \
+ && printf 'torch==%s\ntorchaudio==%s\n' "${TORCH_OVERRIDE}" "${TORCHAUDIO_OVERRIDE}" > /tmp/torch-override.txt \
+ && uv pip install --python ${VIRTUAL_ENV}/bin/python --override /tmp/torch-override.txt \
+      --extra-index-url ${TORCH_INDEX_URL} --index-strategy unsafe-best-match \
+      "maya3[server] @ git+https://github.com/MayaResearch/maya2-native@${MAYA_REF}" \
+ && python -c "import torch; v = torch.version.cuda or ''; assert v.startswith('${CUDA_MAJOR}'), 'unexpected torch CUDA build: ' + v" \
+ && python -c "import maya3" \
+ && rm -f /tmp/torch-override.txt
+
+ENV HF_HOME=/models/hf-cache \
+    HOME=/models/home \
+    TRITON_CACHE_DIR=/models/hf-cache/triton \
+    MAYA_MAX_SEATS=1
+
+LABEL org.opencontainers.image.title="maya2-server" \
+      org.opencontainers.image.description="Maya 2 Native TTS server (upstream pinned)" \
+      org.opencontainers.image.source="https://github.com/MayaResearch/maya2-native" \
+      org.opencontainers.image.licenses="Apache-2.0"
+
+USER ${APP_UID}:${APP_GID}
+EXPOSE 8080
+HEALTHCHECK --interval=15s --timeout=5s --start-period=120s --retries=40 \
+  CMD ["curl", "-fsS", "http://127.0.0.1:8080/health"]
+
+CMD ["sh", "-c", "exec python -m maya3.server --ckpt maya-research/maya2-native --host 127.0.0.1 --port 8080 --max-seats ${MAYA_MAX_SEATS:-1}"]

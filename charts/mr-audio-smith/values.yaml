@@ -1,0 +1,186 @@
+# mr-audio-smith chart values. The defaults describe the full GPU stack (API + Maya 2 + Ollama).
+# See values-ci.yaml (CPU, mock backend, kind) and values-k3s-gpu.yaml (2-node GPU k3s with Cilium).
+
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  repository: ghcr.io/serverless-ventures/mr-audio-smith
+  # Defaults to the chart appVersion. variant is appended to the tag: "" for the CPU image,
+  # "-cuda" for the CUDA image.
+  tag: ""
+  variant: ""
+  pullPolicy: IfNotPresent
+imagePullSecrets: []
+
+replicaCount: 1
+
+config:
+  # Empty: maya2 when maya2.enabled (or maya2.externalUrl is set), otherwise kokoro.
+  defaultBackend: ""
+  # Empty: ollama:<ollama.model> when ollama.enabled, openai_compat:<vllm url>#<model> when vllm.enabled.
+  llm: ""
+  allowPrivate: false
+  logLevel: info
+
+# Extra environment for the API container (list of {name, value} or valueFrom entries).
+extraEnv: []
+
+auth:
+  # AUDIO_SMITH_SERVER_TOKEN. The server refuses to bind 0.0.0.0 without one. Leave empty to have the chart
+  # generate a random token once (kept across upgrades); or reference an existing Secret.
+  token: ""
+  existingSecret: ""
+  existingSecretKey: token
+
+service:
+  type: ClusterIP
+  port: 7340
+
+ingress:
+  enabled: false
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-body-size: 10m
+  # Optional extra auth in front of the API (ingress-nginx basic auth against an htpasswd Secret).
+  auth:
+    enabled: false
+    secretName: ""
+    realm: "mr-audio-smith"
+  hosts:
+    - host: narrate.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: mr-audio-smith-tls
+      hosts: [narrate.example.com]
+
+resources:
+  requests: {cpu: 500m, memory: 1Gi}
+  limits: {cpu: "4", memory: 6Gi}
+
+# GPU for the API pod itself (Kokoro on CUDA, in-process Maya). Normally false: Maya 2 has its own pod.
+gpu:
+  enabled: false
+  count: 1
+  resourceName: nvidia.com/gpu
+
+runtimeClassName: ""
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  fsGroupChangePolicy: OnRootMismatch
+  seccompProfile: {type: RuntimeDefault}
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities: {drop: [ALL]}
+
+probes:
+  # /readyz also runs the backend checks; /healthz only says the process is up.
+  readinessPath: /healthz
+  livenessPath: /healthz
+
+persistence:
+  # accessMode "" picks ReadWriteMany for cache when more than one replica can run, else ReadWriteOnce.
+  cache: {enabled: true, size: 20Gi, accessMode: "", storageClass: "", existingClaim: ""}
+  out: {enabled: true, size: 10Gi, accessMode: ReadWriteOnce, storageClass: "", existingClaim: ""}
+  # Cloned-voice clips and consent records: kept private (directory mode 0700, owned by the app user).
+  voices: {enabled: true, size: 1Gi, accessMode: ReadWriteOnce, storageClass: "", existingClaim: ""}
+  # With replicas > 1, out and voices must also be shared (RWX) or the replicas will not see each other's jobs.
+
+# Root-only init container that makes the voices directory 0700 and owned by the app user.
+# Disable on clusters that enforce the restricted Pod Security Standard and pre-provision the volume.
+initPermissions:
+  enabled: true
+  image: {repository: busybox, tag: "1.37.0", pullPolicy: IfNotPresent}
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 70
+  # Needs a custom-metrics adapter (prometheus-adapter or KEDA) exposing the metric as a Pods metric.
+  queueDepth:
+    enabled: false
+    metricName: audio_smith_jobs_queued
+    averageValue: "4"
+
+networkPolicy:
+  enabled: true
+
+maya2:
+  enabled: true
+  # Use an existing Maya 2 endpoint instead (e.g. http://maya2.other-ns:8080/v1). Disables the StatefulSet.
+  externalUrl: ""
+  image:
+    repository: ghcr.io/serverless-ventures/maya2-server
+    tag: "79142d8"
+    pullPolicy: IfNotPresent
+  maxSeats: 1
+  runtimeClassName: ""
+  weights:
+    repo: maya-research/maya2-native
+    # Pin a Hugging Face commit sha for reproducible installs.
+    revision: main
+    # Optional `sha256sum` file contents (paths relative to the snapshot dir). When set, the init container
+    # verifies the download and fails the pod on a mismatch.
+    sha256sums: ""
+    # true sets HF_HUB_OFFLINE=1 after the pre-download. Leave false unless the Mimi codec and ECAPA encoder
+    # are also in the cache: maya3 fetches those from Hugging Face on first start.
+    offline: false
+  persistence: {enabled: true, size: 50Gi, accessMode: ReadWriteOnce, storageClass: ""}
+  gpu: {count: 1, resourceName: nvidia.com/gpu}
+  # Env var NVIDIA_VISIBLE_DEVICES for CDI-style runtimes; empty leaves it to the device plugin.
+  extraEnv: []
+  startupFailureThreshold: 180   # x10s: first start downloads and loads the model
+  resources:
+    requests: {cpu: "1", memory: 8Gi}
+    limits: {cpu: "4", memory: 16Gi}
+  nodeSelector: {}
+  tolerations: []
+
+ollama:
+  enabled: true
+  # Use an existing Ollama instead (e.g. http://ollama.other-ns:11434). Disables the StatefulSet.
+  externalHost: ""
+  image: {repository: ollama/ollama, tag: "0.12.0", pullPolicy: IfNotPresent}
+  model: qwen3:14b
+  gpu: {enabled: true, count: 1, resourceName: nvidia.com/gpu}
+  runtimeClassName: ""
+  persistence: {enabled: true, size: 100Gi, accessMode: ReadWriteOnce, storageClass: ""}
+  # Post-install/upgrade Job that pulls ollama.model.
+  pull: {enabled: true, backoffLimit: 3, waitSeconds: 600}
+  resources:
+    requests: {cpu: "1", memory: 8Gi}
+    limits: {cpu: "6", memory: 32Gi}
+  nodeSelector: {}
+  tolerations: []
+
+# Alternative to Ollama: a vLLM OpenAI-compatible server (use on NVIDIA Grace / arm64 nodes).
+vllm:
+  enabled: false
+  image: {repository: nvcr.io/nvidia/vllm-openai, tag: latest, pullPolicy: IfNotPresent}
+  model: Qwen/Qwen3-14B
+  args: []
+  hfTokenSecret: ""          # optional Secret (key HF_TOKEN) for gated models
+  runtimeClassName: ""
+  gpu: {count: 1, resourceName: nvidia.com/gpu}
+  persistence: {enabled: true, size: 100Gi, accessMode: ReadWriteOnce, storageClass: ""}
+  resources:
+    requests: {cpu: "2", memory: 16Gi}
+    limits: {cpu: "8", memory: 48Gi}
+  nodeSelector: {}
+  tolerations: []

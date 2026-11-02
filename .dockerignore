@@ -1,0 +1,40 @@
+# Keep the build context small and free of secrets and local state.
+.git
+.github
+.venv
+**/node_modules
+**/__pycache__
+**/*.pyc
+.mypy_cache
+.ruff_cache
+.pytest_cache
+**/coverage
+coverage.json
+htmlcov
+.coverage
+dist
+**/dist
+build
+*.egg-info
+# Built UI bundles are rebuilt inside the image from source.
+audio_smith/studio/static
+audio_smith/_assets/player
+# Runtime state and user data.
+out
+audio
+.audio-smith
+voices
+models
+.cache
+.env
+.env.*
+*.pem
+*.key
+# Tests and docs are not needed to build the image.
+tests
+docs
+site
+examples
+integrations
+action
+tmp

@@ -78,6 +78,8 @@ nav:
       - Site mode: guide/site-mode.md
       - GitHub Action: guide/github-action.md
       - Studio: guide/studio.md
+      - Use from your agent: guide/agents.md
+      - Deployment: guide/deployment.md
       - Embedding: guide/embedding.md
       - Configuration: guide/configuration.md
       - Troubleshooting: guide/troubleshooting.md

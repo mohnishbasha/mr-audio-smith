@@ -1,0 +1,74 @@
+# 2-node GPU k3s cluster with Cilium (CNI) and the NVIDIA container runtime.
+#
+# Prerequisites on each GPU node: NVIDIA driver, nvidia-container-toolkit (k3s auto-detects it and
+# registers the `nvidia` RuntimeClass), and the NVIDIA device plugin DaemonSet (advertises nvidia.com/gpu).
+#   kubectl apply -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.17.0/deployments/static/nvidia-device-plugin.yml
+#   kubectl get runtimeclass nvidia
+# NetworkPolicy is enforced by Cilium, so networkPolicy.enabled is real isolation here.
+#
+#   helm install audio-smith charts/mr-audio-smith -n audio-smith --create-namespace -f charts/mr-audio-smith/values-k3s-gpu.yaml \
+#     --set ingress.hosts[0].host=narrate.example.com --set ingress.tls[0].hosts[0]=narrate.example.com
+image:
+  variant: ""            # the API pod needs no GPU; use "-cuda" only for in-process Maya or Kokoro on CUDA
+  pullPolicy: IfNotPresent
+
+config:
+  defaultBackend: maya2
+
+auth:
+  existingSecret: ""     # or create one: kubectl create secret generic audio-smith-token --from-literal=token=$(openssl rand -hex 32)
+
+ingress:
+  enabled: true
+  className: traefik     # k3s default; switch to nginx (and keep the nginx annotations) if you install ingress-nginx
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-body-size: 10m
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    cert-manager.io/cluster-issuer: letsencrypt
+  hosts:
+    - host: narrate.example.com
+      paths: [{path: /, pathType: Prefix}]
+  tls:
+    - secretName: mr-audio-smith-tls
+      hosts: [narrate.example.com]
+
+persistence:
+  cache: {storageClass: local-path}
+  out: {storageClass: local-path}
+  voices: {storageClass: local-path}
+
+networkPolicy:
+  enabled: true
+
+maya2:
+  enabled: true
+  runtimeClassName: nvidia
+  weights:
+    revision: main        # pin a commit sha once validated
+  persistence: {size: 50Gi, storageClass: local-path}
+  gpu: {count: 1, resourceName: nvidia.com/gpu}
+  # Optional: pin Maya 2 to one GPU node (and use Dockerfile.maya2 built for that node's CUDA).
+  nodeSelector: {}
+
+ollama:
+  enabled: true
+  runtimeClassName: nvidia
+  model: qwen3:14b
+  persistence: {size: 100Gi, storageClass: local-path}
+  gpu: {enabled: true, count: 1}
+
+# --- Grace / arm64 option (for example a GB10 or GH200 node) -------------------------------------
+# Pin the GPU workloads to arm64 nodes, and swap Ollama for vLLM (an OpenAI-compatible endpoint):
+#
+# maya2:
+#   nodeSelector: {kubernetes.io/arch: arm64}
+# ollama:
+#   enabled: false
+# vllm:
+#   enabled: true
+#   runtimeClassName: nvidia
+#   image: {repository: nvcr.io/nvidia/vllm-openai, tag: latest}
+#   model: Qwen/Qwen3-14B
+#   nodeSelector: {kubernetes.io/arch: arm64}
+#   hfTokenSecret: hf-token   # only for gated models

@@ -1,0 +1,23 @@
+{{- range $key := list "cache" "out" "voices" }}
+{{- $p := index $.Values.persistence $key }}
+{{- if and $p.enabled (not $p.existingClaim) }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "mr-audio-smith.claimName" (dict "ctx" $ "key" $key) }}
+  labels:
+    {{- include "mr-audio-smith.labels" (dict "ctx" $ "component" "api") | nindent 4 }}
+  annotations:
+    helm.sh/resource-policy: keep
+spec:
+  accessModes:
+    - {{ if eq $key "cache" }}{{ include "mr-audio-smith.cacheAccessMode" $ }}{{ else }}{{ $p.accessMode }}{{ end }}
+  {{- with $p.storageClass }}
+  storageClassName: {{ . | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ $p.size }}
+{{- end }}
+{{- end }}

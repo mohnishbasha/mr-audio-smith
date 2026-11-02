@@ -1,0 +1,117 @@
+# syntax=docker/dockerfile:1.7
+#
+# mr-audio-smith CUDA image: same app as Dockerfile.cpu, with CUDA torch wheels so Kokoro (and the
+# optional in-process Maya 2 mode, AUDIO_SMITH_MAYA2_MODE=inproc, once maya3 is installed) can use an NVIDIA GPU.
+# For the normal deployment Maya 2 runs as its own server (Dockerfile.maya2) and this image talks to it over HTTP.
+#
+# Build (repo root):  docker build -f deploy/docker/Dockerfile.cuda -t mr-audio-smith:cuda .
+# Multi-arch:         docker buildx build --platform linux/amd64,linux/arm64 -f deploy/docker/Dockerfile.cuda .
+# CUDA 13 variant (DGX Spark GB10 / sm_121, which cu12.x torch wheels cannot run):
+#   docker build -f deploy/docker/Dockerfile.cuda \
+#     --build-arg CUDA_IMAGE=nvidia/cuda:13.0.2-cudnn-runtime-ubuntu24.04 \
+#     --build-arg TORCH_INDEX_URL=https://download.pytorch.org/whl/cu130 -t mr-audio-smith:cuda13 .
+#
+# Why not distroless: ffmpeg and espeak-ng are required, and the NVIDIA runtime base is Ubuntu anyway.
+# Non-root uid 10001; the filesystem layout is the same as the CPU image (read-only rootfs friendly).
+
+ARG CUDA_IMAGE=nvidia/cuda:12.8.1-cudnn-runtime-ubuntu24.04
+ARG PYTHON_IMAGE=python:3.12-slim
+ARG NODE_IMAGE=node:22-slim
+ARG UV_VERSION=0.13.5
+ARG TORCH_INDEX_URL=https://download.pytorch.org/whl/cu128
+
+# ---- Stage 1: UI bundles ----------------------------------------------------------------------------
+FROM ${NODE_IMAGE} AS ui
+WORKDIR /src
+RUN npm install -g bun@1 --no-audit --no-fund
+COPY web/studio/package.json web/studio/package-lock.json web/studio/
+RUN cd web/studio && npm ci --no-audit --no-fund
+COPY player/package.json player/package-lock.json player/
+RUN cd player && npm ci --no-audit --no-fund
+COPY web/studio web/studio
+COPY player player
+RUN cd /src/web/studio && npm run build
+RUN cd /src/player && npm run build \
+ && mkdir -p /src/audio_smith/_assets/player \
+ && cp /src/player/dist/audio-smith-player.js /src/audio_smith/_assets/player/
+
+# ---- Stage 2: wheel and the locked requirements -----------------------------------------------------
+FROM ${PYTHON_IMAGE} AS wheel
+ARG UV_VERSION
+RUN pip install --no-cache-dir "uv==${UV_VERSION}"
+WORKDIR /src
+COPY pyproject.toml uv.lock README.md LICENSE THIRD_PARTY_LICENSES.md CHANGELOG.md ./
+COPY audio_smith audio_smith
+COPY schemas schemas
+COPY assets assets
+COPY --from=ui /src/audio_smith/studio/static audio_smith/studio/static
+COPY --from=ui /src/audio_smith/_assets/player audio_smith/_assets/player
+RUN uv build --wheel --out-dir /wheels \
+ && uv export --frozen --no-dev --no-emit-project --no-hashes \
+      --extra server --extra mcp --extra kokoro --extra qa --extra maya2 \
+    | grep -Ev '^(torch|triton|nvidia-|cuda-)' > /wheels/requirements.txt
+
+# ---- Stage 3: virtualenv on the CUDA base (so the interpreter path matches the runtime) -------------
+FROM ${CUDA_IMAGE} AS builder
+ARG UV_VERSION
+ARG TORCH_INDEX_URL
+ENV DEBIAN_FRONTEND=noninteractive UV_LINK_MODE=copy UV_COMPILE_BYTECODE=1
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends python3 python3-dev python3-venv python3-pip build-essential ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+RUN python3 -m venv /opt/uv && /opt/uv/bin/pip install --no-cache-dir "uv==${UV_VERSION}" \
+ && python3 -m venv /opt/venv
+COPY --from=wheel /wheels /wheels
+# CUDA torch from the PyTorch index first; the rest of the locked set resolves from PyPI.
+RUN /opt/uv/bin/uv pip install --python /opt/venv/bin/python --index-url "${TORCH_INDEX_URL}" "torch>=2.4" \
+ && /opt/uv/bin/uv pip install --python /opt/venv/bin/python -r /wheels/requirements.txt \
+ && /opt/uv/bin/uv pip install --python /opt/venv/bin/python --no-deps /wheels/*.whl \
+ && /opt/venv/bin/python -c "import torch; assert torch.version.cuda, 'not a CUDA torch build'"
+
+# ---- Stage 4: runtime -------------------------------------------------------------------------------
+FROM ${CUDA_IMAGE} AS runtime
+ARG VERSION=dev
+LABEL org.opencontainers.image.title="mr-audio-smith" \
+      org.opencontainers.image.description="Page-to-narration service (REST + MCP), CUDA profile" \
+      org.opencontainers.image.source="https://github.com/mohnishbasha/mr-audio-smith" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.version="${VERSION}"
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends python3 ffmpeg espeak-ng libsndfile1 ca-certificates \
+ && rm -rf /var/lib/apt/lists/* \
+ && (userdel -r ubuntu 2>/dev/null || true) \
+ && groupadd --gid 10001 audio-smith \
+ && useradd --uid 10001 --gid 10001 --no-create-home --shell /usr/sbin/nologin --home-dir /var/lib/audio-smith/cache/home audio-smith \
+ && mkdir -p /var/lib/audio-smith/cache /var/lib/audio-smith/out /var/lib/audio-smith/voices \
+ && chmod 0700 /var/lib/audio-smith/voices \
+ && chown -R 10001:10001 /var/lib/audio-smith
+
+COPY --from=builder /opt/venv /opt/venv
+
+ENV PATH=/opt/venv/bin:$PATH \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    HOME=/var/lib/audio-smith/cache/home \
+    XDG_CACHE_HOME=/var/lib/audio-smith/cache/xdg \
+    XDG_CONFIG_HOME=/var/lib/audio-smith/cache/home/.config \
+    HF_HOME=/var/lib/audio-smith/cache/hf \
+    NUMBA_CACHE_DIR=/var/lib/audio-smith/cache/numba \
+    MPLCONFIGDIR=/var/lib/audio-smith/cache/mpl \
+    TRITON_CACHE_DIR=/var/lib/audio-smith/cache/triton \
+    NVIDIA_VISIBLE_DEVICES=all \
+    NVIDIA_DRIVER_CAPABILITIES=compute,utility \
+    AUDIO_SMITH_ENV=stage \
+    AUDIO_SMITH_LOG_FORMAT=json \
+    AUDIO_SMITH_CACHE_DIR=/var/lib/audio-smith/cache \
+    AUDIO_SMITH_OUT_DIR=/var/lib/audio-smith/out \
+    AUDIO_SMITH_VOICES_DIR=/var/lib/audio-smith/voices
+
+USER 10001:10001
+WORKDIR /var/lib/audio-smith/out
+EXPOSE 7340
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD ["python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:7340/healthz', timeout=3).status == 200 else 1)"]
+
+ENTRYPOINT ["mr-audio-smith"]
+CMD ["serve", "--host", "0.0.0.0"]

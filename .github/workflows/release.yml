@@ -85,6 +85,129 @@ jobs:
           name: dist
           path: dist/
 
+  # ---- Container images and Helm chart (Sprint 9) ----------------------------------------------------
+  # Gated like PyPI/npm: set the repository variable IMAGES_PUBLISH=true after the owner allows GHCR package
+  # writes for the organization serverless-ventures (Packages settings: grant this repository write access).
+  images:
+    needs: [verify, build]
+    if: vars.IMAGES_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      cpu-digest: ${{ steps.cpu.outputs.digest }}
+      cuda-digest: ${{ steps.cuda.outputs.digest }}
+    env:
+      IMAGE: ghcr.io/serverless-ventures/mr-audio-smith
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Compute tags
+        id: tags
+        run: |
+          V="${{ needs.verify.outputs.version }}"
+          CPU="$IMAGE:$V"; CUDA="$IMAGE:$V-cuda"
+          if [ "${{ needs.verify.outputs.prerelease }}" != "true" ]; then
+            CPU="$CPU"$'\n'"$IMAGE:latest"; CUDA="$CUDA"$'\n'"$IMAGE:latest-cuda"
+          fi
+          { echo "cpu<<EOF"; echo "$CPU"; echo "EOF"; echo "cuda<<EOF"; echo "$CUDA"; echo "EOF"; } >> "$GITHUB_OUTPUT"
+      - name: Build and push CPU image
+        id: cpu
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deploy/docker/Dockerfile.cpu
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.tags.outputs.cpu }}
+          build-args: VERSION=${{ needs.verify.outputs.version }}
+          cache-from: type=gha,scope=cpu
+          cache-to: type=gha,scope=cpu,mode=max
+          provenance: mode=max
+          sbom: true
+      - name: Build and push CUDA image
+        id: cuda
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deploy/docker/Dockerfile.cuda
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.tags.outputs.cuda }}
+          build-args: VERSION=${{ needs.verify.outputs.version }}
+          cache-from: type=gha,scope=cuda
+          cache-to: type=gha,scope=cuda,mode=max
+          provenance: mode=max
+          sbom: true
+
+  sign:
+    needs: [verify, images]
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      packages: write
+    env:
+      IMAGE: ghcr.io/serverless-ventures/mr-audio-smith
+    steps:
+      - uses: sigstore/cosign-installer@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Keyless sign each pushed digest
+        run: |
+          cosign sign --yes "$IMAGE@${{ needs.images.outputs.cpu-digest }}"
+          cosign sign --yes "$IMAGE@${{ needs.images.outputs.cuda-digest }}"
+      - name: Verify what was signed
+        run: |
+          for d in "${{ needs.images.outputs.cpu-digest }}" "${{ needs.images.outputs.cuda-digest }}"; do
+            cosign verify "$IMAGE@$d" \
+              --certificate-identity-regexp 'https://github.com/${{ github.repository }}/.*' \
+              --certificate-oidc-issuer https://token.actions.githubusercontent.com > /dev/null
+          done
+
+  chart:
+    needs: [verify, build]
+    if: vars.IMAGES_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+      - uses: azure/setup-helm@v4
+      - uses: sigstore/cosign-installer@v3
+      - name: Lint and package
+        run: |
+          helm lint charts/mr-audio-smith
+          helm package charts/mr-audio-smith --destination dist-chart
+      - name: Push to GHCR
+        id: push
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u "${{ github.actor }}" --password-stdin
+          OUT=$(helm push dist-chart/mr-audio-smith-${{ needs.verify.outputs.version }}.tgz oci://ghcr.io/serverless-ventures/charts 2>&1)
+          echo "$OUT"
+          DIGEST=$(echo "$OUT" | sed -n 's/^Digest: //p')
+          [ -n "$DIGEST" ] || { echo "no digest in helm push output"; exit 1; }
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+      - name: Sign the chart digest
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | cosign login ghcr.io -u "${{ github.actor }}" --password-stdin
+          cosign sign --yes "ghcr.io/serverless-ventures/charts/mr-audio-smith@${{ steps.push.outputs.digest }}"
+
   publish-pypi:
     needs: [verify, build]
     if: vars.PYPI_PUBLISH == 'true'

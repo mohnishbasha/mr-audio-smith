@@ -1,0 +1,146 @@
+{{- if include "mr-audio-smith.ollamaEnabled" . }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "mr-audio-smith.fullname" . }}-ollama
+  labels:
+    {{- include "mr-audio-smith.labels" (dict "ctx" . "component" "ollama") | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - {name: ollama, port: 11434, targetPort: ollama, protocol: TCP}
+  selector:
+    {{- include "mr-audio-smith.selectorLabels" (dict "ctx" . "component" "ollama") | nindent 4 }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "mr-audio-smith.fullname" . }}-ollama
+  labels:
+    {{- include "mr-audio-smith.labels" (dict "ctx" . "component" "ollama") | nindent 4 }}
+spec:
+  serviceName: {{ include "mr-audio-smith.fullname" . }}-ollama
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "mr-audio-smith.selectorLabels" (dict "ctx" . "component" "ollama") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "mr-audio-smith.selectorLabels" (dict "ctx" . "component" "ollama") | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      {{- with .Values.ollama.runtimeClassName }}
+      runtimeClassName: {{ . }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: ollama
+          image: "{{ .Values.ollama.image.repository }}:{{ .Values.ollama.image.tag }}"
+          imagePullPolicy: {{ .Values.ollama.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          env:
+            - {name: HOME, value: /data}
+            - {name: OLLAMA_MODELS, value: /data/models}
+            - {name: OLLAMA_HOST, value: "0.0.0.0:11434"}
+          ports:
+            - {name: ollama, containerPort: 11434, protocol: TCP}
+          readinessProbe:
+            httpGet: {path: /, port: ollama}
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: {path: /, port: ollama}
+            periodSeconds: 30
+            timeoutSeconds: 10
+          resources:
+            {{- $r := deepCopy .Values.ollama.resources }}
+            {{- if .Values.ollama.gpu.enabled }}
+            {{- $_ := set $r "limits" (merge (dict .Values.ollama.gpu.resourceName (.Values.ollama.gpu.count | int)) ($r.limits | default dict)) }}
+            {{- end }}
+            {{- toYaml $r | nindent 12 }}
+          volumeMounts:
+            - {name: data, mountPath: /data}
+            - {name: tmp, mountPath: /tmp}
+      volumes:
+        - name: tmp
+          emptyDir: {sizeLimit: 1Gi}
+        {{- if not .Values.ollama.persistence.enabled }}
+        - name: data
+          emptyDir: {}
+        {{- end }}
+      {{- with (default .Values.nodeSelector .Values.ollama.nodeSelector) }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with (default .Values.tolerations .Values.ollama.tolerations) }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  {{- if .Values.ollama.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [{{ .Values.ollama.persistence.accessMode | quote }}]
+        {{- with .Values.ollama.persistence.storageClass }}
+        storageClassName: {{ . | quote }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.ollama.persistence.size }}
+  {{- end }}
+{{- if .Values.ollama.pull.enabled }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "mr-audio-smith.fullname" . }}-ollama-pull
+  labels:
+    {{- include "mr-audio-smith.labels" (dict "ctx" . "component" "ollama-pull") | nindent 4 }}
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  backoffLimit: {{ .Values.ollama.pull.backoffLimit }}
+  template:
+    metadata:
+      labels:
+        {{- include "mr-audio-smith.selectorLabels" (dict "ctx" . "component" "ollama-pull") | nindent 8 }}
+    spec:
+      restartPolicy: OnFailure
+      automountServiceAccountToken: false
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: pull
+          image: "{{ .Values.ollama.image.repository }}:{{ .Values.ollama.image.tag }}"
+          imagePullPolicy: {{ .Values.ollama.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          env:
+            - {name: HOME, value: /tmp}
+            - {name: OLLAMA_HOST, value: {{ include "mr-audio-smith.ollamaHost" . | quote }}}
+          command:
+            - sh
+            - -c
+            - |
+              i=0
+              until ollama list >/dev/null 2>&1; do
+                i=$((i+5)); [ "$i" -gt {{ .Values.ollama.pull.waitSeconds }} ] && { echo "ollama not reachable"; exit 1; }
+                sleep 5
+              done
+              ollama pull {{ .Values.ollama.model | quote }}
+          volumeMounts:
+            - {name: tmp, mountPath: /tmp}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+{{- end }}
+{{- end }}

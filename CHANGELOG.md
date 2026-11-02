@@ -51,6 +51,7 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `mr-audio-smith serve`: REST API with an on-disk job queue (survives restarts), bearer-token auth (required off localhost), per-token rate limits, `/healthz` and `/readyz`, problem+json errors.
 - `mr-audio-smith mcp` (stdio or streamable HTTP): eight tools for agent harnesses (narrate with progress, script, render, list voices, profiles, backends, status, recommend); every tool respects voice consent.
 - `run --server URL --token ...` and `site --server ...` narrate on a remote server and download the results, so a laptop or CI runner without a GPU can use a GPU box.
+- Agent integrations: Claude Code (MCP config and a `narrate-page` skill), Goose (`toolkit.yaml`), OpenCode (`opencode.json` snippet), and the Pi extension `@mr-audio-smith/pi-extension` with `/narrate`, `/voices`, `/audio-status` and streaming progress.
 - GitHub Action (`mohnishbasha/mr-audio-smith/action@v1`) narrates new or changed pages on push and commits the audio; example workflow and a complete letters-to-a-child example project.
 
 ### Fixed

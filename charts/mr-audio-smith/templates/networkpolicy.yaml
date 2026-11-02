@@ -1,0 +1,63 @@
+{{- if .Values.networkPolicy.enabled }}
+{{- /* Maya 2 and the LLM servers have no authentication: only the API pods (and the model-pull Job) may reach them. */}}
+{{- $apiFrom := list (dict "podSelector" (dict "matchLabels" (include "mr-audio-smith.selectorLabels" (dict "ctx" . "component" "api") | fromYaml))) }}
+{{- if include "mr-audio-smith.mayaEnabled" . }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "mr-audio-smith.fullname" . }}-maya2
+  labels:
+    {{- include "mr-audio-smith.labels" (dict "ctx" . "component" "maya2") | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "mr-audio-smith.selectorLabels" (dict "ctx" . "component" "maya2") | nindent 6 }}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        {{- toYaml $apiFrom | nindent 8 }}
+      ports:
+        - {port: 8080, protocol: TCP}
+{{- end }}
+{{- if include "mr-audio-smith.ollamaEnabled" . }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "mr-audio-smith.fullname" . }}-ollama
+  labels:
+    {{- include "mr-audio-smith.labels" (dict "ctx" . "component" "ollama") | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "mr-audio-smith.selectorLabels" (dict "ctx" . "component" "ollama") | nindent 6 }}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        {{- toYaml $apiFrom | nindent 8 }}
+        - podSelector:
+            matchLabels:
+              {{- include "mr-audio-smith.selectorLabels" (dict "ctx" . "component" "ollama-pull") | nindent 14 }}
+      ports:
+        - {port: 11434, protocol: TCP}
+{{- end }}
+{{- if .Values.vllm.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "mr-audio-smith.fullname" . }}-vllm
+  labels:
+    {{- include "mr-audio-smith.labels" (dict "ctx" . "component" "vllm") | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "mr-audio-smith.selectorLabels" (dict "ctx" . "component" "vllm") | nindent 6 }}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        {{- toYaml $apiFrom | nindent 8 }}
+      ports:
+        - {port: 8000, protocol: TCP}
+{{- end }}
+{{- end }}
