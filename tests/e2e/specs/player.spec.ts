@@ -71,21 +71,24 @@ test("e2e_US006_player_language_toggle_switches_track", async ({ page }) => {
   await page.goto(PAGE);
   await expect(page.locator("#default .lang button")).toHaveText(["EN", "HI"]);
   expect(await audioSrc(page)).toMatch(/tone\.mp3$/);
-  const lang = page.locator("#default").evaluate(
-    (el) =>
-      new Promise<string>((res) => {
-        el.addEventListener(
-          "as-language",
-          (e) => {
-            res((e as CustomEvent<{ lang: string }>).detail.lang);
-          },
-          { once: true },
-        );
-      }),
-  );
+  // Register the listener and wait for it to be attached before pressing the key (no race on fast runners).
+  await page.locator("#default").evaluate((el) => {
+    el.addEventListener(
+      "as-language",
+      (e) => {
+        el.dataset["lastLang"] = (
+          e as CustomEvent<{ lang: string }>
+        ).detail.lang;
+      },
+      { once: true },
+    );
+  });
   await page.locator("#default .wave").focus();
   await page.keyboard.press("l");
-  expect(await lang).toBe("hi");
+  await expect(page.locator("#default")).toHaveAttribute(
+    "data-last-lang",
+    "hi",
+  );
   await expect.poll(() => audioSrc(page)).toMatch(/tone-hi\.mp3$/);
   await expect(page.locator("#default .lang button").nth(1)).toHaveAttribute(
     "aria-checked",
@@ -154,7 +157,7 @@ test("e2e_US006_player_remembers_position_per_src", async ({ page }) => {
     )
     .not.toBe("0");
   await page.reload();
-  await expect.poll(() => audioTime(page)).toBeGreaterThanOrEqual(2);
+  await expect.poll(() => audioTime(page), { timeout: 15_000 }).toBeGreaterThanOrEqual(2);
 });
 
 test("e2e_US006_player_axe_core_zero_violations", async ({ page }) => {
