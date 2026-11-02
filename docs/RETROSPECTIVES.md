@@ -141,3 +141,33 @@ CSP gained `connect-src blob:`.
 
 **What to change:** give each command group its own module (already true for voice, publish, site,
 studio) so parallel work never touches the same file.
+
+## Sprint 6: Release v1.0.0 (2026-11-02, tag `sprint-6-complete`)
+
+**Built** (issues #50 to #55): security review (docs/SECURITY_REVIEW.md) with log redaction, DNS rebinding
+and fuzz tests, and a CI security job (pip-audit, npm audit, gitleaks, license check); a generated and
+checked THIRD_PARTY_LICENSES.md; the mkdocs-material documentation site with a generated CLI reference and
+Python API reference; the release workflow (version verification, CI, build with the Studio and player
+bundles inside the wheel, CycloneDX SBOMs, GitHub Release, and PyPI/npm publishing gated on owner setup);
+docs/LISTENING_TESTS.md with the protocol and automated pre-checks.
+
+**Decisions:** the `chatterbox` extra was removed because its upstream pins carried about 80 advisories;
+torch moved to 2.15; `mutagen` (GPL-2.0-or-later) was replaced by ffmpeg metadata writing so the MIT core
+links no copyleft library. pip-audit now reports only setuptools, held below 81 for resemblyzer and not
+reachable.
+
+**Gate status, stated plainly:**
+- Release checklist: v1.0.0 is versioned, tagged on `main`, and released on GitHub with artifacts and SBOMs.
+- PyPI and npm with provenance: **not done**. Publishing needs the owner to configure trusted publishing
+  (PyPI) and an npm token, then set `PYPI_PUBLISH` and `NPM_PUBLISH` repository variables and re-run the
+  release workflow for the tag.
+- Docs site live: the workflow deploys to GitHub Pages on `main`; the custom domain needs DNS by the owner.
+- Reference site narrated with v1.0.0: the build agent narrated the reference letter with Kokoro; the
+  flagship narration in the parent's cloned voice needs the Maya 2 GPU host and the owner's consented voice.
+- Listening tests: **pending the owner** (docs/LISTENING_TESTS.md). The agent never fills in human scores.
+
+**What worked:** splitting security and docs across agents while the lead built the release pipeline.
+
+**What did not:** dependency advisories piled up inside an optional extra nobody needed by default.
+
+**What to change:** run `pip-audit` on every dependency bump (the CI security job now does).
