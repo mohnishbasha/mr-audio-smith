@@ -1,4 +1,3 @@
-
 """Voice registry, consent, and clip check (TEST_PLAN 5.9)."""
 
 import datetime as dt

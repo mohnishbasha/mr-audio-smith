@@ -34,7 +34,9 @@ def test_cli_main_keyboard_interrupt_exits_130(monkeypatch: pytest.MonkeyPatch) 
     assert e.value.code == 130
 
 
-def test_cli_main_prints_code_and_violations(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+def test_cli_main_prints_code_and_violations(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
     from audio_smith.errors import ScriptInvalidError
 
     def boom(**_: object) -> None:

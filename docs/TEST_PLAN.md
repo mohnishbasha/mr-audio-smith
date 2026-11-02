@@ -831,6 +831,7 @@ Row count: more than 120 scenarios across 27 tables.
 | `test_voices_check_warns_and_fixes_broad_permissions` | voices check warns and fixes broad permissions | Unit | ✅ Automated |
 | `test_voices_cli_add_list_check_remove` | voices cli add list check remove | Unit | ✅ Automated |
 | `test_voices_permissions_0700_dir_0600_files` | voices permissions 0700 dir 0600 files | Unit | ✅ Automated |
+| `test_cli_main_prints_code_and_violations` | cli main prints code and violations | Unit | ✅ Automated |
 
 ## 6. Listening test protocol
 
