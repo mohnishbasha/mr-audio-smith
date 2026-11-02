@@ -13,6 +13,7 @@ from audio_smith.config import Settings, load_settings
 from audio_smith.errors import UsageError
 from audio_smith.profiles import load_all, load_file
 from audio_smith.profiles.loader import json_schema
+from audio_smith.voices.cli import register_voice_commands
 
 ProfileOpt = Annotated[
     str | None, typer.Option("--profile", "-p", help="Profile id (kid-5, adult-brief, ...).")
@@ -34,11 +35,15 @@ def settings_from(**overrides: object) -> Settings:
 
 
 def register(app: typer.Typer, console: Console) -> None:
-    """Attach stage commands to the root app."""
-    profile_app = typer.Typer(help="List, show, and validate audience profiles.", no_args_is_help=True)
-    cache_app = typer.Typer(help="Inspect and prune the cache.", no_args_is_help=True)
-    app.add_typer(profile_app, name="profile")
-    app.add_typer(cache_app, name="cache")
+    """Attach every command group to the root app."""
+    register_stage_commands(app, console)
+    register_profile_commands(app, console)
+    register_cache_commands(app, console)
+    register_voice_commands(app, console)
+
+
+def register_stage_commands(app: typer.Typer, console: Console) -> None:
+    """Pipeline stage commands (script, render; run and friends land in later sprints)."""
 
     @app.command("script")
     def script_cmd(
@@ -74,6 +79,33 @@ def register(app: typer.Typer, console: Console) -> None:
         for w in res.warnings:
             console.print(f"[yellow]warning:[/yellow] {w}")
 
+    @app.command("render")
+    def render_cmd(
+        script: Annotated[Path, typer.Argument(help="Script Markdown file.")],
+        chunks: Annotated[str | None, typer.Option("--chunks", help="Comma-separated chunk numbers.")] = None,
+        voice: VoiceOpt = None,
+        backend: BackendOpt = None,
+        out: OutOpt = None,
+        accept_noncommercial: Annotated[
+            bool, typer.Option("--accept-noncommercial", help="Allow backends with non-commercial weights.")
+        ] = False,
+    ) -> None:
+        """Synthesize a reviewed script chunk by chunk."""
+        settings = settings_from(accept_noncommercial=accept_noncommercial)
+        wanted = [c.strip() for c in chunks.split(",") if c.strip()] if chunks else None
+        res = api.render_script(
+            script, chunks=wanted, voice=voice, backend=backend, out=out, settings=settings
+        )
+        for cid, path in res.chunk_files.items():
+            typer.echo(f"chunk {cid}: {path}")
+        for w in res.warnings:
+            console.print(f"[yellow]warning:[/yellow] {w}")
+
+
+def register_profile_commands(app: typer.Typer, console: Console) -> None:
+    profile_app = typer.Typer(help="List, show, and validate audience profiles.", no_args_is_help=True)
+    app.add_typer(profile_app, name="profile")
+
     @profile_app.command("list")
     def profile_list() -> None:
         """List built-in and project profiles."""
@@ -100,6 +132,11 @@ def register(app: typer.Typer, console: Console) -> None:
     def profile_schema() -> None:
         """Print the profile JSON Schema."""
         typer.echo(json_schema(), nl=False)
+
+
+def register_cache_commands(app: typer.Typer, console: Console) -> None:
+    cache_app = typer.Typer(help="Inspect and prune the cache.", no_args_is_help=True)
+    app.add_typer(cache_app, name="cache")
 
     @cache_app.command("info")
     def cache_info() -> None:

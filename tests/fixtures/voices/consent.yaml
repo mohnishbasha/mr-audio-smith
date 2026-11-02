@@ -1,0 +1,5 @@
+# Sample consent record for the synthetic fixture clips (no real person).
+speaker_name: Fixture Tone
+relationship: self
+statement: "This is a synthetic test tone. I consent to mr-audio-smith cloning it for tests."
+date: 2026-01-01
