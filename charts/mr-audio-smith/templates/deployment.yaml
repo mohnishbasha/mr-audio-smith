@@ -1,3 +1,4 @@
+{{- if not .Values.standIn.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -7,6 +8,10 @@ metadata:
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  {{- with .Values.strategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
   {{- end }}
   selector:
     matchLabels:
@@ -72,7 +77,7 @@ spec:
               protocol: TCP
           env:
             - name: AUDIO_SMITH_ENV
-              value: stage
+              value: {{ .Values.config.env | quote }}
             - name: AUDIO_SMITH_LOG_FORMAT
               value: json
             - name: AUDIO_SMITH_LOG_LEVEL
@@ -145,3 +150,4 @@ spec:
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+{{- end }}

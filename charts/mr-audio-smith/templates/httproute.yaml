@@ -1,0 +1,28 @@
+{{- if .Values.httpRoute.enabled }}
+{{- if not .Values.httpRoute.hostnames }}
+{{- fail "httpRoute.hostnames must list at least one hostname" }}
+{{- end }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "mr-audio-smith.fullname" . }}
+  labels:
+    {{- include "mr-audio-smith.labels" (dict "ctx" . "component" "api") | nindent 4 }}
+spec:
+  parentRefs:
+    {{- toYaml .Values.httpRoute.parentRefs | nindent 4 }}
+  hostnames:
+    {{- toYaml .Values.httpRoute.hostnames | nindent 4 }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      {{- with .Values.httpRoute.timeout }}
+      timeouts:
+        request: {{ . }}
+      {{- end }}
+      backendRefs:
+        - name: {{ include "mr-audio-smith.fullname" . }}
+          port: {{ .Values.service.port }}
+{{- end }}

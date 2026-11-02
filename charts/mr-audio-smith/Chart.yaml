@@ -2,5 +2,7 @@ apiVersion: v2
 name: mr-audio-smith
 description: Page-to-narration service (REST + MCP) with optional Maya 2 and Ollama
 type: application
-version: 1.0.0-rc.2
+# The chart's own semver: bump it when the chart changes (OCI charts are never republished).
+version: 0.1.0
+# Tracks pyproject.toml (scripts/check-versions.sh, scripts/bump-version.sh).
 appVersion: 1.0.0-rc.2

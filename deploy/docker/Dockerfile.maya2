@@ -24,6 +24,8 @@ ARG CUDA_IMAGE=nvidia/cuda:13.0.2-cudnn-runtime-ubuntu24.04
 FROM ${CUDA_IMAGE}
 
 ARG MAYA_REF=79142d835fc745537fc5ab71a007eba8f425c74c
+# Image revision: bump when this Dockerfile changes without a MAYA_REF change; deploy/deploy.sh tags maya-tts:<first 7 of MAYA_REF>-r<rev>.
+ARG MAYA_IMAGE_REV=1
 ARG TORCH_INDEX_URL=https://download.pytorch.org/whl/cu130
 ARG CUDA_MAJOR=13
 # maya3 pins torch==2.8.0, which has no CUDA 13 build (cu130 starts at 2.9.0); uv --override swaps it.
@@ -72,7 +74,9 @@ ENV HF_HOME=/models/hf-cache \
 LABEL org.opencontainers.image.title="maya2-server" \
       org.opencontainers.image.description="Maya 2 Native TTS server (upstream pinned)" \
       org.opencontainers.image.source="https://github.com/MayaResearch/maya2-native" \
-      org.opencontainers.image.licenses="Apache-2.0"
+      org.opencontainers.image.licenses="Apache-2.0" \
+      org.opencontainers.image.revision="${MAYA_REF}" \
+      io.snackonai.maya-image-rev="${MAYA_IMAGE_REV}"
 
 USER ${APP_UID}:${APP_GID}
 EXPOSE 8080

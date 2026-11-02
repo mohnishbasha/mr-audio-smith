@@ -38,6 +38,23 @@ def test_scripts_check_versions_consistent_passes(tmp_path: Path) -> None:
     assert r.returncode == 0, r.stdout
 
 
+def test_versions_check_ignores_chart_version_but_checks_app_version(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    chart = repo / "charts/mr-audio-smith/Chart.yaml"
+    text = chart.read_text(encoding="utf-8")
+    chart.write_text(text.replace("version: 0.1.0", "version: 7.7.7", 1))
+    ok = subprocess.run(
+        ["bash", "scripts/check-versions.sh"], cwd=repo, capture_output=True, text=True, check=False
+    )
+    assert ok.returncode == 0, ok.stdout
+    chart.write_text(text.replace("appVersion: ", "appVersion: 9.9.9-x", 1))
+    bad = subprocess.run(
+        ["bash", "scripts/check-versions.sh"], cwd=repo, capture_output=True, text=True, check=False
+    )
+    assert bad.returncode == 1
+    assert "appVersion" in bad.stdout
+
+
 def test_versions_check_exits_1_naming_mismatched_file(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
     pkg = repo / "web/studio/package.json"

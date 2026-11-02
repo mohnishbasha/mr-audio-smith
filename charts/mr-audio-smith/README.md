@@ -13,6 +13,15 @@ API token, PVCs, Ingress, NetworkPolicy and an HPA.
 Maya 2, Ollama and vLLM have no authentication. They are ClusterIP only, and the NetworkPolicy lets only the
 `audio-smith` pods (and the model-pull Job) reach them. Never add an Ingress for them.
 
+## StokeAI DGX Spark
+
+`values-openstoke.yaml` (home unit) and `values-openstoke-standin.yaml` (other platform units) are applied by
+`deploy/deploy.sh` or Flux; see `docs/guide/stokeai.md`. They switch on `maya2.gpu.mode: cdi` (GPU through
+`runtimeClassName: nvidia` and `NVIDIA_VISIBLE_DEVICES`, no `nvidia.com/gpu` request), the HTTPRoute, the
+ExternalSecret and `standIn`. The default `maya2.gpu.mode` stays `device-plugin` for generic Kubernetes.
+
+The chart `version` is its own semver (bump it when the chart changes); `appVersion` tracks the app.
+
 ## Install
 
 ```bash

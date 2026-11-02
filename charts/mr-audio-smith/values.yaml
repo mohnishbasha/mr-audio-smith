@@ -15,7 +15,16 @@ imagePullSecrets: []
 
 replicaCount: 1
 
+# true renders only a selectorless global Service and the HTTPRoute (StokeAI stand-in clusters; see values-openstoke-standin.yaml).
+standIn:
+  enabled: false
+
+# Recreate for single-replica installs whose volumes are ReadWriteOnce; empty keeps the Kubernetes default (RollingUpdate).
+strategy: {}
+
 config:
+  # AUDIO_SMITH_ENV: dev, stage or prod.
+  env: stage
   # Empty: maya2 when maya2.enabled (or maya2.externalUrl is set), otherwise kokoro.
   defaultBackend: ""
   # Empty: ollama:<ollama.model> when ollama.enabled, openai_compat:<vllm url>#<model> when vllm.enabled.
@@ -36,6 +45,25 @@ auth:
 service:
   type: ClusterIP
   port: 7340
+  annotations: {}
+
+# Gateway API route (StokeAI: Gateway stoke-gw in namespace gateway). Off by default; the ingress block below is the generic path.
+httpRoute:
+  enabled: false
+  hostnames: []
+  parentRefs: []
+  timeout: ""
+
+secrets:
+  # false when the Secret comes from an ExternalSecret or auth.existingSecret.
+  create: true
+  externalSecret:
+    enabled: false
+    storeName: openbao
+    storeKind: ClusterSecretStore
+    key: ""                  # e.g. stoke/mr-audio-smith
+    property: server_token   # the property holding AUDIO_SMITH_SERVER_TOKEN
+    refreshInterval: 1h
 
 ingress:
   enabled: false
@@ -130,6 +158,7 @@ maya2:
     tag: "79142d8"
     pullPolicy: IfNotPresent
   maxSeats: 1
+  # Device-plugin mode only; cdi mode always uses the nvidia RuntimeClass unless this is set.
   runtimeClassName: ""
   weights:
     repo: maya-research/maya2-native
@@ -138,12 +167,20 @@ maya2:
     # Optional `sha256sum` file contents (paths relative to the snapshot dir). When set, the init container
     # verifies the download and fails the pod on a mismatch.
     sha256sums: ""
+    # Run the init container that pre-downloads the weights. false lets the server download into HF_HOME on first start
+    # (the startup probe allows for it).
+    prefetch: true
     # true sets HF_HUB_OFFLINE=1 after the pre-download. Leave false unless the Mimi codec and ECAPA encoder
     # are also in the cache: maya3 fetches those from Hugging Face on first start.
     offline: false
   persistence: {enabled: true, size: 50Gi, accessMode: ReadWriteOnce, storageClass: ""}
-  gpu: {count: 1, resourceName: nvidia.com/gpu}
-  # Env var NVIDIA_VISIBLE_DEVICES for CDI-style runtimes; empty leaves it to the device plugin.
+  gpu:
+    # device-plugin: request resourceName x count (needs the NVIDIA device plugin, generic Kubernetes).
+    # cdi: no GPU resource request at all; runtimeClassName nvidia plus NVIDIA_VISIBLE_DEVICES=cdiDevices (StokeAI, no device plugin).
+    mode: device-plugin
+    count: 1
+    resourceName: nvidia.com/gpu
+    cdiDevices: all
   extraEnv: []
   startupFailureThreshold: 180   # x10s: first start downloads and loads the model
   resources:

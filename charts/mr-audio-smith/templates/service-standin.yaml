@@ -1,0 +1,19 @@
+{{- if .Values.standIn.enabled }}
+# Selectorless stand-in: this cluster runs no pods, but its gateway can route the
+# hostname, and Cilium ClusterMesh fills the endpoints from the home cluster's Service.
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "mr-audio-smith.fullname" . }}
+  labels:
+    {{- include "mr-audio-smith.labels" (dict "ctx" . "component" "api") | nindent 4 }}
+  annotations:
+    service.cilium.io/global: "true"
+    service.cilium.io/shared: "false"   # contributes no endpoints
+spec:
+  ports:
+    - name: http
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.port }}
+      protocol: TCP
+{{- end }}

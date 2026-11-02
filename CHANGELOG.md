@@ -7,8 +7,12 @@ uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- StokeAI DGX Spark deployment: `deploy/deploy.sh`, `deploy/release.sh`, `deploy/tailnet.py`, Makefile targets `deploy`, `deploy-routes`, `deploy-check`, `deploy-clean`, `image`, `image-maya`, `helm-package`, `helm-push` and `release`, and `docs/guide/stokeai.md`.
+- Helm chart: `values-openstoke.yaml` and `values-openstoke-standin.yaml`, an HTTPRoute, stand-in Service, ExternalSecret, `strategy`, `config.env`, `service.annotations`, `secrets.create`, `maya2.weights.prefetch` and `maya2.gpu.mode` (`device-plugin` by default, `cdi` for platforms without the NVIDIA device plugin).
+- `ARG MAYA_IMAGE_REV` in `Dockerfile.maya2`.
 
 ### Changed
+- Helm chart `version` is now its own plain semver (starts at `0.1.0`) instead of mirroring the app version. `appVersion` still tracks `pyproject.toml`; `scripts/check-versions.sh` and `scripts/bump-version.sh` now check and set only `appVersion`.
 
 ### Deprecated
 

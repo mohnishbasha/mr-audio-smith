@@ -1,3 +1,4 @@
+{{- if not .Values.standIn.enabled }}
 {{- if .Values.vllm.enabled }}
 # Optional OpenAI-compatible LLM endpoint (instead of Ollama), e.g. on NVIDIA Grace arm64 nodes.
 # The upstream image writes compile caches and is not read-only-rootfs clean, so this one container relaxes
@@ -126,4 +127,5 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+{{- end }}
 {{- end }}

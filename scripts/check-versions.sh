@@ -21,7 +21,7 @@ check() {
 check "$(jq -r '.version' player/package.json)" "player/package.json"
 check "$(jq -r '.version' integrations/pi/package.json)" "integrations/pi/package.json"
 check "$(jq -r '.version' web/studio/package.json)" "web/studio/package.json"
-check "$(yq -r '.version' charts/mr-audio-smith/Chart.yaml)" "charts/mr-audio-smith/Chart.yaml (version)"
+# Chart.yaml `version` is the chart's own semver (starts at 0.1.0); only appVersion tracks the app.
 check "$(yq -r '.appVersion' charts/mr-audio-smith/Chart.yaml)" "charts/mr-audio-smith/Chart.yaml (appVersion)"
 check "$(yq -r '.inputs.image-tag.default' action/action.yml)" "action/action.yml (image-tag)"
 

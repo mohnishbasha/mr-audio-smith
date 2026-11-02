@@ -16,6 +16,7 @@ uv lock -q
 for f in player/package.json integrations/pi/package.json web/studio/package.json; do
   tmp=$(mktemp); jq --arg v "$NEW" '.version=$v' "$f" > "$tmp" && mv "$tmp" "$f"
 done
-yq -i ".version = \"$NEW\" | .appVersion = \"$NEW\"" charts/mr-audio-smith/Chart.yaml
+# Only appVersion: the chart `version` is its own semver, bumped by hand when the chart changes.
+yq -i ".appVersion = \"$NEW\"" charts/mr-audio-smith/Chart.yaml
 yq -i ".inputs.image-tag.default = \"$NEW\"" action/action.yml
 ./scripts/check-versions.sh

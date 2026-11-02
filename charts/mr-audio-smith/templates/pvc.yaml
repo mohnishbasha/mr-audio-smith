@@ -1,3 +1,4 @@
+{{- if not .Values.standIn.enabled }}
 {{- range $key := list "cache" "out" "voices" }}
 {{- $p := index $.Values.persistence $key }}
 {{- if and $p.enabled (not $p.existingClaim) }}
@@ -19,5 +20,6 @@ spec:
   resources:
     requests:
       storage: {{ $p.size }}
+{{- end }}
 {{- end }}
 {{- end }}

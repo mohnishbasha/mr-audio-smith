@@ -1,0 +1,92 @@
+# mr-audio-smith.openstoke.com on the StokeAI DGX Spark platform (stokeai / stokeai-deploy).
+# Same shape as mr-reel-smith:
+#   - runs on ONE home unit (spark-bundle2-1; each Spark is its own single-node k3s cluster); deploy/deploy.sh
+#     builds the image there and imports it into k3s: there is no registry, so pullPolicy: Never
+#   - the other platform clusters get values-openstoke-standin.yaml (selectorless global Service + the same
+#     HTTPRoute), so any platform machine's Envoy can route the name via ClusterMesh
+#   - *.openstoke.com is tailnet-only; stoke-gw terminates TLS with the wildcard cert and the wildcard DNS
+#     record already resolves the name: nothing to configure for TLS or DNS
+#   - the API is CPU only. Maya 2 is the one GPU user: its pod alone gets the GPU through CDI
+#     (runtimeClassName: nvidia). Never a nvidia.com/gpu request (there is no device plugin on the platform,
+#     so such a request would leave the pod Pending forever)
+#   - script writing uses the platform's shared SGLang model; no Ollama, no vLLM here
+#   - the server token comes from Bao (secret/stoke/mr-audio-smith, property server_token) through an ExternalSecret
+#   - the namespace enforces PodSecurity restricted: no root init container (initPermissions off)
+#
+#   deploy/deploy.sh                      # build on the home unit, import, apply, routes, smoke test
+standIn:
+  enabled: false
+
+replicaCount: 1
+strategy:
+  type: Recreate          # RWO volumes (local-path): never two pods at once
+
+image:
+  repository: mr-audio-smith
+  tag: ""                 # set by deploy.sh to the git commit
+  variant: ""
+  pullPolicy: Never       # imported into k3s by deploy.sh; a missing image must fail, not pull
+
+config:
+  env: prod
+  defaultBackend: maya2
+  llm: "openai_compat:http://qwen38-27b-api.serving.svc.cluster.local:8000/v1#qwen38-27b"
+  allowPrivate: false
+
+# AUDIO_SMITH_LOG_FORMAT is json in the chart; AUDIO_SMITH_MAYA2_URL is derived from the Maya service name below.
+
+initPermissions:
+  enabled: false          # a root init container is rejected by PodSecurity restricted
+
+persistence:
+  cache: {storageClass: local-path}
+  out: {storageClass: local-path}
+  voices: {storageClass: local-path}
+
+maya2:
+  enabled: true
+  image:
+    repository: maya-tts            # built from deploy/docker/Dockerfile.maya2 and imported by deploy.sh
+    tag: "79142d8-r1"               # first 7 of MAYA_REF + -r<MAYA_IMAGE_REV>; deploy.sh --set keeps it in step
+    pullPolicy: Never
+  weights:
+    prefetch: false       # the server downloads into HF_HOME on first start
+  persistence: {size: 50Gi, storageClass: local-path}
+  gpu:
+    mode: cdi
+    cdiDevices: all
+  startupFailureThreshold: 180
+
+ollama:
+  enabled: false
+vllm:
+  enabled: false
+
+networkPolicy:
+  enabled: true
+
+secrets:
+  create: false
+  externalSecret:
+    enabled: true
+    storeName: openbao
+    storeKind: ClusterSecretStore
+    key: stoke/mr-audio-smith
+    property: server_token
+
+service:
+  annotations:
+    service.cilium.io/global: "true"
+    service.cilium.io/shared: "true"
+
+httpRoute:
+  enabled: true
+  hostnames: ["mr-audio-smith.openstoke.com"]
+  parentRefs:
+    - name: stoke-gw
+      namespace: gateway
+  # Envoy's default is 15s; narration requests can be slow, so allow five minutes like the other studio apps.
+  timeout: 300s
+
+ingress:
+  enabled: false

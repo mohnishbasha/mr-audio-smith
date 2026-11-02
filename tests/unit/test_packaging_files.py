@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import tomllib
 from pathlib import Path
 from typing import Any
@@ -122,11 +123,24 @@ def test_helm_k3s_values_use_nvidia_runtime() -> None:
     assert k3s["networkPolicy"]["enabled"] is True
 
 
-def test_chart_version_equals_pyproject_version() -> None:
+def test_chart_app_version_equals_pyproject_and_chart_version_is_plain_semver() -> None:
     pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     chart = _load(CHART / "Chart.yaml")
-    assert chart["version"] == pyproject["project"]["version"]
     assert chart["appVersion"] == pyproject["project"]["version"]
+    # The chart has its own plain x.y.z version (stokeai-deploy's render.py accepts nothing else).
+    assert re.fullmatch(r"\d+\.\d+\.\d+", str(chart["version"]))
+
+
+def test_helm_openstoke_values_use_cdi_without_gpu_requests() -> None:
+    values = _load(CHART / "values-openstoke.yaml")
+    assert values["maya2"]["gpu"]["mode"] == "cdi"
+    assert values["maya2"]["weights"]["prefetch"] is False
+    assert values["secrets"]["create"] is False
+    assert values["ollama"]["enabled"] is False
+    assert values["vllm"]["enabled"] is False
+    assert values["initPermissions"]["enabled"] is False
+    assert _load(CHART / "values-openstoke-standin.yaml")["standIn"]["enabled"] is True
+    assert _load(CHART / "values.yaml")["maya2"]["gpu"]["mode"] == "device-plugin"
 
 
 @pytest.mark.parametrize("name", ["Dockerfile.cpu", "Dockerfile.cuda"])

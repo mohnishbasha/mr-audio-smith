@@ -1,0 +1,13 @@
+# The other StokeAI platform clusters (not the home unit): only a selectorless global
+# Service and the HTTPRoute, so their Envoy can route mr-audio-smith.openstoke.com and
+# Cilium ClusterMesh fills in the home unit's endpoints. Applied by deploy/deploy.sh.
+standIn:
+  enabled: true
+
+httpRoute:
+  enabled: true
+  hostnames: ["mr-audio-smith.openstoke.com"]
+  parentRefs:
+    - name: stoke-gw
+      namespace: gateway
+  timeout: 300s

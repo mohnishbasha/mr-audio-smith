@@ -199,7 +199,7 @@ jobs:
         id: push
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u "${{ github.actor }}" --password-stdin
-          OUT=$(helm push dist-chart/mr-audio-smith-${{ needs.verify.outputs.version }}.tgz oci://ghcr.io/serverless-ventures/charts 2>&1)
+          OUT=$(helm push dist-chart/mr-audio-smith-*.tgz oci://ghcr.io/serverless-ventures/charts 2>&1)
           echo "$OUT"
           DIGEST=$(echo "$OUT" | sed -n 's/^Digest: //p')
           [ -n "$DIGEST" ] || { echo "no digest in helm push output"; exit 1; }

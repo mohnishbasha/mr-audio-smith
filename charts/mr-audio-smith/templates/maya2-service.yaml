@@ -1,3 +1,4 @@
+{{- if not .Values.standIn.enabled }}
 {{- if include "mr-audio-smith.mayaEnabled" . }}
 # Cluster-internal only: Maya 2 has no authentication. Never add an Ingress or LoadBalancer for it.
 apiVersion: v1
@@ -15,4 +16,5 @@ spec:
       protocol: TCP
   selector:
     {{- include "mr-audio-smith.selectorLabels" (dict "ctx" . "component" "maya2") | nindent 4 }}
+{{- end }}
 {{- end }}

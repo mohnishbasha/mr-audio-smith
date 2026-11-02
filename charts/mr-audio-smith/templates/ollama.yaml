@@ -1,3 +1,4 @@
+{{- if not .Values.standIn.enabled }}
 {{- if include "mr-audio-smith.ollamaEnabled" . }}
 apiVersion: v1
 kind: Service
@@ -142,5 +143,6 @@ spec:
       volumes:
         - name: tmp
           emptyDir: {}
+{{- end }}
 {{- end }}
 {{- end }}

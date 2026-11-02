@@ -1,3 +1,4 @@
+{{- if not .Values.standIn.enabled }}
 {{- if .Values.autoscaling.enabled }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
@@ -28,4 +29,5 @@ spec:
           type: AverageValue
           averageValue: {{ .Values.autoscaling.queueDepth.averageValue | quote }}
     {{- end }}
+{{- end }}
 {{- end }}

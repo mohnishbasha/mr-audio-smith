@@ -1,3 +1,4 @@
+{{- if not .Values.standIn.enabled }}
 {{- if include "mr-audio-smith.mayaEnabled" . }}
 {{- if .Values.maya2.weights.sha256sums }}
 apiVersion: v1
@@ -34,11 +35,17 @@ spec:
       {{- end }}
       automountServiceAccountToken: false
       enableServiceLinks: false
+      {{- $cdi := eq .Values.maya2.gpu.mode "cdi" }}
+      {{- if $cdi }}
+      runtimeClassName: {{ default "nvidia" .Values.maya2.runtimeClassName }}
+      {{- else }}
       {{- with .Values.maya2.runtimeClassName }}
       runtimeClassName: {{ . }}
       {{- end }}
+      {{- end }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if .Values.maya2.weights.prefetch }}
       initContainers:
         - name: pull-weights
           image: "{{ .Values.maya2.image.repository }}:{{ .Values.maya2.image.tag }}"
@@ -72,6 +79,7 @@ spec:
             {{- if .Values.maya2.weights.sha256sums }}
             - {name: checksums, mountPath: /checksums, readOnly: true}
             {{- end }}
+      {{- end }}
       containers:
         - name: maya2
           image: "{{ .Values.maya2.image.repository }}:{{ .Values.maya2.image.tag }}"
@@ -91,6 +99,11 @@ spec:
             - {name: TRITON_CACHE_DIR, value: /models/hf-cache/triton}
             {{- if .Values.maya2.weights.offline }}
             - {name: HF_HUB_OFFLINE, value: "1"}
+            {{- end }}
+            {{- if $cdi }}
+            # GPU through CDI (runtimeClassName above); no GPU resource request.
+            - {name: NVIDIA_VISIBLE_DEVICES, value: {{ .Values.maya2.gpu.cdiDevices | quote }}}
+            - {name: NVIDIA_DRIVER_CAPABILITIES, value: compute,utility}
             {{- end }}
             {{- with .Values.maya2.extraEnv }}
             {{- toYaml . | nindent 12 }}
@@ -112,7 +125,9 @@ spec:
             failureThreshold: 6
           resources:
             {{- $r := deepCopy .Values.maya2.resources }}
+            {{- if not $cdi }}
             {{- $_ := set $r "limits" (merge (dict .Values.maya2.gpu.resourceName (.Values.maya2.gpu.count | int)) ($r.limits | default dict)) }}
+            {{- end }}
             {{- toYaml $r | nindent 12 }}
           volumeMounts:
             - {name: models, mountPath: /models}
@@ -150,4 +165,5 @@ spec:
           requests:
             storage: {{ .Values.maya2.persistence.size }}
   {{- end }}
+{{- end }}
 {{- end }}
