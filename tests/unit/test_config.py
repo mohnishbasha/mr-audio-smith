@@ -14,14 +14,16 @@ def test_config_defaults_when_nothing_set(tmp_path: Path) -> None:
 
 
 def test_config_file_overrides_defaults(tmp_path: Path) -> None:
-    (tmp_path / "audio-smith.toml").write_text('default_backend = "kokoro"\nqa_threshold = 0.8\n')
+    (tmp_path / "audio-smith.toml").write_text(
+        'default_backend = "kokoro"\nqa_threshold = 0.8\n', encoding="utf-8"
+    )
     s = load_settings()
     assert s.default_backend == "kokoro"
     assert s.qa_threshold == 0.8
 
 
 def test_config_env_overrides_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    (tmp_path / "audio-smith.toml").write_text('default_backend = "kokoro"\n')
+    (tmp_path / "audio-smith.toml").write_text('default_backend = "kokoro"\n', encoding="utf-8")
     monkeypatch.setenv("AUDIO_SMITH_DEFAULT_BACKEND", "mock")
     assert load_settings().default_backend == "mock"
 
@@ -39,7 +41,7 @@ def test_config_cli_none_override_ignored(monkeypatch: pytest.MonkeyPatch) -> No
 def test_config_audio_smith_toml_discovered_upward_from_cwd(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    (tmp_path / "audio-smith.toml").write_text('default_backend = "kokoro"\n')
+    (tmp_path / "audio-smith.toml").write_text('default_backend = "kokoro"\n', encoding="utf-8")
     nested = tmp_path / "a" / "b"
     nested.mkdir(parents=True)
     monkeypatch.chdir(nested)
@@ -48,14 +50,16 @@ def test_config_audio_smith_toml_discovered_upward_from_cwd(
 
 
 def test_config_unknown_key_warns_not_crashes(tmp_path: Path) -> None:
-    (tmp_path / "audio-smith.toml").write_text('nonsense_key = 1\ndefault_backend = "mock"\n')
+    (tmp_path / "audio-smith.toml").write_text(
+        'nonsense_key = 1\ndefault_backend = "mock"\n', encoding="utf-8"
+    )
     s = load_settings()
     assert s.default_backend == "mock"
     assert any("nonsense_key" in w for w in s.config_warnings)
 
 
 def test_config_secret_keys_in_file_ignored_with_warning(tmp_path: Path) -> None:
-    (tmp_path / "audio-smith.toml").write_text('server_token = "abc"\n')
+    (tmp_path / "audio-smith.toml").write_text('server_token = "abc"\n', encoding="utf-8")
     s = load_settings()
     assert s.server_token is None
     assert any("server_token" in w for w in s.config_warnings)
@@ -64,14 +68,14 @@ def test_config_secret_keys_in_file_ignored_with_warning(tmp_path: Path) -> None
 def test_config_invalid_toml_raises_usage_error(tmp_path: Path) -> None:
     from audio_smith.errors import UsageError
 
-    (tmp_path / "audio-smith.toml").write_text("this is = = not toml")
+    (tmp_path / "audio-smith.toml").write_text("this is = = not toml", encoding="utf-8")
     with pytest.raises(UsageError):
         load_settings()
 
 
 def test_config_explicit_config_path(tmp_path: Path) -> None:
     other = tmp_path / "elsewhere.toml"
-    other.write_text('default_backend = "kokoro"\n')
+    other.write_text('default_backend = "kokoro"\n', encoding="utf-8")
     assert load_settings(config_path=other).default_backend == "kokoro"
 
 

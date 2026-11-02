@@ -13,6 +13,8 @@ make coverage                       # coverage + thresholds
 make smoke                          # end to end with mocks
 make e2e                            # Playwright
 ./scripts/check-versions.sh         # version consistency
+uv run python scripts/sync-test-plan.py --add-missing  # TEST_PLAN statuses from real test names
+make record-llm                     # re-record LLM fixtures after a writer prompt change (needs Ollama)
 uv run mr-audio-smith doctor        # environment check
 uv run mr-audio-smith run tests/fixtures/pages/letter-calm.html --llm fake --backend mock
 

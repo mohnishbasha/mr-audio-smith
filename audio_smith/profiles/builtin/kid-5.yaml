@@ -1,0 +1,29 @@
+id: kid-5
+version: 1.0.0
+description: A five-year-old listener, bedtime or car ride
+audience:
+  age: 5
+  attention_minutes: 6
+writing:
+  target_minutes: 5
+  max_sentence_words: 12
+  explain_big_words: true
+  spoken_transitions: true        # "Idea number two..."
+  interactive_moments: 2          # "Let's breathe together"
+  keep_signature_verbatim: true
+  forbidden: [sarcasm, scary_detail, brand_names_without_context]
+speech:
+  rate: 0.9
+  pause_after_heading_ms: 800
+  pause_between_chunks_ms: 350
+  max_chunk_chars: 360
+languages: [en]                   # add "hi", "mr", "ta" for extra tracks
+tracks:
+  parent: adult-brief
+mastering:
+  intro_sting: builtin:chime-soft
+  outro_sting: builtin:chime-soft
+  music_bed: null                 # path or builtin id; ducked under voice
+lexicon:
+  Aadi: AH-dee
+  Houston: HYOO-stun

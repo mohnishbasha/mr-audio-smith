@@ -190,10 +190,15 @@ audio_smith/
                        doctor, studio, serve, mcp, cache
   config.py            pydantic-settings; env prefix AUDIO_SMITH_
   errors.py            AudioSmithError hierarchy (code, stage, message, hint)
+  proc.py              the only subprocess entry point: argument arrays, no shell, timeouts
+  paths.py             safe_slug, ensure_inside (output root guard), atomic_write
+  preflight.py         PreflightIssue model shared by backends, LLM providers, doctor
+  cli_commands.py      stage commands registered on the typer app (front door)
   api.py               the core public API: narrate, extract, write_script,
                        render_script, master, publish (only module front doors import)
   fetch.py             httpx fetch, size/time limits, scheme allowlist, SSRF guard
-  extract.py           selectolax DOM walk -> Block list; trafilatura fallback
+  extract.py           selectolax (lexbor backend) DOM walk -> Block list; trafilatura and
+                       text-density fallbacks; local .md converted to HTML in api.py
   blocks.py            Block model, normalization, hashing
   profiles/            loader.py, schema.py, builtin/{kid-5,kid-8,adult-commute,adult-brief}.yaml
   script/              writer.py (LLM prompt build), validate.py, translate.py,
@@ -244,7 +249,7 @@ Layering, top to bottom: front doors, `api`, stages (`fetch/extract`, `script`, 
 | Extra | Contents | Notes |
 |---|---|---|
 | (base) | typer, rich, httpx, selectolax, trafilatura, emoji, pydantic, pydantic-settings, pyyaml, structlog, numpy, soundfile, pydub, mutagen, openai, keyring | No torch |
-| `maya2` | `maya3` | In-process Maya 2 Native; package name per its README |
+| `maya2` | `torch` | In-process Maya 2 Native. `maya3` is not on PyPI (PyPI forbids direct URL dependencies); install it with `uv pip install "maya3 @ git+https://github.com/MayaResearch/maya2-native@<pinned sha>"` |
 | `kokoro` | `kokoro>=0.9`, `torch>=2.4` | Marked `python_version < "3.13"` (ADR-017) |
 | `chatterbox` | `chatterbox-tts`, `torch>=2.4` | Optional clone backend |
 | `qa` | `resemblyzer>=0.1.4` | ADR-015 |
@@ -900,8 +905,10 @@ One module (`cache/keys.py`) computes all keys; `cache/store.py` reads and write
 ```
 cache/
   v1/
-    blocks/{content_hash}.json
-    scripts/{script_key}.md            script_key = H(content_hash, profile@ver, llm, lang)
+    blocks/{blocks_key}.json           blocks_key = H(page bytes, extractor version,
+                                                     parent_headings)
+    scripts/{script_key}.md            script_key = H(content_hash, profile@ver, llm, lang,
+                                                     writer prompt version, track)
     chunks/{chunk_key}.wav             chunk_key  = H(chunk_text_after_lexicon, backend,
                                                      model, voice_id, voice_clip_hash,
                                                      rate, seed)
@@ -909,6 +916,9 @@ cache/
 ```
 
 Additions and clarifications:
+
+- Every key starts with the cache format (`v1-`), so bumping `CACHE_FORMAT` makes old entries unreachable instead of misread.
+- The blocks key uses page bytes because the content hash is only known after extraction; the content hash (FR-003) is then computed from the normalized blocks.
 
 - **Prompt template version in `script_key`:** `script_key = H(content_hash, profile@ver, llm, lang, prompt_template_version)`. The version is the content hash (or declared version header) of `script/prompts/writer.md` and, for translations, `translate.md`. Editing a prompt template therefore invalidates cached scripts automatically.
 - **`track_key`:** `H(ordered chunk_keys, profile@ver mastering section, pause settings, sting and music-bed content hashes, tool major version)`.
@@ -933,6 +943,7 @@ Every failure raises a typed `AudioSmithError` subclass with `code`, `stage`, `m
 | `ExtractError` | `extract_failed` | `extract` | 4 |
 | `FetchError` (subclass of `ExtractError`) | `fetch_failed` | `fetch` | 4 |
 | `ScriptInvalidError` | `script_invalid` | `script` | 5 |
+| `LLMError` | `llm_failed` | `script` | 5 |
 | `SynthesisError` | `synthesis_failed` | `synth` | 6 |
 | `MasteringError` | `mastering_failed` | `master` | 7 |
 | `ConsentError` | `consent_missing` | `voice` | 8 |

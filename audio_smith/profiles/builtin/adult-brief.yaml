@@ -1,0 +1,25 @@
+id: adult-brief
+version: 1.0.0
+description: A busy adult who wants the essentials in a couple of minutes
+audience:
+  age: 40
+  attention_minutes: 3
+writing:
+  target_minutes: 2
+  max_sentence_words: 20
+  explain_big_words: false
+  spoken_transitions: false
+  interactive_moments: 0
+  keep_signature_verbatim: true
+  forbidden: [filler, url_reading]
+speech:
+  rate: 1.05
+  pause_after_heading_ms: 500
+  pause_between_chunks_ms: 250
+  max_chunk_chars: 400
+languages: [en]
+mastering:
+  intro_sting: null
+  outro_sting: null
+  music_bed: null
+lexicon: {}

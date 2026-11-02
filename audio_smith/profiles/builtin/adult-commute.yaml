@@ -1,0 +1,25 @@
+id: adult-commute
+version: 1.0.0
+description: An adult listening in the car or on a walk; clear signposting, no visual references
+audience:
+  age: 35
+  attention_minutes: 12
+writing:
+  target_minutes: 8
+  max_sentence_words: 22
+  explain_big_words: false
+  spoken_transitions: true
+  interactive_moments: 0
+  keep_signature_verbatim: true
+  forbidden: [visual_only_references, url_reading]
+speech:
+  rate: 1.0
+  pause_after_heading_ms: 600
+  pause_between_chunks_ms: 300
+  max_chunk_chars: 400
+languages: [en]
+mastering:
+  intro_sting: builtin:chime-bright
+  outro_sting: null
+  music_bed: null
+lexicon: {}

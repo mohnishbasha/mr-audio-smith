@@ -15,6 +15,7 @@ permissions:
 
 env:
   UV_PYTHON: "3.12"
+  PYTHONUTF8: "1"
   PY_EXTRAS: --extra dev --extra server --extra mcp --extra cloud
 
 jobs:

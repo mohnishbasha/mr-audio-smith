@@ -119,7 +119,9 @@ def core_checks() -> list[Check]:
 
 def default_checks() -> list[Check]:
     """Core checks plus contributions from later stages (backends, LLM, voices)."""
-    return core_checks()
+    from audio_smith.llm.checks import llm_check  # noqa: PLC0415
+
+    return [*core_checks(), Check(name="llm", run=llm_check)]
 
 
 def run_checks(settings: Settings, checks: list[Check]) -> DoctorReport:

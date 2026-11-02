@@ -90,6 +90,13 @@ Milestones are created by Step 2.5 of the build prompt. Adjust due dates to the 
 - Speaker similarity uses resemblyzer in the `qa` extra, lazy-imported, skipped with a manifest warning when absent (ADR-015).
 - Kokoro requires Python below 3.13 upstream, so the `kokoro` extra carries a `python_version < "3.13"` marker and doctor hints to use 3.12 (ADR-017).
 - Forced alignment for word-level captions is deferred (see OOS-04).
+- Issue numbers: #1 to #68 are the tasks in plan order (S0-T01 is #1, S9-T04 is #68); #69 to #80 are OOS-01 to OOS-12.
+- `maya3` is not on PyPI, so the `maya2` extra adds only torch and the docs show the pinned git install.
+- `selectolax>=1.0` with the lexbor backend (the old backend was removed upstream).
+- Default profile is `kid-5`; blocks cache key is computed from page bytes (content hash needs extraction first).
+- Script writer: an off-target length triggers the one corrective retry; a still off-length result is kept with a warning.
+- Tooling added in Sprint 0 and 1: `scripts/sync-test-plan.py` (TEST_PLAN statuses tied to real test names, checked in CI) and `scripts/record-llm.py` (`make record-llm`).
+- `gpu-integration` is a separate workflow gated by the `GPU_RUNNER_ENABLED` repository variable.
 
 ---
 

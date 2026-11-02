@@ -28,7 +28,7 @@ coverage.xml
 playwright-report/
 test-results/
 # Product runtime
-.audio-smith/cache/
+.audio-smith/
 out/
 audio/
 *.db
@@ -54,3 +54,4 @@ Thumbs.db
 voices/*/reference.24k.wav
 jobs.db
 /Prompt.md
+coverage.json

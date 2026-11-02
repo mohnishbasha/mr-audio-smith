@@ -207,111 +207,111 @@ Conventions: ids follow section 3. Types are Unit, Integration, Smoke, E2E, Regr
 
 | ID | Scenario | Type | Status |
 |---|---|---|---|
-| `test_fetch_private_ip_blocked` | SSRF guard rejects private, loopback, link-local, metadata addresses | Unit | ⚠️ Deferred |
-| `test_fetch_redirect_to_private_blocked` | Redirect from public host to private IP is rejected | Unit | ⚠️ Deferred |
-| `test_fetch_allow_private_flag_permits_loopback` | `--allow-private` lets loopback through | Unit | ⚠️ Deferred |
-| `test_fetch_dns_rebinding_connects_to_resolved_ip` | DNS resolved once, connection pinned to that IP | Unit | ⚠️ Deferred |
-| `test_fetch_non_http_scheme_rejected` | `ftp:`, `gopher:`, `javascript:` rejected with clear error | Unit | ⚠️ Deferred |
-| `test_fetch_timeout_default_20s_honored` | Default timeout of 20 s applies; configured value overrides | Unit | ⚠️ Deferred |
-| `test_fetch_max_size_5mb_aborts_stream` | Streamed body aborted at the 5 MB limit | Unit | ⚠️ Deferred |
-| `test_fetch_redirect_limit_5_enforced` | Sixth redirect raises | Unit | ⚠️ Deferred |
-| `test_fetch_user_agent_descriptive_sent` | Request carries `mr-audio-smith/{version}` User-Agent | Unit | ⚠️ Deferred |
-| `test_fetch_local_file_no_network` | Local .html and .md read with network disabled | Unit | ⚠️ Deferred |
-| `test_fetch_charset_from_content_type_decoded` | Non-UTF-8 charset decoded correctly | Unit | ⚠️ Deferred |
-| `test_fetch_hostile_page_within_limits` | `hostile.html` (3 MB text, base64) handled without exceeding memory or time budget | Unit | ⚠️ Deferred |
+| `test_fetch_private_ip_blocked` | SSRF guard rejects private, loopback, link-local, metadata addresses | Unit | ✅ Automated |
+| `test_fetch_redirect_to_private_blocked` | Redirect from public host to private IP is rejected | Unit | ✅ Automated |
+| `test_fetch_allow_private_flag_permits_loopback` | `--allow-private` lets loopback through | Unit | ✅ Automated |
+| `test_fetch_dns_rebinding_connects_to_resolved_ip` | DNS resolved once, connection pinned to that IP | Unit | ✅ Automated |
+| `test_fetch_non_http_scheme_rejected` | `ftp:`, `gopher:`, `javascript:` rejected with clear error | Unit | ✅ Automated |
+| `test_fetch_timeout_default_20s_honored` | Default timeout of 20 s applies; configured value overrides | Unit | ✅ Automated |
+| `test_fetch_max_size_5mb_aborts_stream` | Streamed body aborted at the 5 MB limit | Unit | ✅ Automated |
+| `test_fetch_redirect_limit_5_enforced` | Sixth redirect raises | Unit | ✅ Automated |
+| `test_fetch_user_agent_descriptive_sent` | Request carries `mr-audio-smith/{version}` User-Agent | Unit | ✅ Automated |
+| `test_fetch_local_file_no_network` | Local .html and .md read with network disabled | Unit | ✅ Automated |
+| `test_fetch_charset_from_content_type_decoded` | Non-UTF-8 charset decoded correctly | Unit | ✅ Automated |
+| `test_fetch_hostile_page_within_limits` | `hostile.html` (3 MB text, base64) handled without exceeding memory or time budget | Unit | ✅ Automated |
 
 ### 5.2 Extract and blocks (FR-002, FR-003, FR-026)
 
 | ID | Scenario | Type | Status |
 |---|---|---|---|
-| `test_extract_blocks_data_narrate_present_uses_only_marked_element` | Extraction honors [data-narrate] | Unit | ⚠️ Deferred |
-| `test_extract_blocks_article_used_when_no_data_narrate` | Fallback 2: `<article>` | Unit | ⚠️ Deferred |
-| `test_extract_blocks_trafilatura_used_when_no_article` | Fallback 3: trafilatura main content | Unit | ⚠️ Deferred |
-| `test_extract_blocks_readability_fallback_last_resort` | Fallback 4: readability when trafilatura returns empty | Unit | ⚠️ Deferred |
-| `test_extract_blocks_nav_header_footer_excluded` | Boilerplate elements excluded | Unit | ⚠️ Deferred |
-| `test_extract_blocks_scripts_styles_forms_excluded` | script, style, noscript, svg, button, form removed | Unit | ⚠️ Deferred |
-| `test_extract_blocks_emoji_stripped` | Emoji never reach blocks | Unit | ⚠️ Deferred |
-| `test_extract_blocks_regional_indicator_flags_stripped` | Flag emoji (regional indicator pairs) stripped | Unit | ⚠️ Deferred |
-| `test_extract_blocks_skip_attribute_excluded` | data-narrate="skip" excluded | Unit | ⚠️ Deferred |
-| `test_extract_blocks_parent_attribute_routed` | Parent track routing | Unit | ⚠️ Deferred |
-| `test_extract_blocks_types_title_heading_paragraph_list_quote_signature` | All six block types emitted in document order | Unit | ⚠️ Deferred |
-| `test_extract_blocks_signature_role_attribute_detected` | `data-narrate-role="signature"` becomes signature block | Unit | ⚠️ Deferred |
-| `test_extract_blocks_signoff_pattern_detected` | Final short paragraph with sign-off pattern becomes signature | Unit | ⚠️ Deferred |
-| `test_extract_blocks_list_items_capture_index_and_nested_heading` | list_item keeps index and parent heading | Unit | ⚠️ Deferred |
-| `test_extract_blocks_grown_up_note_not_parent_without_attribute` | No magic-string matching in core | Unit | ⚠️ Deferred |
-| `test_extract_blocks_parent_headings_profile_rule_opt_in` | `parent_headings` profile rule routes "A grown-up note" to parent | Unit | ⚠️ Deferred |
-| `test_extract_letter_calm_matches_golden_blocks` | Snapshot of `letter-calm.html` equals `golden/letter-calm.blocks.json` | Unit | ⚠️ Deferred |
-| `test_extract_hostile_html_no_crash_within_limits` | `hostile.html` yields blocks without hang | Unit | ⚠️ Deferred |
-| `test_extract_blocks_fuzz_hypothesis_never_raises` | Hypothesis-generated HTML never crashes the extractor | Unit | ⚠️ Deferred |
-| `test_blocks_hash_whitespace_change_stable` | Hash ignores whitespace | Unit | ⚠️ Deferred |
-| `test_blocks_hash_markup_only_change_stable` | Markup-only change (extra wrapper div) keeps hash | Unit | ⚠️ Deferred |
-| `test_blocks_hash_text_change_differs` | Hash detects text edits | Unit | ⚠️ Deferred |
-| `test_blocks_hash_profile_version_change_differs` | Profile version is part of the hash input | Unit | ⚠️ Deferred |
-| `test_blocks_hash_backend_voice_language_change_differs` | Backend id, voice id, and language each alter the hash | Unit | ⚠️ Deferred |
-| `test_blocks_normalize_smart_quotes_for_hash_only` | Smart quotes normalized for hashing, preserved in stored text | Unit | ⚠️ Deferred |
-| `test_blocks_hash_whitespace_invariant_property` | Hypothesis property: whitespace invariance | Unit | ⚠️ Deferred |
-| `test_parent_track_excluded_from_child_blocks` | Parent-marked blocks never appear in the child track (FR-026) | Unit | ⚠️ Deferred |
+| `test_extract_blocks_data_narrate_present_uses_only_marked_element` | Extraction honors [data-narrate] | Unit | ✅ Automated |
+| `test_extract_blocks_article_used_when_no_data_narrate` | Fallback 2: `<article>` | Unit | ✅ Automated |
+| `test_extract_blocks_trafilatura_used_when_no_article` | Fallback 3: trafilatura main content | Unit | ✅ Automated |
+| `test_extract_blocks_readability_fallback_last_resort` | Fallback 4: readability when trafilatura returns empty | Unit | ✅ Automated |
+| `test_extract_blocks_nav_header_footer_excluded` | Boilerplate elements excluded | Unit | ✅ Automated |
+| `test_extract_blocks_scripts_styles_forms_excluded` | script, style, noscript, svg, button, form removed | Unit | ✅ Automated |
+| `test_extract_blocks_emoji_stripped` | Emoji never reach blocks | Unit | ✅ Automated |
+| `test_extract_blocks_regional_indicator_flags_stripped` | Flag emoji (regional indicator pairs) stripped | Unit | ✅ Automated |
+| `test_extract_blocks_skip_attribute_excluded` | data-narrate="skip" excluded | Unit | ✅ Automated |
+| `test_extract_blocks_parent_attribute_routed` | Parent track routing | Unit | ✅ Automated |
+| `test_extract_blocks_types_title_heading_paragraph_list_quote_signature` | All six block types emitted in document order | Unit | ✅ Automated |
+| `test_extract_blocks_signature_role_attribute_detected` | `data-narrate-role="signature"` becomes signature block | Unit | ✅ Automated |
+| `test_extract_blocks_signoff_pattern_detected` | Final short paragraph with sign-off pattern becomes signature | Unit | ✅ Automated |
+| `test_extract_blocks_list_items_capture_index_and_nested_heading` | list_item keeps index and parent heading | Unit | ✅ Automated |
+| `test_extract_blocks_grown_up_note_not_parent_without_attribute` | No magic-string matching in core | Unit | ✅ Automated |
+| `test_extract_blocks_parent_headings_profile_rule_opt_in` | `parent_headings` profile rule routes "A grown-up note" to parent | Unit | ✅ Automated |
+| `test_extract_letter_calm_matches_golden_blocks` | Snapshot of `letter-calm.html` equals `golden/letter-calm.blocks.json` | Unit | ✅ Automated |
+| `test_extract_hostile_html_no_crash_within_limits` | `hostile.html` yields blocks without hang | Unit | ✅ Automated |
+| `test_extract_blocks_fuzz_hypothesis_never_raises` | Hypothesis-generated HTML never crashes the extractor | Unit | ✅ Automated |
+| `test_blocks_hash_whitespace_change_stable` | Hash ignores whitespace | Unit | ✅ Automated |
+| `test_blocks_hash_markup_only_change_stable` | Markup-only change (extra wrapper div) keeps hash | Unit | ✅ Automated |
+| `test_blocks_hash_text_change_differs` | Hash detects text edits | Unit | ✅ Automated |
+| `test_blocks_hash_profile_version_change_differs` | Profile version is part of the hash input | Unit | ✅ Automated |
+| `test_blocks_hash_backend_voice_language_change_differs` | Backend id, voice id, and language each alter the hash | Unit | ✅ Automated |
+| `test_blocks_normalize_smart_quotes_for_hash_only` | Smart quotes normalized for hashing, preserved in stored text | Unit | ✅ Automated |
+| `test_blocks_hash_whitespace_invariant_property` | Hypothesis property: whitespace invariance | Unit | ✅ Automated |
+| `test_parent_track_excluded_from_child_blocks` | Parent-marked blocks never appear in the child track (FR-026) | Unit | ✅ Automated |
 
 ### 5.3 Profiles (FR-004)
 
 | ID | Scenario | Type | Status |
 |---|---|---|---|
-| `test_profiles_load_invalid_rate_rejected` | Schema errors are clear | Unit | ⚠️ Deferred |
-| `test_profiles_load_error_names_field_path` | Error message contains the YAML field path | Unit | ⚠️ Deferred |
-| `test_profiles_builtins_kid5_kid8_commute_brief_load` | All four built-in profiles validate | Unit | ⚠️ Deferred |
-| `test_profiles_user_profile_overrides_builtin_same_id` | `./profiles` entry wins over the built-in | Unit | ⚠️ Deferred |
-| `test_profiles_semantic_version_required` | Missing or non-semver version rejected | Unit | ⚠️ Deferred |
-| `test_profiles_custom_commute_fixture_loads` | `profiles/custom-commute.yaml` loads | Unit | ⚠️ Deferred |
-| `test_profiles_json_schema_matches_pydantic_model` | Exported `schemas/profile.schema.json` is current | Unit | ⚠️ Deferred |
-| `test_cli_profile_list_show_validate_commands` | `profile list`, `show`, `validate` behave and set exit codes | Unit | ⚠️ Deferred |
+| `test_profiles_load_invalid_rate_rejected` | Schema errors are clear | Unit | ✅ Automated |
+| `test_profiles_load_error_names_field_path` | Error message contains the YAML field path | Unit | ✅ Automated |
+| `test_profiles_builtins_kid5_kid8_commute_brief_load` | All four built-in profiles validate | Unit | ✅ Automated |
+| `test_profiles_user_profile_overrides_builtin_same_id` | `./profiles` entry wins over the built-in | Unit | ✅ Automated |
+| `test_profiles_semantic_version_required` | Missing or non-semver version rejected | Unit | ✅ Automated |
+| `test_profiles_custom_commute_fixture_loads` | `profiles/custom-commute.yaml` loads | Unit | ✅ Automated |
+| `test_profiles_json_schema_matches_pydantic_model` | Exported `schemas/profile.schema.json` is current | Unit | ✅ Automated |
+| `test_cli_profile_list_show_validate_commands` | `profile list`, `show`, `validate` behave and set exit codes | Unit | ✅ Automated |
 
 ### 5.4 LLM providers (FR-005 provider support)
 
 | ID | Scenario | Type | Status |
 |---|---|---|---|
-| `test_llm_ollama_chat_request_shape` | `/api/chat` body, model, options match (respx) | Unit | ⚠️ Deferred |
-| `test_llm_anthropic_provider_passes_model_and_system` | Anthropic SDK called with configured model (stubbed) | Unit | ⚠️ Deferred |
-| `test_llm_openai_compat_base_url_and_key` | base_url and key applied | Unit | ⚠️ Deferred |
-| `test_llm_fake_provider_replays_by_prompt_hash` | FakeProvider returns the recorded response | Unit | ⚠️ Deferred |
-| `test_llm_fake_provider_unknown_hash_raises_clear_error` | Missing recording names the hash and `make record-llm` | Unit | ⚠️ Deferred |
-| `test_llm_provider_string_parsing_all_three_formats` | `ollama:qwen3:14b`, `anthropic:<id>`, `openai_compat:<url>#<model>` | Unit | ⚠️ Deferred |
-| `test_llm_ollama_unreachable_preflight_hint` | Doctor hint when Ollama is down | Unit | ⚠️ Deferred |
-| `test_llm_seed_and_temperature_zero_passed_where_supported` | Determinism parameters forwarded | Unit | ⚠️ Deferred |
+| `test_llm_ollama_chat_request_shape` | `/api/chat` body, model, options match (respx) | Unit | ✅ Automated |
+| `test_llm_anthropic_provider_passes_model_and_system` | Anthropic SDK called with configured model (stubbed) | Unit | ✅ Automated |
+| `test_llm_openai_compat_base_url_and_key` | base_url and key applied | Unit | ✅ Automated |
+| `test_llm_fake_provider_replays_by_prompt_hash` | FakeProvider returns the recorded response | Unit | ✅ Automated |
+| `test_llm_fake_provider_unknown_hash_raises_clear_error` | Missing recording names the hash and `make record-llm` | Unit | ✅ Automated |
+| `test_llm_provider_string_parsing_all_three_formats` | `ollama:qwen3:14b`, `anthropic:<id>`, `openai_compat:<url>#<model>` | Unit | ✅ Automated |
+| `test_llm_ollama_unreachable_preflight_hint` | Doctor hint when Ollama is down | Unit | ✅ Automated |
+| `test_llm_seed_and_temperature_zero_passed_where_supported` | Determinism parameters forwarded | Unit | ✅ Automated |
 | `it_ollama_script_kid5_within_length` | Real LLM script length | Integration | ⚠️ Deferred |
 
 ### 5.5 Script generation and validation (FR-005, FR-006)
 
 | ID | Scenario | Type | Status |
 |---|---|---|---|
-| `test_script_validate_unknown_marker_rejected` | Validator rejects invented tags | Unit | ⚠️ Deferred |
-| `test_script_validate_empty_chunk_rejected` | Empty chunk reported with number | Unit | ⚠️ Deferred |
-| `test_script_validate_chunk_over_max_chars_rejected` | Chunk over `max_chunk_chars` reported | Unit | ⚠️ Deferred |
-| `test_script_validate_strips_stray_markdown_and_emoji` | Stray `**`, `#`, emoji removed | Unit | ⚠️ Deferred |
-| `test_script_validate_reports_violations_with_chunk_numbers` | Every violation carries its chunk number | Unit | ⚠️ Deferred |
-| `test_script_validate_verbatim_chunk_changed_rejected` | Verbatim enforced | Unit | ⚠️ Deferred |
-| `test_script_validate_signature_altered_rejected` | Signature must be preserved exactly | Unit | ⚠️ Deferred |
-| `test_script_validate_allowed_markers_only_pass` | `[pause N]` and allowed emphasis pass | Unit | ⚠️ Deferred |
-| `test_script_parse_serialize_roundtrip_property` | Parse then serialize is identity (hypothesis) | Unit | ⚠️ Deferred |
-| `test_script_parse_frontmatter_and_numbered_chunks` | Frontmatter and chunk numbering parsed | Unit | ⚠️ Deferred |
-| `test_script_parse_invalid_markers_fixture_rejected` | `scripts/invalid-markers.script.md` fails | Unit | ⚠️ Deferred |
-| `test_script_parse_valid_fixture_passes` | `scripts/valid.script.md` passes | Unit | ⚠️ Deferred |
-| `test_script_writer_retry_with_violations_succeeds` | One corrective retry | Unit | ⚠️ Deferred |
-| `test_script_writer_second_failure_raises` | Fails after the single retry | Unit | ⚠️ Deferred |
-| `test_script_writer_target_length_within_20_percent` | Word count within target_minutes x 130 x rate, plus or minus 20 percent | Unit | ⚠️ Deferred |
-| `test_script_writer_prompt_version_in_cache_key` | Template version changes the script cache key | Unit | ⚠️ Deferred |
-| `test_script_writer_interactive_moments_count_requested` | Prompt carries `interactive_moments` count | Unit | ⚠️ Deferred |
-| `test_script_writer_fake_provider_matches_golden_script` | `letter-calm` + kid-5 equals `golden/letter-calm.en.script.md` | Unit | ⚠️ Deferred |
-| `test_script_writer_deterministic_temperature_zero_fixed_seed` | Same inputs and seed give the same script (fake and where supported) | Unit | ⚠️ Deferred |
+| `test_script_validate_unknown_marker_rejected` | Validator rejects invented tags | Unit | ✅ Automated |
+| `test_script_validate_empty_chunk_rejected` | Empty chunk reported with number | Unit | ✅ Automated |
+| `test_script_validate_chunk_over_max_chars_rejected` | Chunk over `max_chunk_chars` reported | Unit | ✅ Automated |
+| `test_script_validate_strips_stray_markdown_and_emoji` | Stray `**`, `#`, emoji removed | Unit | ✅ Automated |
+| `test_script_validate_reports_violations_with_chunk_numbers` | Every violation carries its chunk number | Unit | ✅ Automated |
+| `test_script_validate_verbatim_chunk_changed_rejected` | Verbatim enforced | Unit | ✅ Automated |
+| `test_script_validate_signature_altered_rejected` | Signature must be preserved exactly | Unit | ✅ Automated |
+| `test_script_validate_allowed_markers_only_pass` | `[pause N]` and allowed emphasis pass | Unit | ✅ Automated |
+| `test_script_parse_serialize_roundtrip_property` | Parse then serialize is identity (hypothesis) | Unit | ✅ Automated |
+| `test_script_parse_frontmatter_and_numbered_chunks` | Frontmatter and chunk numbering parsed | Unit | ✅ Automated |
+| `test_script_parse_invalid_markers_fixture_rejected` | `scripts/invalid-markers.script.md` fails | Unit | ✅ Automated |
+| `test_script_parse_valid_fixture_passes` | `scripts/valid.script.md` passes | Unit | ✅ Automated |
+| `test_script_writer_retry_with_violations_succeeds` | One corrective retry | Unit | ✅ Automated |
+| `test_script_writer_second_failure_raises` | Fails after the single retry | Unit | ✅ Automated |
+| `test_script_writer_target_length_within_20_percent` | Word count within target_minutes x 130 x rate, plus or minus 20 percent | Unit | ✅ Automated |
+| `test_script_writer_prompt_version_in_cache_key` | Template version changes the script cache key | Unit | ✅ Automated |
+| `test_script_writer_interactive_moments_count_requested` | Prompt carries `interactive_moments` count | Unit | ✅ Automated |
+| `test_script_writer_fake_provider_matches_golden_script` | `letter-calm` + kid-5 equals `golden/letter-calm.en.script.md` | Unit | ✅ Automated |
+| `test_script_writer_deterministic_temperature_zero_fixed_seed` | Same inputs and seed give the same script (fake and where supported) | Unit | ✅ Automated |
 
 ### 5.6 Lexicon (FR-007)
 
 | ID | Scenario | Type | Status |
 |---|---|---|---|
-| `test_lexicon_apply_whole_word_only` | "Aadi" replaced, "Aadish" not | Unit | ⚠️ Deferred |
-| `test_lexicon_apply_case_sensitive` | "aadi" untouched when entry is "Aadi" | Unit | ⚠️ Deferred |
-| `test_lexicon_stored_script_unchanged_after_apply` | Replacement happens at synthesis only; stored script bytes unchanged | Unit | ⚠️ Deferred |
-| `test_lexicon_project_overrides_profile_entry` | `lexicon.yaml` wins on conflict | Unit | ⚠️ Deferred |
-| `test_lexicon_merge_profile_and_project` | Union of both sources | Unit | ⚠️ Deferred |
+| `test_lexicon_apply_whole_word_only` | "Aadi" replaced, "Aadish" not | Unit | ✅ Automated |
+| `test_lexicon_apply_case_sensitive` | "aadi" untouched when entry is "Aadi" | Unit | ✅ Automated |
+| `test_lexicon_stored_script_unchanged_after_apply` | Replacement happens at synthesis only; stored script bytes unchanged | Unit | ✅ Automated |
+| `test_lexicon_project_overrides_profile_entry` | `lexicon.yaml` wins on conflict | Unit | ✅ Automated |
+| `test_lexicon_merge_profile_and_project` | Union of both sources | Unit | ✅ Automated |
 
 ### 5.7 Translation (FR-008)
 
@@ -464,13 +464,13 @@ Conventions: ids follow section 3. Types are Unit, Integration, Smoke, E2E, Regr
 
 | ID | Scenario | Type | Status |
 |---|---|---|---|
-| `test_cache_unchanged_page_skips_render` | Incremental build | Unit | ⚠️ Deferred |
+| `test_cache_unchanged_page_skips_render` | Incremental build | Unit | ✅ Automated |
 | `test_cache_second_script_run_under_2s` | Second `script` run on unchanged page is a cache hit under 2 s | Integration | ⚠️ Deferred |
-| `test_cache_key_format_versioned` | Key begins with a format version | Unit | ⚠️ Deferred |
-| `test_cache_version_bump_invalidates_old_entries` | Old-format keys are never read | Unit | ⚠️ Deferred |
-| `test_cache_prune_older_than_30d_removes_old_only` | `cache prune --older-than 30d` | Unit | ⚠️ Deferred |
-| `test_cache_content_addressed_blocks_scripts_chunks_outputs` | All four kinds stored by hash | Unit | ⚠️ Deferred |
-| `test_cache_force_flag_bypasses` | `--force` re-runs the stage | Unit | ⚠️ Deferred |
+| `test_cache_key_format_versioned` | Key begins with a format version | Unit | ✅ Automated |
+| `test_cache_version_bump_invalidates_old_entries` | Old-format keys are never read | Unit | ✅ Automated |
+| `test_cache_prune_older_than_30d_removes_old_only` | `cache prune --older-than 30d` | Unit | ✅ Automated |
+| `test_cache_content_addressed_blocks_scripts_chunks_outputs` | All four kinds stored by hash | Unit | ✅ Automated |
+| `test_cache_force_flag_bypasses` | `--force` re-runs the stage | Unit | ✅ Automated |
 
 ### 5.17 CLI, doctor, and config (FR-021, S0-T09, S0-T10)
 
@@ -692,6 +692,81 @@ Row count: more than 120 scenarios across 27 tables.
 | `test_scripts_check_coverage_overall_under_target_fails` | scripts check coverage overall under target fails | Unit | ✅ Automated |
 | `test_scripts_check_versions_consistent_passes` | scripts check versions consistent passes | Unit | ✅ Automated |
 | `test_scripts_em_dash_clean_file_passes` | scripts em dash clean file passes | Unit | ✅ Automated |
+| `it_ollama_chat_tiny_model_returns_text` | ollama chat tiny model returns text | Integration | ✅ Automated |
+| `test_api_markdown_source_extracts_blocks` | api markdown source extracts blocks | Unit | ✅ Automated |
+| `test_api_markdown_to_html_closes_trailing_list` | api markdown to html closes trailing list | Unit | ✅ Automated |
+| `test_api_resolve_profile_uses_settings_default` | api resolve profile uses settings default | Unit | ✅ Automated |
+| `test_api_write_script_writes_blocks_and_scripts` | api write script writes blocks and scripts | Unit | ✅ Automated |
+| `test_blocks_normalize_strips_emoji_and_space_before_punct` | blocks normalize strips emoji and space before punct | Unit | ✅ Automated |
+| `test_blocks_to_json_uses_schema_alias` | blocks to json uses schema alias | Unit | ✅ Automated |
+| `test_cache_keys_change_with_every_input` | cache keys change with every input | Unit | ✅ Automated |
+| `test_cache_parse_age_forms` | cache parse age forms | Unit | ✅ Automated |
+| `test_cache_rejects_traversal_addresses` | cache rejects traversal addresses | Unit | ✅ Automated |
+| `test_cli_cache_info_and_prune` | cli cache info and prune | Unit | ✅ Automated |
+| `test_cli_script_command_with_local_fixture` | cli script command with local fixture | Unit | ✅ Automated |
+| `test_default_resolver_localhost_and_failure` | default resolver localhost and failure | Unit | ✅ Automated |
+| `test_extract_blocks_verbatim_attribute_marks_block` | extract blocks verbatim attribute marks block | Unit | ✅ Automated |
+| `test_extract_empty_article_raises_extract_error` | extract empty article raises extract error | Unit | ✅ Automated |
+| `test_extract_list_item_skip_and_parent_attributes` | extract list item skip and parent attributes | Unit | ✅ Automated |
+| `test_extract_list_item_without_paragraph_strips_number` | extract list item without paragraph strips number | Unit | ✅ Automated |
+| `test_extract_metadata_title_lang_author_date` | extract metadata title lang author date | Unit | ✅ Automated |
+| `test_extract_no_content_raises_extract_error` | extract no content raises extract error | Unit | ✅ Automated |
+| `test_extract_parent_headings_routes_heading_tag_sections` | extract parent headings routes heading tag sections | Unit | ✅ Automated |
+| `test_fetch_content_length_over_limit_rejected_early` | fetch content length over limit rejected early | Unit | ✅ Automated |
+| `test_fetch_creates_and_closes_own_client` | fetch creates and closes own client | Unit | ✅ Automated |
+| `test_fetch_empty_resolution_rejected` | fetch empty resolution rejected | Unit | ✅ Automated |
+| `test_fetch_five_redirects_then_success` | fetch five redirects then success | Unit | ✅ Automated |
+| `test_fetch_http_error_names_status` | fetch http error names status | Unit | ✅ Automated |
+| `test_fetch_local_bad_extension_missing_and_oversize` | fetch local bad extension missing and oversize | Unit | ✅ Automated |
+| `test_fetch_metadata_hostname_blocked` | fetch metadata hostname blocked | Unit | ✅ Automated |
+| `test_fetch_network_error_raises_fetch_error` | fetch network error raises fetch error | Unit | ✅ Automated |
+| `test_fetch_non_text_content_type_rejected` | fetch non text content type rejected | Unit | ✅ Automated |
+| `test_fetch_pinned_request_keeps_port_and_ipv6_host_header` | fetch pinned request keeps port and ipv6 host header | Unit | ✅ Automated |
+| `test_fetch_private_ip_literal_and_any_answer_blocked` | fetch private ip literal and any answer blocked | Unit | ✅ Automated |
+| `test_fetch_redirect_to_non_http_scheme_blocked` | fetch redirect to non http scheme blocked | Unit | ✅ Automated |
+| `test_fetch_redirect_without_location_is_not_followed` | fetch redirect without location is not followed | Unit | ✅ Automated |
+| `test_fetch_timeout_raises_fetch_error` | fetch timeout raises fetch error | Unit | ✅ Automated |
+| `test_fetch_total_time_budget_enforced` | fetch total time budget enforced | Unit | ✅ Automated |
+| `test_fetch_unknown_or_missing_charset_falls_back_to_utf8` | fetch unknown or missing charset falls back to utf8 | Unit | ✅ Automated |
+| `test_lexicon_apply_phrase_before_word` | lexicon apply phrase before word | Unit | ✅ Automated |
+| `test_lexicon_invalid_file_raises` | lexicon invalid file raises | Unit | ✅ Automated |
+| `test_llm_anthropic_missing_sdk_and_failure` | llm anthropic missing sdk and failure | Unit | ✅ Automated |
+| `test_llm_anthropic_preflight_states` | llm anthropic preflight states | Unit | ✅ Automated |
+| `test_llm_bad_replies_raise` | llm bad replies raise | Unit | ✅ Automated |
+| `test_llm_check_states` | llm check states | Unit | ✅ Automated |
+| `test_llm_fake_provider_queue_mode` | llm fake provider queue mode | Unit | ✅ Automated |
+| `test_llm_get_provider_factory` | llm get provider factory | Unit | ✅ Automated |
+| `test_llm_ollama_preflight_ok_and_model_missing` | llm ollama preflight ok and model missing | Unit | ✅ Automated |
+| `test_llm_ollama_retries_5xx_then_succeeds` | llm ollama retries 5xx then succeeds | Unit | ✅ Automated |
+| `test_llm_ollama_tags_malformed_means_model_missing` | llm ollama tags malformed means model missing | Unit | ✅ Automated |
+| `test_llm_openai_compat_no_key_no_header_and_bad_reply` | llm openai compat no key no header and bad reply | Unit | ✅ Automated |
+| `test_llm_openai_compat_preflight_cloud_and_unreachable` | llm openai compat preflight cloud and unreachable | Unit | ✅ Automated |
+| `test_llm_parse_provider_rejects_invalid` | llm parse provider rejects invalid | Unit | ✅ Automated |
+| `test_llm_provider_label_drops_base_url` | llm provider label drops base url | Unit | ✅ Automated |
+| `test_llm_retries_exhausted_raises` | llm retries exhausted raises | Unit | ✅ Automated |
+| `test_llm_strip_think_and_locality` | llm strip think and locality | Unit | ✅ Automated |
+| `test_llm_unknown_provider_lists_known_kinds` | llm unknown provider lists known kinds | Unit | ✅ Automated |
+| `test_paths_atomic_write_replaces_and_sets_mode` | paths atomic write replaces and sets mode | Unit | ✅ Automated |
+| `test_paths_ensure_inside_blocks_traversal` | paths ensure inside blocks traversal | Unit | ✅ Automated |
+| `test_paths_safe_slug_sanitizes` | paths safe slug sanitizes | Unit | ✅ Automated |
+| `test_profiles_get_profile_version_pin_and_unknown` | profiles get profile version pin and unknown | Unit | ✅ Automated |
+| `test_profiles_invalid_yaml_and_non_mapping_rejected` | profiles invalid yaml and non mapping rejected | Unit | ✅ Automated |
+| `test_profiles_language_code_validated` | profiles language code validated | Unit | ✅ Automated |
+| `test_profiles_track_reference_must_exist` | profiles track reference must exist | Unit | ✅ Automated |
+| `test_script_parse_structural_errors_raise` | script parse structural errors raise | Unit | ✅ Automated |
+| `test_script_plain_text_and_word_count` | script plain text and word count | Unit | ✅ Automated |
+| `test_script_validate_numbering_and_no_chunks` | script validate numbering and no chunks | Unit | ✅ Automated |
+| `test_script_validate_sentence_count_warning` | script validate sentence count warning | Unit | ✅ Automated |
+| `test_script_validate_verbatim_ignores_terminal_punct_and_quotes` | script validate verbatim ignores terminal punct and quotes | Unit | ✅ Automated |
+| `test_script_writer_prompt_carries_profile_rules` | script writer prompt carries profile rules | Unit | ✅ Automated |
+| `test_script_writer_strips_think_blocks_and_fences` | script writer strips think blocks and fences | Unit | ✅ Automated |
+| `test_script_writer_too_short_retries_then_warns` | script writer too short retries then warns | Unit | ✅ Automated |
+| `test_script_writer_user_prompt_wraps_untrusted_content_and_track` | script writer user prompt wraps untrusted content and track | Unit | ✅ Automated |
+| `test_script_verbatim_empty_signature_chunk_replaced_with_exact_text` | script verbatim empty signature chunk replaced with exact text | Unit | ✅ Automated |
+| `test_script_verbatim_missing_sources_appended_signature_last` | script verbatim missing sources appended signature last | Unit | ✅ Automated |
+| `test_script_verbatim_no_sources_is_identity` | script verbatim no sources is identity | Unit | ✅ Automated |
+| `test_script_verbatim_paraphrased_signature_restored_in_place` | script verbatim paraphrased signature restored in place | Unit | ✅ Automated |
+| `test_script_verbatim_signature_moved_to_end` | script verbatim signature moved to end | Unit | ✅ Automated |
 
 ## 6. Listening test protocol
 

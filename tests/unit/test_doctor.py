@@ -108,7 +108,7 @@ def test_doctor_each_failure_has_fix_hint(monkeypatch: pytest.MonkeyPatch, tmp_p
         free = 1
 
     blocker = tmp_path / "file"
-    blocker.write_text("x")
+    blocker.write_text("x", encoding="utf-8")
     monkeypatch.setenv("AUDIO_SMITH_CACHE_DIR", str(blocker / "sub"))
     monkeypatch.setattr(doctor.shutil, "which", lambda _: None)
     monkeypatch.setattr(doctor.shutil, "disk_usage", lambda _: U())

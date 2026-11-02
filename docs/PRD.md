@@ -181,6 +181,9 @@ Rewrite blocks into a listening script with an LLM provider (ollama default, ant
 - [ ] Expanded: `--no-rewrite` produces a script by minimal normalization only (no LLM call)
 - [ ] Expanded: the LLM provider, model, and seed are recorded in the manifest
 
+- [ ] Expanded: a script outside the length band triggers the single corrective retry; if the retry is still outside it, the script is kept and the warning is reported (only grammar violations fail the stage).
+- [ ] Expanded: provider strings are `ollama:<model>`, `anthropic:<model-id>`, `openai_compat:<base_url>#<model>`, and `fake[:<fixture-dir>]`.
+
 ### FR-006 Script validation
 
 Validate generated scripts before synthesis.
