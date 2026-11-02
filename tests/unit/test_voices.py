@@ -128,7 +128,7 @@ def test_consent_hash_mismatch_after_tamper_raises(vdir: Path, added: registry.V
 def test_consent_record_edge_cases(vdir: Path, added: registry.VoiceRecord) -> None:
     ref = registry.resolve("dad", load_settings(), _caps())
     rec = vdir / "dad" / "voice.yaml"
-    data = yaml.safe_load(rec.read_text())
+    data = yaml.safe_load(rec.read_text(encoding="utf-8"))
     for patch in ({"reference": "../x.wav"}, {"id": "mom"}, {"reference": "gone.wav"}):
         rec.write_text(yaml.safe_dump({**data, **patch}))
         with pytest.raises(ConsentError):
@@ -222,7 +222,7 @@ def test_voices_add_stores_24k_mono_reference_copy(vdir: Path, added: registry.V
     info = sf.info(target / "reference.24k.wav")
     assert info.samplerate == 24000 and info.channels == 1
     assert len(added.clip_hash) == 64
-    assert yaml.safe_load((target / "voice.yaml").read_text())["clip_hash"] == added.clip_hash
+    assert yaml.safe_load((target / "voice.yaml").read_text(encoding="utf-8"))["clip_hash"] == added.clip_hash
     assert added.clipcheck.sample_rate == 24000
 
 
@@ -279,7 +279,7 @@ def test_voices_check_clip_problem_when_clip_degrades(vdir: Path) -> None:
     rec = registry.add_voice(vdir, "dad", CLEAN, _consent(), display_name="Dad")
     noisy = VOICES / "noisy.wav"
     (vdir / "dad" / "reference.wav").write_bytes(noisy.read_bytes())
-    data = yaml.safe_load((vdir / "dad" / "voice.yaml").read_text())
+    data = yaml.safe_load((vdir / "dad" / "voice.yaml").read_text(encoding="utf-8"))
     data["clip_hash"] = registry.file_sha256(noisy)
     (vdir / "dad" / "voice.yaml").write_text(yaml.safe_dump(data))
     res = registry.check_voice(vdir, "dad")
@@ -385,7 +385,7 @@ def test_cli_voice_check_clip_problems_exit_3(vdir: Path) -> None:
     registry.add_voice(vdir, "dad", CLEAN, _consent(), display_name="Dad")
     noisy = VOICES / "noisy.wav"
     (vdir / "dad" / "reference.wav").write_bytes(noisy.read_bytes())
-    data = yaml.safe_load((vdir / "dad" / "voice.yaml").read_text())
+    data = yaml.safe_load((vdir / "dad" / "voice.yaml").read_text(encoding="utf-8"))
     data["clip_hash"] = registry.file_sha256(noisy)
     (vdir / "dad" / "voice.yaml").write_text(yaml.safe_dump(data))
     r = runner.invoke(app, ["voice", "check", "dad"])
@@ -399,7 +399,7 @@ def test_cli_voice_add_explicit_statement_and_unreadable_clip_check(vdir: Path) 
     assert r.exit_code == 0, r.output
     junk = vdir / "dad" / "reference.wav"
     junk.write_bytes(b"not audio")
-    data = yaml.safe_load((vdir / "dad" / "voice.yaml").read_text())
+    data = yaml.safe_load((vdir / "dad" / "voice.yaml").read_text(encoding="utf-8"))
     data["clip_hash"] = registry.file_sha256(junk)
     (vdir / "dad" / "voice.yaml").write_text(yaml.safe_dump(data))
     res = registry.check_voice(vdir, "dad")

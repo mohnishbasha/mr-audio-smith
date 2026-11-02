@@ -38,10 +38,10 @@ def test_api_render_applies_lexicon_at_synthesis_only(tmp_path: Path) -> None:
             return super().synth(text, voice, params)
 
     script = FIX / "scripts" / "valid.script.md"
-    before = script.read_text()
+    before = script.read_text(encoding="utf-8")
     api.render_script(script, tts=Spy(), voice="mock-a", out=tmp_path)
     assert seen[0].startswith("My dear AH-dee")
-    assert script.read_text() == before
+    assert script.read_text(encoding="utf-8") == before
 
 
 def test_consent_enforced_from_python_api_unregistered_voice(tmp_path: Path) -> None:
