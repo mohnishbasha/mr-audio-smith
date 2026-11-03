@@ -29,7 +29,7 @@ jobs:
       version: ${{ steps.v.outputs.version }}
       prerelease: ${{ steps.v.outputs.prerelease }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           ref: ${{ inputs.tag || github.ref }}
@@ -55,7 +55,7 @@ jobs:
     needs: [verify, ci]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.tag || github.ref }}
       - uses: astral-sh/setup-uv@v7
@@ -102,7 +102,7 @@ jobs:
     env:
       IMAGE: ghcr.io/serverless-ventures/mr-audio-smith
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.tag || github.ref }}
       - uses: docker/setup-qemu-action@v3
@@ -186,7 +186,7 @@ jobs:
       packages: write
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.tag || github.ref }}
       - uses: azure/setup-helm@v4
@@ -256,7 +256,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.tag || github.ref }}
       - uses: actions/download-artifact@v4

@@ -23,7 +23,7 @@ jobs:
   lint-template:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: azure/setup-helm@v4
       - name: helm lint and template for each values file
         run: |
@@ -48,7 +48,7 @@ jobs:
     needs: lint-template
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: docker/setup-buildx-action@v3
