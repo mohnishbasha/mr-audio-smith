@@ -150,7 +150,7 @@ jobs:
       - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
       - uses: oven-sh/setup-bun@v2
@@ -182,7 +182,7 @@ jobs:
       - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
       - run: uv sync --frozen ${{ env.PY_EXTRAS }}
@@ -223,7 +223,7 @@ jobs:
       - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg
