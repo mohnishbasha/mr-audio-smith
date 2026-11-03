@@ -1153,10 +1153,12 @@ Row count: more than 120 scenarios across 27 tables.
 | `it_harness_goose_toolkit_lists_tools` | harness goose toolkit lists tools | Integration | ✅ Automated |
 | `it_harness_opencode_config_lists_tools` | harness opencode config lists tools | Integration | ✅ Automated |
 | `test_app_dockerfiles_are_non_root_with_serve_entrypoint` | app dockerfiles are non root with serve entrypoint | Unit | ✅ Automated |
-| `test_chart_version_equals_pyproject_version` | chart version equals pyproject version | Unit | ✅ Automated |
+| `test_chart_app_version_equals_pyproject_and_chart_version_is_plain_semver` | chart app version equals pyproject and chart version is plain semver | Unit | ✅ Automated |
 | `test_compose_local_cpu_profile_has_no_gpu_or_maya` | compose local cpu profile has no gpu or maya | Unit | ✅ Automated |
 | `test_compose_local_requires_token_and_localhost_only` | compose local requires token and localhost only | Unit | ✅ Automated |
 | `test_compose_maya2_uses_port_8080` | compose maya2 uses port 8080 | Unit | ✅ Automated |
+| `test_helm_openstoke_values_use_cdi_without_gpu_requests` | helm openstoke values use cdi without gpu requests | Unit | ✅ Automated |
+| `test_versions_check_ignores_chart_version_but_checks_app_version` | versions check ignores chart version but checks app version | Unit | ✅ Automated |
 | `test_compose_prod_images_pinned_by_digest` | compose prod images pinned by digest | Unit | ✅ Automated |
 | `test_compose_prod_internal_network_and_read_only` | compose prod internal network and read only | Unit | ✅ Automated |
 | `test_compose_prod_no_published_ports_for_internal_services` | compose prod no published ports for internal services | Unit | ✅ Automated |
