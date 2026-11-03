@@ -99,7 +99,7 @@ jobs:
           for p in player web/studio integrations/pi; do
             if [ -f "$p/package-lock.json" ]; then (cd "$p" && npm ci && npm run --if-present coverage); fi
           done
-      - uses: codecov/codecov-action@v5
+      - uses: codecov/codecov-action@v7
         with:
           files: coverage.xml
           fail_ci_if_error: false
