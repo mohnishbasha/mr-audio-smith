@@ -51,7 +51,7 @@ kokoro = ["kokoro>=0.9.4; python_version < '3.13'", "torch>=2.4; python_version 
 # Chatterbox is not an extra: chatterbox-tts hard-pins old torch, transformers, gradio, and pillow
 # releases with open advisories (docs/SECURITY_REVIEW.md). Install it yourself to use the backend:
 #   uv pip install chatterbox-tts
-qa = ["resemblyzer>=0.1.4", "setuptools>=69,<81"]  # resemblyzer imports pkg_resources
+qa = ["resemblyzer>=0.1.4", "setuptools>=69,<85"]  # resemblyzer imports pkg_resources
 cloud = ["anthropic>=0.34"]
 server = ["fastapi>=0.112", "uvicorn[standard]>=0.30", "python-multipart>=0.0.9"]
 mcp = ["mcp>=2.3,<3"]  # MCPServer API (FastMCP was removed in mcp 2)
