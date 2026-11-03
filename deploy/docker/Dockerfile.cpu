@@ -67,7 +67,7 @@ RUN python -m venv /opt/venv \
 # ---- Stage 3: runtime -------------------------------------------------------------------------------
 # Static ffmpeg/ffprobe (about 80 MB) instead of Debian's ffmpeg package (about 450 MB of shared
 # libraries) keeps the CPU image under the 1.5 GB target. Pin by digest in production builds.
-FROM mwader/static-ffmpeg:7.1 AS ffmpeg
+FROM mwader/static-ffmpeg:9.0 AS ffmpeg
 
 FROM ${PYTHON_IMAGE} AS runtime
 ARG VERSION=dev
